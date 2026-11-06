@@ -1,0 +1,105 @@
+name: Agent
+
+# `feature` címkés issue -> DeepSeek-es Claude Code CLI -> teszt + implementáció -> PR -> CI + preview
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  implement:
+    name: Feature implementálása
+    # Csak a repó tulajdonosa indíthatja (az issue szövege az ügynök bemenete).
+    if: github.event.label.name == 'feature' && github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: agent # egyszerre egy feature (egy preview környezet van)
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number }}
+      ISSUE_TITLE: ${{ github.event.issue.title }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0 }
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 26, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: npm install -g @anthropic-ai/claude-code@2.1.311
+
+      - name: Jelzés az issue-ban
+        run: |
+          gh issue comment "$ISSUE" --body "🤖 Az ügynök dolgozik rajta: ${RUN_URL}"
+
+      - name: Ügynök futtatása (DeepSeek)
+        env:
+          ANTHROPIC_BASE_URL: https://api.deepseek.com/anthropic
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.DEEPSEEK_API_KEY }}
+          ANTHROPIC_MODEL: deepseek-flash
+          ANTHROPIC_DEFAULT_SONNET_MODEL: deepseek-flash
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: deepseek-flash
+          ANTHROPIC_DEFAULT_OPUS_MODEL: deepseek-flash
+          CLAUDE_CODE_SUBAGENT_MODEL: deepseek-flash
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
+          CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
+        run: |
+          git switch -c "agent/issue-${ISSUE}"
+          PROMPT="$(printf 'Implementáld ezt a feature-t a Szikra repóban. Kövesd az AGENTS.md szabályait szigorúan (előbb e2e teszt, utána implementáció, minden zöld legyen).\n\nCím: %s\n\nLeírás:\n%s\n' "$ISSUE_TITLE" "$ISSUE_BODY")"
+          claude -p "$PROMPT" \
+            --permission-mode acceptEdits \
+            --max-turns 60 \
+            --allowedTools "Read" "Edit" "Write" "Glob" "Grep" \
+              "Bash(pnpm typecheck)" "Bash(pnpm test)" "Bash(pnpm build)" "Bash(pnpm build && pnpm test:e2e)" "Bash(pnpm test:e2e:*)" "Bash(git status:*)" "Bash(git diff:*)" \
+            | tee agent-output.txt
+
+      - name: Védett fájlok ellenőrzése és commit
+        id: commit
+        run: |
+          git add -A -- . ':!agent-output.txt' ':!playwright-report' ':!test-results'
+          if git diff --cached --quiet; then
+            echo "Az ügynök nem módosított semmit." >&2; echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          BAD="$(git diff --cached --name-only | grep -E '^(\.github/|deploy/|Dockerfile$|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|playwright\.config\.ts$|osv-scanner\.toml$|AGENTS\.md$)' || true)"
+          if [ -n "$BAD" ]; then
+            echo "Védett fájl módosítás, megszakítva:" >&2; echo "$BAD" >&2
+            echo "bad<<EOF" >> "$GITHUB_OUTPUT"; echo "$BAD" >> "$GITHUB_OUTPUT"; echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "changed=blocked" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          git -c user.name="szikra-agent" -c user.email="szikra-agent@users.noreply.github.com" \
+            commit -q -m "feat: ${ISSUE_TITLE} (#${ISSUE})" -m "Az ügynök (DeepSeek flash) készítette: ${RUN_URL}"
+          git push -q origin "agent/issue-${ISSUE}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: PR nyitása és pipeline indítása
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          PR_URL="$(gh pr create --base main --head "agent/issue-${ISSUE}" \
+            --title "feat: ${ISSUE_TITLE}" \
+            --body "$(printf 'Closes #%s\n\nAz ügynök (DeepSeek flash) készítette: %s\n\nA pipeline (e2e, security, preview) automatikusan indul; az eredmény a PR-ben jelenik meg.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)' "$ISSUE" "$RUN_URL")")"
+          PR="${PR_URL##*/}"
+          # A GITHUB_TOKEN-nel nyitott PR nem indít workflow-t, ezért közvetlenül dispatch-eljük.
+          gh workflow run ci.yml --ref "agent/issue-${ISSUE}" -f "pr=${PR}"
+          gh workflow run security.yml --ref "agent/issue-${ISSUE}"
+          gh issue comment "$ISSUE" --body "✅ PR elkészült: ${PR_URL}"
+
+      - name: Hibajelzés az issue-ban
+        if: steps.commit.outputs.changed != 'true' || failure()
+        run: |
+          case "${{ steps.commit.outputs.changed }}" in
+            blocked) MSG="⛔ Az ügynök védett fájlt módosított, ezért nem nyitottam PR-t. Részletek: ${RUN_URL}" ;;
+            false)   MSG="⚠️ Az ügynök nem módosított semmit. Részletek: ${RUN_URL}" ;;
+            *)       MSG="❌ Az ügynök futása hibával állt le. Részletek: ${RUN_URL}" ;;
+          esac
+          gh issue comment "$ISSUE" --body "$MSG"
