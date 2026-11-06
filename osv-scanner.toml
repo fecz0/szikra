@@ -4,3 +4,10 @@
 id = "GHSA-gcqx-w48m-w2h4"
 ignoreUntil = 2027-02-01
 reason = "Nincs javított kiadás; csak build-idejű tranzitív függőség"
+
+# Nuxt route rules advisory: a 4.x ágon a javítás a 4.6.2-ben van, mi 4.6.4-en vagyunk.
+# Az OSV a 3.x tartomány (nincs javítás) miatt hamis találatot ad. Felülvizsgálat: 2027-02-01.
+[[IgnoredVulns]]
+id = "GHSA-vjh5-4x84-xrqp"
+ignoreUntil = 2027-02-01
+reason = "Hamis pozitív: nuxt/@nuxt/nitro-server 4.6.4 >= 4.6.2 (javított)"
