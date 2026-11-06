@@ -1,6 +1,6 @@
 import { test as base, expect } from '@playwright/test'
 
-export type Scenario = 'okosmero-gaz-villany' | 'elmaradt-szamla' | 'kartya-elutasitva'
+export type Scenario = 'okosmero-gaz-villany' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
 
 /**
  * `sap.seed(forgatókönyv)` -> létrehozza a teszt SAP-objektumot a mockban

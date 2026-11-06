@@ -1,13 +1,14 @@
 import type { SapCustomer } from './types'
 
 type Scenario = (id: string) => SapCustomer
+export type ScenarioName = 'okosmero-gaz-villany' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
 
 /**
  * Seed forgatókönyvek: egy forgatókönyv = egy teljes SAP-objektumcsomag
  * (ügyfél, szerződéses számla, mérők, számlák, fizetési mód).
  * Ami valós SAP-ban 2-3 nap kézi beállítás, az itt egyetlen hívás.
  */
-export const scenarios: Record<string, Scenario> = {
+export const scenarios: Record<ScenarioName, Scenario> = {
   'okosmero-gaz-villany': id => ({
     id,
     name: 'Teszt Elek',
@@ -51,5 +52,20 @@ export const scenarios: Record<string, Scenario> = {
       { id: `${id}-B1`, meterId: `${id}-G1`, period: '2026. október', amountHuf: 41200, dueDate: '2026-11-20', status: 'open' },
     ],
     paymentMethod: { kind: 'card', label: 'Bankkártya **** 0002', declines: true },
+  }),
+
+  'rendezett-szamlak': id => ({
+    id,
+    name: 'Rendes Réka',
+    address: '9021 Győr, Pontos köz 12.',
+    contractAccount: `CA-${id}`,
+    meters: [
+      { id: `${id}-E1`, type: 'villany', smart: true, pod: 'HU-DEMO-E-0004', lastReading: 2210, unit: 'kWh' },
+    ],
+    bills: [
+      { id: `${id}-B1`, meterId: `${id}-E1`, period: '2026. szeptember', amountHuf: 15200, dueDate: '2026-10-20', status: 'paid' },
+      { id: `${id}-B2`, meterId: `${id}-E1`, period: '2026. október', amountHuf: 16100, dueDate: '2026-11-20', status: 'paid' },
+    ],
+    paymentMethod: { kind: 'direct-debit', label: 'Csoportos beszedés' },
   }),
 }

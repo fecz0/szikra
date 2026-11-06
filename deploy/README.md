@@ -15,5 +15,5 @@ Még nincs bekötve; a `deploy.yml` kikapcsolt állapotban van (`vars.DEPLOY_ENA
   user systemd `szikra@main` (:3101) és `szikra@preview` (:3102), saját Node 26 LTS a `~/szikra/node` alatt
   (a Hermes alap Node-ja alpha és a heti frissítés cseréli, ezért nem azt használjuk).
 - Az app kimenete: `~/szikra/<main|preview>/.output`; frissítés után `systemctl --user restart szikra@<env>`.
-- Kézi deploy egyelőre: `rsync -az --delete .output/ hermes@...:~/szikra/<env>/.output/`.
-- Következő: ezt a CI végzi (korlátozott deploy kulcs, forced command), PR-ről a `preview`-ra, main-ről a `main`-re.
+- Deploy: a CI végzi (`ci.yml` `deploy` job): `main` -> `szikra`, saját repós PR -> `szikra-preview`. Korlátozott SSH kulcs (forced command: `~/szikra/deploy.sh`), a csomag az e2e által tesztelt build.
+- Ellenőrzés: `/api/health` visszaadja a deployolt commitot; a CI ezt várja meg smoke tesztként.
