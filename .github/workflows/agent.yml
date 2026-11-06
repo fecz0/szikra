@@ -38,6 +38,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - run: npm install -g @anthropic-ai/claude-code@2.1.311
+      - name: Sandbox (bubblewrap) a titkok elrejtéséhez
+        run: |
+          sudo apt-get install -y --no-install-recommends bubblewrap
+          # Ubuntu 24.04-en az AppArmor alapból tiltja a felhasználói namespace-t, amit a bwrap használ
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Jelzés az issue-ban
         run: |
@@ -55,6 +60,7 @@ jobs:
           CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1'
           CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'
         run: |
+          set -o pipefail
           git switch -c "agent/issue-${ISSUE}"
           PROMPT="$(printf 'Implementáld ezt a feature-t a Szikra repóban. Kövesd az AGENTS.md szabályait szigorúan (előbb e2e teszt, utána implementáció, minden zöld legyen).\n\nCím: %s\n\nLeírás:\n%s\n' "$ISSUE_TITLE" "$ISSUE_BODY")"
           claude -p "$PROMPT" \
