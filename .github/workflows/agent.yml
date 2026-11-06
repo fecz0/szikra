@@ -73,7 +73,7 @@ jobs:
       - name: Védett fájlok ellenőrzése és commit
         id: commit
         run: |
-          git add -A -- . ':!agent-output.txt' ':!playwright-report' ':!test-results'
+          git add -A -- . ':!agent-output.txt'
           if git diff --cached --quiet; then
             echo "Az ügynök nem módosított semmit." >&2; echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0
           fi
