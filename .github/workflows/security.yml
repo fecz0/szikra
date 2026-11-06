@@ -1,0 +1,62 @@
+name: Security
+
+on:
+  push: { branches: [main] }
+  pull_request:
+  schedule:
+    - cron: '17 3 * * 1' # hetente, hétfő hajnal
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    name: SAST – CodeQL
+    runs-on: ubuntu-latest
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with: { languages: javascript-typescript }
+      - uses: github/codeql-action/analyze@v3
+
+  semgrep:
+    name: SAST – Semgrep
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: semgrep scan --config p/default --config p/typescript --error --metrics=off
+
+  secrets:
+    name: Titokkeresés – gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+
+  deps:
+    name: SCA – függőségek
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        if: github.event_name == 'pull_request'
+        with: { fail-on-severity: high }
+      - uses: google/osv-scanner-action/osv-scanner-action@v1
+        with: { scan-args: '--lockfile=pnpm-lock.yaml' }
+
+  trivy-fs:
+    name: Trivy fájlrendszer + konfiguráció
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'

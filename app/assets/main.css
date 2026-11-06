@@ -1,0 +1,24 @@
+:root { --bg:#f6f7f9; --fg:#1b1f24; --muted:#5d6672; --card:#fff; --line:#e1e5ea; --brand:#e8590c; --ok:#2b8a3e; --err:#c92a2a; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#14171a; --fg:#e8eaed; --muted:#9aa3ad; --card:#1d2227; --line:#2d343b; --brand:#ff8a4c; --ok:#69db7c; --err:#ff8787; }
+}
+* { box-sizing: border-box }
+body { margin:0; font:16px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--fg) }
+.shell { max-width:860px; margin:0 auto; padding:0 16px 32px }
+.top { display:flex; gap:12px; align-items:center; padding:16px 0 }
+.logo { font-weight:700; font-size:1.25rem; color:var(--brand); text-decoration:none }
+.tag { font-size:.75rem; border:1px solid var(--line); border-radius:99px; padding:2px 10px; color:var(--muted) }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px }
+.narrow { max-width:420px; margin-inline:auto }
+h1 { margin:0 0 8px; font-size:1.5rem } h2 { margin:0 0 12px; font-size:1.15rem }
+label { display:block; margin:12px 0 4px; color:var(--muted) }
+input { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); font:inherit }
+button { margin-top:12px; padding:9px 16px; border:0; border-radius:8px; background:var(--brand); color:#fff; font:inherit; font-weight:600; cursor:pointer }
+td button { margin:0; padding:6px 12px } button:disabled { opacity:.5; cursor:wait }
+table { width:100%; border-collapse:collapse } th,td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line) }
+.meters { list-style:none; margin:0; padding:0; display:grid; gap:8px } .meters li { display:flex; flex-wrap:wrap; gap:12px; align-items:center }
+.chip { font-size:.75rem; background:var(--bg); border:1px solid var(--line); border-radius:99px; padding:1px 10px }
+.status.paid { color:var(--ok) } .status.overdue { color:var(--err) } .status.open { color:var(--muted) }
+.msg { padding:8px 12px; border-radius:8px } .msg.ok { background:color-mix(in srgb,var(--ok) 15%,transparent); color:var(--ok) } .msg.err { background:color-mix(in srgb,var(--err) 15%,transparent); color:var(--err) }
+footer { color:var(--muted); font-size:.8rem; text-align:center; margin-top:24px }
+code { background:var(--bg); padding:1px 6px; border-radius:4px }

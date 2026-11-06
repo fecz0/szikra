@@ -1,0 +1,30 @@
+{
+  "name": "szikra",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "Szikra: demó energiaszolgáltatói ügyfélportál, SAP mockkal és automatizált CI/CD + DevSecOps + e2e folyamattal",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "node .output/server/index.mjs",
+    "typecheck": "nuxt typecheck",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "nuxt": "^4.6.3",
+    "vue": "latest",
+    "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.6",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.11",
+    "vue-tsc": "^3.3.14"
+  },
+  "packageManager": "pnpm@11.16.0"
+}
