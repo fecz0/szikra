@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { scenarios } from '../../mock-sap/scenarios'
-import { customers } from '../../mock-sap/store'
+import { saveCustomer } from '../../mock-sap/store'
 
 export default defineEventHandler(async (event) => {
   requireMockSap(event)
@@ -15,6 +15,6 @@ export default defineEventHandler(async (event) => {
   // Egyedi azonosító: a párhuzamos tesztek nem zavarják egymást.
   const id = `T${randomUUID().slice(0, 8).toUpperCase()}`
   const customer = make(id)
-  customers.set(id, customer)
+  saveCustomer(customer)
   return { customerId: id, scenario: body!.scenario }
 })
