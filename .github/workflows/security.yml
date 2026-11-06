@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/dependency-review-action@v5
         if: github.event_name == 'pull_request'
         with: { fail-on-severity: high }
       - uses: google/osv-scanner-action/osv-scanner-action@v1
