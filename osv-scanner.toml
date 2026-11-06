@@ -1,0 +1,6 @@
+# deepmerge (tranzitív, nitropack): a javítás (>=4.3.2) még nem jelent meg, a legújabb 4.3.1.
+# Alacsony súlyosság. Felülvizsgálat: 2027-02-01.
+[[IgnoredVulns]]
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2027-02-01
+reason = "Nincs javított kiadás; csak build-idejű tranzitív függőség"

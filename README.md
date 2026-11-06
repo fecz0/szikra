@@ -31,4 +31,4 @@ pnpm test:e2e            # Playwright (buildel és elindítja a szervert)
 |---|---|
 | `ci.yml` | typecheck, unit, e2e (riport+videó+trace artifactként), Docker build + Trivy image scan |
 | `security.yml` | CodeQL, Semgrep, gitleaks, dependency-review, OSV-scanner, Trivy fs (heti ütemezéssel is) |
-| `deploy.yml` | PR-preview és main deploy a Hetzner szerverre (lásd `deploy/README.md`, még nincs bekötve) |
+| `ci.yml` `publish` job | main -> image GHCR-be, később Hetzner deploy (lásd `deploy/README.md`, kikapcsolva) |
