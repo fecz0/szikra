@@ -17,3 +17,4 @@ Még nincs bekötve; a `deploy.yml` kikapcsolt állapotban van (`vars.DEPLOY_ENA
 - Az app kimenete: `~/szikra/<main|preview>/.output`; frissítés után `systemctl --user restart szikra@<env>`.
 - Deploy: a CI végzi (`ci.yml` `deploy` job): `main` -> `szikra`, saját repós PR -> `szikra-preview`. Korlátozott SSH kulcs (forced command: `~/szikra/deploy.sh`), a csomag az e2e által tesztelt build.
 - Ellenőrzés: `/api/health` visszaadja a deployolt commitot; a CI ezt várja meg smoke tesztként.
+- E2E riport (videók, trace): `<host>/report/` (nginx alias `/var/www/szikra-reports/<env>/`); a `report` CI job tölti fel (`deploy.sh ... report`), env-enként csak a legutóbbi él. Elbukott e2e esetén is feltöltődik.

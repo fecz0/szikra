@@ -44,6 +44,15 @@ jobs:
           name: szikra-output
           path: szikra-output.tgz
           retention-days: 1
+      - name: Riport csomagolása
+        if: ${{ !cancelled() }}
+        run: tar -czf playwright-report.tgz -C playwright-report .
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: szikra-report
+          path: playwright-report.tgz
+          retention-days: 1
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -67,6 +76,44 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
 
+  report:
+    name: E2E riport publikálása
+    # Akkor is feltöltjük, ha az e2e elbukott: a piros teszt videója a legjobb hibakereső.
+    if: >-
+      ${{ !cancelled() && needs.e2e.result != 'skipped' && vars.DEPLOY_ENABLED == 'true' && (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+          && github.actor != 'dependabot[bot]')
+      ) }}
+    runs-on: ubuntu-latest
+    needs: [e2e]
+    concurrency:
+      group: report-${{ github.event_name == 'push' && 'main' || 'preview' }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    env:
+      TARGET: ${{ github.event_name == 'push' && 'main' || 'preview' }}
+      SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: szikra-report }
+      - name: SSH előkészítés
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Riport feltöltése
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "hermes@${DEPLOY_HOST}" "${TARGET} ${SHA} report" < playwright-report.tgz
+
   deploy:
     name: Deploy
     # main push -> szikra.problemas.hu, saját repós PR -> szikra-preview.problemas.hu
@@ -79,7 +126,7 @@ jobs:
           && github.actor != 'dependabot[bot]')
       )
     runs-on: ubuntu-latest
-    needs: [quality, e2e, image]
+    needs: [quality, e2e, image, report]
     concurrency:
       group: deploy-${{ github.event_name == 'push' && 'main' || 'preview' }}
       cancel-in-progress: false
@@ -137,7 +184,8 @@ jobs:
           | E2E (Playwright, mock SAP) | ✅ |
           | Docker image + Trivy | ✅ |
 
-          **E2E riport, videók, trace:** [${RUN_URL}](${RUN_URL}) (Artifacts → \`playwright-report\`)
+          **🎬 E2E riport (videók, trace, screenshotok):** ${URL}/report/
+          Pipeline futás: ${RUN_URL}
           **Demó belépés:** \`DEMO-OKOS\`, \`DEMO-ELMARADT\`, \`DEMO-KARTYA\`, \`DEMO-RENDEZETT\`
           EOF
           )"
