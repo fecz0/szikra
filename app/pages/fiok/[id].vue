@@ -11,6 +11,14 @@ const busy = ref<string | null>(null)
 const huf = (n: number) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft'
 const statusLabel = { open: 'Nyitott', paid: 'Kiegyenlítve', overdue: 'Lejárt' } as const
 
+// Nyitott és lejárt (nem kiegyenlített) számlák összege; a fizetés utáni
+// refresh() hatására automatikusan újraszámolódik.
+const debtTotal = computed(() =>
+  (customer.value?.bills ?? [])
+    .filter(b => b.status !== 'paid')
+    .reduce((sum, b) => sum + b.amountHuf, 0),
+)
+
 async function pay(billId: string) {
   busy.value = billId
   message.value = null
@@ -54,6 +62,9 @@ async function pay(billId: string) {
 
     <section class="card">
       <h2>Számlák</h2>
+      <p data-testid="debt-total">
+        {{ debtTotal > 0 ? `Nyitott tartozás összesen: ${huf(debtTotal)}` : 'Nincs tartozás' }}
+      </p>
       <p v-if="message" :class="['msg', message.kind]" :role="message.kind === 'err' ? 'alert' : 'status'">
         {{ message.text }}
       </p>
