@@ -20,7 +20,7 @@ async function login() {
     <form @submit.prevent="login">
       <label for="cid">Ügyfélazonosító</label>
       <input id="cid" v-model="customerId" autocomplete="off" placeholder="pl. T1A2B3C4D">
-      <button type="submit">Belépés</button>
+      <button type="submit" class="login">Belépés</button>
     </form>
   </section>
 
