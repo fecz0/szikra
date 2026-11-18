@@ -29,6 +29,7 @@ async function pay(billId: string) {
 </script>
 
 <template>
+  <div class="page">
   <section v-if="error" class="card narrow" role="alert">
     <h1>Nem található ügyfél</h1>
     <NuxtLink to="/">Vissza a belépéshez</NuxtLink>
@@ -76,5 +77,6 @@ async function pay(billId: string) {
         </tbody>
       </table>
     </section>
+  </div>
   </div>
 </template>
