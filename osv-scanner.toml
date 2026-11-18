@@ -11,3 +11,28 @@ reason = "Nincs javított kiadás; csak build-idejű tranzitív függőség"
 id = "GHSA-vjh5-4x84-xrqp"
 ignoreUntil = 2027-02-01
 reason = "Hamis pozitív: nuxt/@nuxt/nitro-server 4.6.4 >= 4.6.2 (javított)"
+
+# Nuxt, 2026-11-16-án publikált advisoryk: a javítás mind a 4.6.4-ben van, mi 4.6.4-en vagyunk.
+# Az OSV a 3.x tartomány (nincs javítás) miatt hamis találatot ad (mint a fenti). Felülvizsgálat: 2027-02-01.
+[[IgnoredVulns]]
+id = "GHSA-f3x9-2chm-73c8"
+ignoreUntil = 2027-02-01
+reason = "Hamis pozitív: nuxt/@nuxt/nitro-server 4.6.4 >= 4.6.4 (javított)"
+
+[[IgnoredVulns]]
+id = "GHSA-hf59-9xwc-2g4p"
+ignoreUntil = 2027-02-01
+reason = "Hamis pozitív: nuxt/@nuxt/nitro-server 4.6.4 >= 4.6.4 (javított)"
+
+[[IgnoredVulns]]
+id = "GHSA-96x6-fvhx-49hg"
+ignoreUntil = 2027-02-01
+reason = "Hamis pozitív: nuxt 4.6.4 >= 4.6.4 (javított)"
+
+# picomatch ReDoS (<= 4.0.7): még nincs javított kiadás. Csak build-idejű tranzitív függőség
+# (nitropack, micromatch), a mintákat a build konfigurációja adja, kéréseket nem dolgoz fel.
+# Felülvizsgálat: 2027-02-01.
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2027-02-01
+reason = "Nincs javított kiadás; csak build-idejű tranzitív függőség, felhasználói bemenetet nem kap"
