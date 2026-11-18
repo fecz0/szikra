@@ -1,10 +1,10 @@
 import { test, expect } from './support/fixtures'
 
-// A --brand szín értékei a main.css-ből.
-const BRAND_LIGHT = 'rgb(232, 89, 12)'
-const BRAND_DARK = 'rgb(255, 138, 76)'
+// A linkszín értékei a main.css-ből (--link).
+const BRAND_LIGHT = 'rgb(0, 86, 126)'
+const BRAND_DARK = 'rgb(108, 196, 238)'
 
-test('a demó ügyféllista linkjei narancssárgák, alapból aláhúzás nélkül', async ({ page }) => {
+test('a demó ügyféllista linkjei link színűek, alapból aláhúzás nélkül', async ({ page }) => {
   await page.goto('/')
 
   const links = page.getByTestId('demo-users').getByRole('link')
@@ -24,7 +24,7 @@ test('a linkek hoverre aláhúzottá válnak', async ({ page }) => {
   await expect(link).toHaveCSS('text-decoration-line', 'underline')
 })
 
-test('a linkek dark módban a világosabb narancs színt kapják', async ({ page }) => {
+test('a linkek dark módban a világosabb kék színt kapják', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.goto('/')
 
@@ -35,7 +35,7 @@ test('a linkek dark módban a világosabb narancs színt kapják', async ({ page
   }
 })
 
-test('a Vissza a belépéshez link a fiókoldalon is narancssárga', async ({ page }) => {
+test('a Vissza a belépéshez link a fiókoldalon is link színű', async ({ page }) => {
   await page.goto('/fiok/NEMLETEZIK')
 
   const link = page.getByRole('link', { name: 'Vissza a belépéshez' })
@@ -45,13 +45,13 @@ test('a Vissza a belépéshez link a fiókoldalon is narancssárga', async ({ pa
   await expect(link).toHaveCSS('text-decoration-line', 'underline')
 })
 
-test('a fejléc-logó és az elsődleges gomb meglévő színe nem változik', async ({ page }) => {
+test('a fejléc-logó fehér, az elsődleges gomb sötétkék (dark módban világosabb kék)', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('link', { name: /Szikra/ })).toHaveCSS('color', BRAND_LIGHT)
-  await expect(page.getByRole('button', { name: 'Belépés' })).toHaveCSS('background-color', BRAND_LIGHT)
+  await expect(page.getByRole('link', { name: /Szikra/ })).toHaveCSS('color', 'rgb(255, 255, 255)')
+  await expect(page.getByRole('button', { name: 'Belépés' })).toHaveCSS('background-color', 'rgb(28, 43, 57)')
 
   await page.emulateMedia({ colorScheme: 'dark' })
-  await expect(page.getByRole('link', { name: /Szikra/ })).toHaveCSS('color', BRAND_DARK)
-  await expect(page.getByRole('button', { name: 'Belépés' })).toHaveCSS('background-color', BRAND_DARK)
+  await expect(page.getByRole('link', { name: /Szikra/ })).toHaveCSS('color', 'rgb(255, 255, 255)')
+  await expect(page.getByRole('button', { name: 'Belépés' })).toHaveCSS('background-color', 'rgb(42, 122, 166)')
 })
