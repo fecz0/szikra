@@ -32,37 +32,37 @@ test('a fejléc menüje valódi linkeket tartalmaz', async ({ page }) => {
 test('a főoldal hero részében cím, tájékoztató, belépés és sárga sáv van', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Szikra online ügyintézés')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Szikra partnerportál')
   await expect(page.getByTestId('demo-notice')).toBeVisible()
   await expect(page.getByTestId('hero')).toHaveCSS('border-bottom-color', YELLOW)
 
-  const login = page.getByRole('button', { name: 'Belépés' })
+  const login = page.getByRole('button', { name: 'Belépés', exact: true })
   await expect(login).toHaveCSS('background-color', NAVY)
   await expect(login).toHaveCSS('border-top-left-radius', '12px')
   await expect(login).toHaveCSS('color', 'rgb(255, 255, 255)')
 })
 
-test('a belépés a hero űrlapjából továbbra is működik', async ({ page, sap }) => {
-  const id = await sap.seed('rendezett-szamlak')
+test('a belépés a hero űrlapjából működik', async ({ page, erp }) => {
+  const s = await erp.seed('rendezett-szamlak')
   await page.goto('/')
-  await page.getByLabel('Ügyfélazonosító').fill(id)
-  await page.getByRole('button', { name: 'Belépés' }).click()
-  await expect(page).toHaveURL(new RegExp(`/fiok/${id}$`))
-  await expect(page.getByTestId('page-title')).toHaveText('Ügyfélfiók')
+  await page.getByLabel('Felhasználói azonosító').fill(s.userId)
+  await page.getByRole('button', { name: 'Belépés', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/partner/${s.partnerId}$`))
+  await expect(page.getByTestId('page-title')).toHaveText('Partnerportál')
 })
 
-test('a fiókoldal kártyái lekerekítettek, a Fizetés gomb sötétkék', async ({ page, sap }) => {
-  const id = await sap.seed('okosmero-gaz-villany')
-  await page.goto(`/fiok/${id}`)
-
-  await expect(page.getByTestId('customer-name').locator('xpath=ancestor::section[1]'))
-    .toHaveCSS('border-top-left-radius', '12px')
-  await expect(page.getByRole('button', { name: 'Fizetés' }).first()).toHaveCSS('background-color', NAVY)
+test('a partner oldal kártyái lekerekítettek, a Fizetés gomb sötétkék', async ({ page, erp }) => {
+  const s = await erp.seed('okos-ipari', 'penzugy')
+  await erp.login(page, s)
+  await expect(page.getByTestId('company-bar')).toHaveCSS('border-top-left-radius', '12px')
+  await page.getByRole('navigation', { name: 'Partnerportál menü' }).getByRole('link', { name: 'Számlák', exact: true }).click()
+  await expect(page.getByTestId('pay').first()).toHaveCSS('background-color', NAVY)
 })
 
-test('sehol nem szerepel az „MVM” vagy az „omni” név (látható szöveg, cím, attribútumok)', async ({ page, sap }) => {
-  const id = await sap.seed('okosmero-gaz-villany')
-  for (const url of ['/', `/fiok/${id}`, '/fiok/NEMLETEZIK']) {
+test('sehol nem szerepel az „MVM” vagy az „omni” név (látható szöveg, cím, attribútumok)', async ({ page, erp }) => {
+  const s = await erp.seed('okos-ipari', 'admin')
+  await erp.login(page, s)
+  for (const url of ['/', `/partner/${s.partnerId}`, `/partner/${s.partnerId}/szamlak`, `/partner/${s.partnerId}/ugyek/uj`, '/partner/NEMLETEZIK']) {
     await page.goto(url)
     const texts = await page.evaluate(() => [
       document.title,
@@ -75,10 +75,11 @@ test('sehol nem szerepel az „MVM” vagy az „omni” név (látható szöveg
   }
 })
 
-test('telefonos szélességen nincs vízszintes görgetés', async ({ page, sap }) => {
+test('telefonos szélességen nincs vízszintes görgetés', async ({ page, erp }) => {
   await page.setViewportSize({ width: 375, height: 800 })
-  const id = await sap.seed('okosmero-gaz-villany')
-  for (const url of ['/', `/fiok/${id}`]) {
+  const s = await erp.seed('okos-ipari', 'admin')
+  await erp.login(page, s)
+  for (const url of ['/', `/partner/${s.partnerId}`, `/partner/${s.partnerId}/ugyek/uj`]) {
     await page.goto(url)
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
     expect(overflow, `túlcsordulás ezen: ${url}`).toBeLessThanOrEqual(0)

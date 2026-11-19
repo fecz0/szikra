@@ -1,0 +1,236 @@
+{
+  "partners": [
+    {
+      "id": "DEMO-ELMARADT",
+      "name": "Késő Kereskedelmi Zrt.",
+      "taxNumber": "23456789-2-09",
+      "address": "4025 Debrecen, Határidő köz 7.",
+      "segment": "kereskedelmi",
+      "contractNo": "SZ-DEMO-ELMARADT-02"
+    },
+    {
+      "id": "DEMO-OKOS",
+      "name": "Napfény Energia Kft.",
+      "taxNumber": "12345678-2-41",
+      "address": "1011 Budapest, Minta utca 1.",
+      "segment": "ipari",
+      "contractNo": "SZ-DEMO-OKOS-01"
+    },
+    {
+      "id": "DEMO-KARTYA",
+      "name": "Pech Gázfogyasztó Bt.",
+      "taxNumber": "34567890-2-02",
+      "address": "7621 Pécs, Elutasított tér 3.",
+      "segment": "kozuzemi",
+      "contractNo": "SZ-DEMO-KARTYA-03",
+      "cardDeclines": true
+    },
+    {
+      "id": "DEMO-RENDEZETT",
+      "name": "Rendes Ipari Park Kft.",
+      "taxNumber": "45678901-2-08",
+      "address": "9021 Győr, Pontos köz 12.",
+      "segment": "ipari",
+      "contractNo": "SZ-DEMO-RENDEZETT-04"
+    }
+  ],
+  "users": [
+    {
+      "id": "DEMO-PENZUGY",
+      "name": "Nagy Péter",
+      "email": "peter@demo.szikra.test",
+      "note": "Pénzügyi szerepkör: számlák és fizetés, mérőállást nem közölhet"
+    },
+    {
+      "id": "DEMO-ADMIN",
+      "name": "Kovács Anna",
+      "email": "anna@demo.szikra.test",
+      "note": "Három cég: adminisztrátor az okosmérős cégnél, olvasó a lejárt számlásnál, pénzügyi a kártyás cégnél"
+    },
+    {
+      "id": "DEMO-MUSZAKI",
+      "name": "Szabó Mária",
+      "email": "maria@demo.szikra.test",
+      "note": "Műszaki szerepkör: fogyasztási helyek, mérőállás, ajánlatkérés; számlát nem lát"
+    },
+    {
+      "id": "DEMO-OLVASO",
+      "name": "Tóth Gábor",
+      "email": "gabor@demo.szikra.test",
+      "note": "Csak olvasó: minden megtekinthető, semmi nem indítható"
+    }
+  ],
+  "memberships": [
+    {
+      "userId": "DEMO-PENZUGY",
+      "partnerId": "DEMO-ELMARADT",
+      "role": "penzugy"
+    },
+    {
+      "userId": "DEMO-PENZUGY",
+      "partnerId": "DEMO-KARTYA",
+      "role": "penzugy"
+    },
+    {
+      "userId": "DEMO-ADMIN",
+      "partnerId": "DEMO-OKOS",
+      "role": "admin"
+    },
+    {
+      "userId": "DEMO-MUSZAKI",
+      "partnerId": "DEMO-OKOS",
+      "role": "muszaki"
+    },
+    {
+      "userId": "DEMO-ADMIN",
+      "partnerId": "DEMO-KARTYA",
+      "role": "penzugy"
+    },
+    {
+      "userId": "DEMO-OLVASO",
+      "partnerId": "DEMO-RENDEZETT",
+      "role": "olvaso"
+    },
+    {
+      "userId": "DEMO-ADMIN",
+      "partnerId": "DEMO-ELMARADT",
+      "role": "olvaso"
+    }
+  ],
+  "supplyPoints": [
+    {
+      "id": "DEMO-ELMARADT-E1",
+      "partnerId": "DEMO-ELMARADT",
+      "type": "villany",
+      "pod": "HU-DEMO-E-DEMO-ELMARADT",
+      "address": "4025 Debrecen, Határidő köz 7.",
+      "meterSerial": "E-7731",
+      "smart": false,
+      "lastReading": 90330,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh"
+    },
+    {
+      "id": "DEMO-KARTYA-G1",
+      "partnerId": "DEMO-KARTYA",
+      "type": "gaz",
+      "pod": "HU-DEMO-G-DEMO-KARTYA",
+      "address": "7621 Pécs, Elutasított tér 3.",
+      "meterSerial": "G-3318",
+      "smart": false,
+      "lastReading": 8800,
+      "lastReadingDate": "2026-10-31",
+      "unit": "m3"
+    },
+    {
+      "id": "DEMO-OKOS-E1",
+      "partnerId": "DEMO-OKOS",
+      "type": "villany",
+      "pod": "HU-DEMO-E-DEMO-OKOS",
+      "address": "1011 Budapest, Minta utca 1.",
+      "meterSerial": "E-4411",
+      "smart": true,
+      "lastReading": 48210,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh"
+    },
+    {
+      "id": "DEMO-OKOS-G1",
+      "partnerId": "DEMO-OKOS",
+      "type": "gaz",
+      "pod": "HU-DEMO-G-DEMO-OKOS",
+      "address": "1011 Budapest, Minta utca 1.",
+      "meterSerial": "G-9020",
+      "smart": true,
+      "lastReading": 12600,
+      "lastReadingDate": "2026-10-31",
+      "unit": "m3"
+    },
+    {
+      "id": "DEMO-RENDEZETT-E1",
+      "partnerId": "DEMO-RENDEZETT",
+      "type": "villany",
+      "pod": "HU-DEMO-E-DEMO-RENDEZETT",
+      "address": "9021 Győr, Pontos köz 12.",
+      "meterSerial": "E-1208",
+      "smart": true,
+      "lastReading": 22100,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "DEMO-ELMARADT-INV1",
+      "partnerId": "DEMO-ELMARADT",
+      "supplyPointId": "DEMO-ELMARADT-E1",
+      "period": "2026. augusztus",
+      "amountHuf": 2410000,
+      "issueDate": "2026-09-01",
+      "dueDate": "2026-09-20",
+      "status": "overdue"
+    },
+    {
+      "id": "DEMO-ELMARADT-INV2",
+      "partnerId": "DEMO-ELMARADT",
+      "supplyPointId": "DEMO-ELMARADT-E1",
+      "period": "2026. szeptember",
+      "amountHuf": 2180000,
+      "issueDate": "2026-10-01",
+      "dueDate": "2026-10-20",
+      "status": "overdue"
+    },
+    {
+      "id": "DEMO-RENDEZETT-INV1",
+      "partnerId": "DEMO-RENDEZETT",
+      "supplyPointId": "DEMO-RENDEZETT-E1",
+      "period": "2026. szeptember",
+      "amountHuf": 1520000,
+      "issueDate": "2026-10-01",
+      "dueDate": "2026-10-20",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-OKOS-INV1",
+      "partnerId": "DEMO-OKOS",
+      "supplyPointId": "DEMO-OKOS-E1",
+      "period": "2026. október",
+      "amountHuf": 1845000,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-OKOS-INV2",
+      "partnerId": "DEMO-OKOS",
+      "supplyPointId": "DEMO-OKOS-G1",
+      "period": "2026. október",
+      "amountHuf": 3299000,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-KARTYA-INV1",
+      "partnerId": "DEMO-KARTYA",
+      "supplyPointId": "DEMO-KARTYA-G1",
+      "period": "2026. október",
+      "amountHuf": 4120000,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-RENDEZETT-INV2",
+      "partnerId": "DEMO-RENDEZETT",
+      "supplyPointId": "DEMO-RENDEZETT-E1",
+      "period": "2026. október",
+      "amountHuf": 1610000,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "paid"
+    }
+  ],
+  "cases": [],
+  "notifications": []
+}
