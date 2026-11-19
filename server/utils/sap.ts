@@ -27,3 +27,10 @@ export function sapPayBill(event: H3Event, customerId: string, billId: string) {
     { method: 'POST', body: { billId } },
   )
 }
+
+export function sapAcceptTerms(event: H3Event, customerId: string) {
+  return $fetch<{ acceptedVersion: string }>(
+    `${baseUrl(event)}/customers/${encodeURIComponent(customerId)}/terms`,
+    { method: 'POST' },
+  )
+}
