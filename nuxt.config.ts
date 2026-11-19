@@ -9,14 +9,20 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/main.css'],
   runtimeConfig: {
-    // NUXT_MOCK_SAP=true  -> a beépített mock SAP (/mock-sap) elérhető
-    mockSap: false,
-    // NUXT_SAP_BASE_URL   -> a SAP interfész alap URL-je (mock esetén üresen is jó)
-    sapBaseUrl: '',
+    // NUXT_BACKEND=snapshot (alapért.) -> memória-tár a JSON snapshotból (deploy, CI)
+    // NUXT_BACKEND=erpnext             -> élő ERPNext (NUXT_ERP_BASE_URL + kulcs/titok)
+    backend: 'snapshot',
+    erpBaseUrl: '',
+    erpApiKey: '',
+    erpApiSecret: '',
+    // NUXT_SESSION_PASSWORD -> >=32 karakteres titok a munkamenet-sütihez (élesben kötelező)
+    sessionPassword: '',
+    // NUXT_TEST_SEED=true -> a /__test/seed végpont él (e2e tesztek)
+    testSeed: false,
     // NUXT_BUILD_SHA     -> a deployolt commit (a /api/health ezt adja vissza)
     buildSha: '',
     public: {
-      // NUXT_PUBLIC_DEMO_USERS=true -> fix demó ügyfelek létrejönnek és listázva vannak a belépő oldalon
+      // NUXT_PUBLIC_DEMO_USERS=true -> a belépő oldal listázza a demó felhasználókat
       demoUsers: false,
     },
   },

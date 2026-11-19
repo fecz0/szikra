@@ -12,7 +12,7 @@ test('a fejlécben inline SVG logó és „Szikra” szöveg látszik, régi emo
 })
 
 test('a logó kattintásra a főoldalra navigál', async ({ page }) => {
-  await page.goto('/fiok/NEMLETEZIK')
+  await page.goto('/partner/NEMLETEZIK')
   await page.getByTestId('brand-logo').click()
   await expect(page).toHaveURL(/\/$/)
 })

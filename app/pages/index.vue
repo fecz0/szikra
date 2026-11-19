@@ -1,47 +1,20 @@
 <script setup lang="ts">
-const method = ref<'customer' | 'meter'>('customer')
-const customerId = ref('')
-const meterId = ref('')
-const error = ref('')
+interface DemoUser { id: string, name: string, note: string, companies: { name: string, role: string }[] }
 const showDemo = useRuntimeConfig().public.demoUsers
-const demoUsers = [
-  { id: 'DEMO-OKOS', name: 'Teszt Elek', note: 'okosmérő, villany + gáz, nyitott számlák' },
-  { id: 'DEMO-ELMARADT', name: 'Késő Kata', note: 'lejárt számlák' },
-  { id: 'DEMO-KARTYA', name: 'Pech Péter', note: 'a kártyaterhelés elutasításra kerül' },
-  { id: 'DEMO-RENDEZETT', name: 'Rendes Réka', note: 'minden számla kiegyenlítve' },
-]
+const { data: demoUsers } = showDemo ? await useFetch<DemoUser[]>('/api/auth/demo-users') : { data: ref<DemoUser[]>([]) }
 
-function setMethod(next: 'customer' | 'meter') {
-  if (next === method.value) return
-  method.value = next
-  customerId.value = ''
-  meterId.value = ''
+const userId = ref('')
+const error = ref('')
+
+async function login(id: string) {
   error.value = ''
-}
-
-async function login() {
-  error.value = ''
-  if (method.value === 'customer') {
-    const id = customerId.value.trim()
-    if (id) await navigateTo(`/fiok/${encodeURIComponent(id)}`)
-    return
-  }
-
-  const meter = meterId.value.trim()
-  if (!meter) {
-    error.value = 'Add meg a mérőóra ID-t.'
-    return
-  }
-
-  let customer: string
   try {
-    ({ customerId: customer } = await $fetch<{ customerId: string }>(`/api/lookup/meter/${encodeURIComponent(meter)}`))
+    await $fetch('/api/auth/login', { method: 'POST', body: { userId: id } })
+    await navigateTo('/valasztas')
   }
   catch (e: any) {
-    error.value = e?.data?.message ?? 'Nem található ügyfél ehhez a mérőóra ID-hoz.'
-    return
+    error.value = e?.data?.message ?? 'Sikertelen belépés'
   }
-  await navigateTo(`/fiok/${encodeURIComponent(customer)}`)
 }
 </script>
 
@@ -55,45 +28,19 @@ async function login() {
           </svg>
           <div>
             <strong>Demó tájékoztató</strong>
-            <p>Ez a Szikra bemutató környezete. Minden adat kitalált, a fizetések fél óránként visszaállnak.</p>
+            <p>Ez a Szikra bemutató környezete. Minden adat kitalált, a módosítások fél óránként visszaállnak.</p>
           </div>
         </aside>
-        <h1>Szikra online ügyintézés</h1>
+        <h1>Szikra partnerportál</h1>
         <p class="lead">
-          Villany- és gázügyei egy helyen: számlák, mérőórák és fizetés néhány kattintással.
-          Add meg az ügyfélazonosítódat a belépéshez.
+          Üzleti partnereinknek: számlák és fizetés, fogyasztási helyek, mérőállás-közlés,
+          ajánlatkérés és ügyintézés egy helyen, cégenként és szerepkörönként szabályozott hozzáféréssel.
         </p>
-        <form class="login" @submit.prevent="login">
-          <div class="methods" role="group" aria-label="Belépési mód">
-            <button
-              type="button"
-              data-testid="login-method-customer"
-              :class="{ active: method === 'customer' }"
-              :aria-pressed="method === 'customer'"
-              @click="setMethod('customer')"
-            >
-              Ügyfél-azonosító
-            </button>
-            <button
-              type="button"
-              data-testid="login-method-meter"
-              :class="{ active: method === 'meter' }"
-              :aria-pressed="method === 'meter'"
-              @click="setMethod('meter')"
-            >
-              Mérőóra ID
-            </button>
-          </div>
-          <template v-if="method === 'customer'">
-            <label for="cid">Ügyfélazonosító</label>
-            <input id="cid" v-model="customerId" autocomplete="off" placeholder="pl. T1A2B3C4D">
-          </template>
-          <template v-else>
-            <label for="meter">Mérőóra ID</label>
-            <input id="meter" v-model="meterId" data-testid="meter-id-input" autocomplete="off" placeholder="pl. T1A2B3C4D-E1">
-          </template>
-          <p v-if="error" class="msg err login-error" role="alert">{{ error }}</p>
+        <form class="login" @submit.prevent="userId.trim() && login(userId.trim())">
+          <label for="uid">Felhasználói azonosító</label>
+          <input id="uid" v-model="userId" autocomplete="off" placeholder="pl. DEMO-ADMIN">
           <button type="submit">Belépés</button>
+          <p v-if="error" class="msg err" role="alert">{{ error }}</p>
         </form>
       </div>
       <div class="hero-art" aria-hidden="true">
@@ -119,13 +66,14 @@ async function login() {
 
   <section v-if="showDemo" id="demo" class="band" data-testid="demo-users">
     <div class="band-in">
-      <h2>Demó ügyfelek</h2>
-      <p class="hint">Kitalált adatok, kattints bármelyikre. A fizetések fél óránként visszaállnak.</p>
+      <h2>Demó felhasználók</h2>
+      <p class="hint">Kitalált adatok. A szerepkör dönti el, mit lát és mit indíthat a felhasználó.</p>
       <ul class="demo">
-        <li v-for="u in demoUsers" :key="u.id" class="tile">
-          <NuxtLink :to="`/fiok/${u.id}`"><strong>{{ u.name }}</strong></NuxtLink>
+        <li v-for="u in demoUsers" :key="u.id" class="tile" :data-testid="`demo-user-${u.id}`">
+          <strong>{{ u.name }}</strong>
           <code>{{ u.id }}</code>
           <span class="hint">{{ u.note }}</span>
+          <button type="button" :data-testid="`login-${u.id}`" @click="login(u.id)">Belépés mint {{ u.name }}</button>
         </li>
       </ul>
     </div>
@@ -133,20 +81,11 @@ async function login() {
 
   <section class="band alt">
     <div class="band-in">
-      <h2>Egyszerű ügyintézés az Ön számára legfontosabb ügyekben</h2>
+      <h2>Amit a portál tud</h2>
       <ul class="features">
-        <li class="tile">
-          <h3>Számlák egy helyen</h3>
-          <p>Belépés után azonnal látja a nyitott és a lejárt számláit.</p>
-        </li>
-        <li class="tile">
-          <h3>Online fizetés</h3>
-          <p>A számlát a mentett bankkártyával néhány kattintással kiegyenlítheti.</p>
-        </li>
-        <li class="tile">
-          <h3>Villany és gáz</h3>
-          <p>Okosmérők és hagyományos mérők utolsó állása egy áttekinthető nézetben.</p>
-        </li>
+        <li class="tile"><h3>Több cég, szerepkörök</h3><p>Egy belépéssel több cég kezelése, cégenként külön jogosultsággal.</p></li>
+        <li class="tile"><h3>Számlák és fizetés</h3><p>Számlalista, egyenleg, online fizetés a bank visszajelzésével.</p></li>
+        <li class="tile"><h3>Ügyindítás</h3><p>Reklamáció, tartozásigazolás, mérőállás és ajánlatkérés közös keretrendszerben.</p></li>
       </ul>
     </div>
   </section>

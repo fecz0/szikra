@@ -1,29 +1,41 @@
-# Szikra ⚡
+# Szikra
 
-Demó energiaszolgáltatói ügyfélportál (kitalált adatok). A cél nem a portál, hanem a **folyamat**:
-automatizált CI/CD, DevSecOps és Playwright e2e, **szimulált SAP-pal**.
+Demó **B2B partnerportál** (Nuxt 4 + pnpm): több cég és szerepkör egy belépéssel, számlák és fizetés, fogyasztási
+helyek, közös ügyindítási keretrendszer (számlareklamáció, tartozásigazolás, mérőállás, ajánlatkérés),
+automatizált CI/CD + DevSecOps + e2e folyamattal. Minden adat kitalált.
 
-## A lényeg: SAP mock + seed
+## Háttér: ERPNext vagy JSON snapshot
 
-Az alkalmazás csak a `server/utils/sap.ts` adapteren át beszél a SAP-pal. Demó/teszt módban
-(`NUXT_MOCK_SAP=true`) ez a beépített `/mock-sap` szerver. A teszt elején egy hívással létrejön a teljes
-SAP-objektumcsomag (ügyfél, szerződéses számla, okosmérők, számlák, fizetési mód):
+Az alkalmazás kizárólag a `server/utils/backend.ts` interfészen át éri el a háttérrendszert:
+
+- **`snapshot`** (alapértelmezett; deploy, CI, tesztek): memória-tár, a `server/data/snapshot.json`-ból töltve.
+  A módosítások (fizetés, új ügy) csak memóriában élnek, félóránként visszaállnak.
+- **`erpnext`** (`NUXT_BACKEND=erpnext`): élő, lokális ERPNext REST-en át. Lásd [erp/README.md](erp/README.md).
+
+A snapshot az ERPNext exportja (`pnpm erp:export`), tehát a deploy ugyanazt az adatot mutatja, amit lokálisan ERPNextben látsz.
+
+## Tesztelés
+
+A teszt elején egy hívással létrejön egy teljes partner + egyedi felhasználó:
 
 ```ts
-const id = await sap.seed('okosmero-gaz-villany')   // ~ms, valós SAP-ban 2-3 nap kézzel
+const s = await erp.seed('okos-ipari', 'penzugy')   // ~ms; forgatókönyv + szerepkör
+await erp.login(page, s)                              // mock SSO, a partner oldalára visz
 ```
 
-Forgatókönyvek: `server/mock-sap/scenarios.ts`. Minden seed egyedi azonosítót ad, így a tesztek párhuzamosak.
-A mock az éles környezetben 404-et ad (kapcsoló nélkül nem létezik).
-
-## Parancsok
+Forgatókönyvek: `server/domain/scenarios.ts`. Minden seed egyedi azonosítót ad, így a tesztek párhuzamosak.
 
 ```bash
 pnpm install
-pnpm dev                 # NUXT_MOCK_SAP=true kell hozzá (.env.example)
-pnpm test                # unit
-pnpm test:e2e            # Playwright (buildel és elindítja a szervert)
+pnpm dev                  # snapshot háttérrel (NUXT_PUBLIC_DEMO_USERS=true kell a demó belépőkhöz)
+pnpm dev:erp              # élő ERPNexttel (előtte: pnpm erp:up && pnpm erp:seed)
+pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e
 ```
+
+## Jogosultságok
+
+Szerepkör -> képesség mátrix: `server/domain/permissions.ts`. A BFF minden hívásnál ellenőrzi
+(`requireCapability`), a UI csak elrejti a gombokat. Ügytípusok konfigurációja: `server/domain/case-types.ts`.
 
 ## Pipeline
 

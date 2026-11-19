@@ -10,13 +10,15 @@ Demó ügyfélportál (Nuxt 4, pnpm). A UI és a kódkommentek **magyarul** vann
 5. Ne commitolj és ne pushólj: ezt a pipeline végzi.
 
 ## Tesztelés
-- SAP-adat a `sap.seed('<forgatókönyv>')` fixture-rel jön (`tests/e2e/support/fixtures.ts`). Ne használj kézzel összerakott adatot.
-- Ha új SAP-adat kell, bővítsd a forgatókönyveket: `server/mock-sap/scenarios.ts` (és a `ScenarioName` típust, a fixture `Scenario` típusát).
+- Háttéradat az `erp.seed('<forgatókönyv>', '<szerepkör>')` fixture-rel jön, belépni az `erp.login(page, seeded)`-del lehet (`tests/e2e/support/fixtures.ts`). Ne használj kézzel összerakott adatot.
+- Ha új adat kell, bővítsd a forgatókönyveket: `server/domain/scenarios.ts` (és a fixture `Scenario` típusát). Új ügytípus: `server/domain/case-types.ts` + `CaseTypeId` a `server/domain/types.ts`-ben.
 - A tesztek párhuzamosak: használj egyedi, seedelt ügyfelet, ne oszd meg az állapotot.
 - Szelektornak `getByRole` / `getByTestId` (`data-testid`), ne CSS-osztály.
 
 ## Architektúra
-- Az app SAP-hívásai kizárólag a `server/utils/sap.ts` adapteren át mennek. A `/mock-sap` útvonalak csak `NUXT_MOCK_SAP=true` mellett élnek (`requireMockSap`).
+- A háttérrendszert (ERPNext vagy JSON snapshot) kizárólag a `server/utils/backend.ts` interfész (`useBackend()`) éri el; új adatművelet az interfészbe és mindkét megvalósításba (`backends/memory.ts`, `backends/erpnext.ts`) kerül.
+- Minden `/api/partner/[pid]/...` útvonal elején `requireCapability(event, pid, '<képesség>')` kell (a jogosultsági mátrix: `server/domain/permissions.ts`); a böngészőtől kapott cégazonosítóban sosem bízunk.
+- A `/__test/seed` csak `NUXT_TEST_SEED=true` mellett él.
 - Emberi hibaüzenet a JSON törzsben (`message`), **nem** `statusMessage`-ben (az fejléc, az ékezetek kiesnek).
 - Pénzösszeg: `Intl.NumberFormat('hu-HU')`, forint.
 
