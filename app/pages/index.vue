@@ -11,6 +11,39 @@ async function login() {
   const id = customerId.value.trim()
   if (id) await navigateTo(`/fiok/${encodeURIComponent(id)}`)
 }
+
+// Mérőóra-állás megadása belépés nélkül, a belépő kártyán.
+const showMeterForm = ref(false)
+const meterNumber = ref('')
+const meterReading = ref('')
+const meterError = ref('')
+const meterConfirmation = ref<{ number: string, reading: string } | null>(null)
+
+function submitMeterReading() {
+  meterConfirmation.value = null
+  const number = meterNumber.value.trim()
+  const reading = meterReading.value.trim()
+
+  if (!number) {
+    meterError.value = 'Add meg a mérőóra számát.'
+    return
+  }
+  if (!reading) {
+    meterError.value = 'Add meg a mérőóra állását.'
+    return
+  }
+  if (!/^-?\d+(?:[.,]\d+)?$/.test(reading)) {
+    meterError.value = 'A mérőóra állása csak szám lehet.'
+    return
+  }
+  if (Number(reading.replace(',', '.')) < 0) {
+    meterError.value = 'A mérőóra állása nem lehet negatív.'
+    return
+  }
+
+  meterError.value = ''
+  meterConfirmation.value = { number, reading }
+}
 </script>
 
 <template>
@@ -31,11 +64,51 @@ async function login() {
           Villany- és gázügyei egy helyen: számlák, mérőórák és fizetés néhány kattintással.
           Add meg az ügyfélazonosítódat a belépéshez.
         </p>
-        <form class="login" @submit.prevent="login">
-          <label for="cid">Ügyfélazonosító</label>
-          <input id="cid" v-model="customerId" autocomplete="off" placeholder="pl. T1A2B3C4D">
-          <button type="submit">Belépés</button>
-        </form>
+        <div class="login">
+          <form @submit.prevent="login">
+            <label for="cid">Ügyfélazonosító</label>
+            <input id="cid" v-model="customerId" autocomplete="off" placeholder="pl. T1A2B3C4D">
+            <button type="submit">Belépés</button>
+          </form>
+
+          <a
+            href="#meter-reading"
+            class="meter-link"
+            data-testid="meter-reading-link"
+            @click.prevent="showMeterForm = true"
+          >Mérőóra-állás megadása</a>
+
+          <form
+            v-if="showMeterForm"
+            id="meter-reading"
+            class="meter-form"
+            data-testid="meter-reading-form"
+            novalidate
+            @submit.prevent="submitMeterReading"
+          >
+            <label for="meter-number">Mérőóra száma</label>
+            <input
+              id="meter-number"
+              v-model="meterNumber"
+              autocomplete="off"
+              data-testid="meter-number-input"
+            >
+            <label for="meter-reading">Aktuális mérőóra-állás</label>
+            <input
+              id="meter-reading"
+              v-model="meterReading"
+              inputmode="decimal"
+              autocomplete="off"
+              data-testid="meter-reading-input"
+            >
+            <p v-if="meterError" class="msg err" role="alert">{{ meterError }}</p>
+            <button type="submit">Beküldés</button>
+          </form>
+
+          <p v-if="meterConfirmation" class="msg ok" role="status" data-testid="meter-reading-confirmation">
+            Mérőóra-állás rögzítve: {{ meterConfirmation.number }} mérőóra, {{ meterConfirmation.reading }}.
+          </p>
+        </div>
       </div>
       <div class="hero-art" aria-hidden="true">
         <svg viewBox="0 0 420 400" focusable="false">
