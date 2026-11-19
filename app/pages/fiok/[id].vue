@@ -7,9 +7,32 @@ const { data: customer, error, refresh } = await useFetch<SapCustomer>(`/api/acc
 
 const message = ref<{ kind: 'ok' | 'err', text: string } | null>(null)
 const busy = ref<string | null>(null)
+const acceptingTerms = ref(false)
+const termsError = ref('')
 
 const huf = (n: number) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft'
 const statusLabel = { open: 'Nyitott', paid: 'Kiegyenlítve', overdue: 'Lejárt' } as const
+
+// Amíg a felhasználó nem fogadta el az aktuális ÁSZF-et, a fiókoldal blokkolt.
+const termsOutdated = computed(() => {
+  const terms = customer.value?.terms
+  return !!terms && terms.acceptedVersion !== terms.current.id
+})
+
+async function acceptTerms() {
+  acceptingTerms.value = true
+  termsError.value = ''
+  try {
+    await $fetch(`/api/account/${encodeURIComponent(id)}/terms`, { method: 'POST' })
+    await refresh()
+  }
+  catch (e: any) {
+    termsError.value = e?.data?.message ?? 'Az ÁSZF elfogadása nem sikerült.'
+  }
+  finally {
+    acceptingTerms.value = false
+  }
+}
 
 async function pay(billId: string) {
   busy.value = billId
@@ -35,7 +58,8 @@ async function pay(billId: string) {
     <NuxtLink to="/">Vissza a belépéshez</NuxtLink>
   </section>
 
-  <div v-else-if="customer">
+  <template v-else-if="customer">
+  <div data-testid="account-content" :inert="termsOutdated" :aria-hidden="termsOutdated ? 'true' : undefined">
     <section class="card">
       <h1 data-testid="customer-name">{{ customer.name }}</h1>
       <p>{{ customer.address }} · Szerződéses számla: <code>{{ customer.contractAccount }}</code></p>
@@ -78,5 +102,29 @@ async function pay(billId: string) {
       </table>
     </section>
   </div>
+
+  <div
+    v-if="termsOutdated"
+    class="modal-overlay"
+    data-testid="terms-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="terms-title"
+  >
+    <div class="modal">
+      <h2 id="terms-title">Megváltoztak a felhasználási feltételek</h2>
+      <p>
+        Az ÁSZF új verziója jelent meg. A fiókja használatához el kell fogadnia a módosításokat.
+      </p>
+      <p data-testid="terms-version">
+        Aktuális verzió: <strong>{{ customer.terms.current.id }}</strong> ({{ customer.terms.current.date }})
+      </p>
+      <p v-if="termsError" class="msg err" role="alert">{{ termsError }}</p>
+      <button type="button" data-testid="terms-accept" :disabled="acceptingTerms" @click="acceptTerms">
+        Elfogadom
+      </button>
+    </div>
+  </div>
+  </template>
   </div>
 </template>

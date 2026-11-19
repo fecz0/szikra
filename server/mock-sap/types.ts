@@ -25,6 +25,18 @@ export interface PaymentMethod {
   declines?: boolean
 }
 
+export interface TermsVersion {
+  id: string
+  date: string
+}
+
+export interface Terms {
+  /** A felhasználó által elfogadott ÁSZF-verzió azonosítója */
+  acceptedVersion: string
+  /** A SAP-ban aktuális ÁSZF-verzió */
+  current: TermsVersion
+}
+
 export interface SapCustomer {
   id: string
   name: string
@@ -33,4 +45,5 @@ export interface SapCustomer {
   meters: Meter[]
   bills: Bill[]
   paymentMethod: PaymentMethod
+  terms: Terms
 }

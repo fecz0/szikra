@@ -1,7 +1,16 @@
-import type { SapCustomer } from './types'
+import type { SapCustomer, TermsVersion } from './types'
 
 type Scenario = (id: string) => SapCustomer
 export type ScenarioName = 'okosmero-gaz-villany' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
+
+/** A mock SAP-ban aktuálisan érvényes ÁSZF-verzió. */
+export const CURRENT_TERMS: TermsVersion = { id: 'ASZF-2026-2', date: '2026-11-01' }
+
+/** Az aktuális verziót elfogadó ügyfél ÁSZF-adata. */
+const acceptedCurrentTerms = () => ({ acceptedVersion: CURRENT_TERMS.id, current: CURRENT_TERMS })
+
+/** Elavult (korábbi) ÁSZF-elfogadás, hogy a változás folyamata tesztelhető legyen. */
+const outdatedTerms = () => ({ acceptedVersion: 'ASZF-2026-1', current: CURRENT_TERMS })
 
 /**
  * Seed forgatókönyvek: egy forgatókönyv = egy teljes SAP-objektumcsomag
@@ -23,6 +32,7 @@ export const scenarios: Record<ScenarioName, Scenario> = {
       { id: `${id}-B2`, meterId: `${id}-G1`, period: '2026. október', amountHuf: 32990, dueDate: '2026-11-20', status: 'open' },
     ],
     paymentMethod: { kind: 'card', label: 'Bankkártya **** 4242' },
+    terms: acceptedCurrentTerms(),
   }),
 
   'elmaradt-szamla': id => ({
@@ -38,6 +48,8 @@ export const scenarios: Record<ScenarioName, Scenario> = {
       { id: `${id}-B2`, meterId: `${id}-E1`, period: '2026. szeptember', amountHuf: 21800, dueDate: '2026-10-20', status: 'overdue' },
     ],
     paymentMethod: { kind: 'transfer', label: 'Átutalás' },
+    // Elavult ÁSZF-elfogadás: belépés után megjelenik a blokkoló modal.
+    terms: outdatedTerms(),
   }),
 
   'kartya-elutasitva': id => ({
@@ -52,6 +64,7 @@ export const scenarios: Record<ScenarioName, Scenario> = {
       { id: `${id}-B1`, meterId: `${id}-G1`, period: '2026. október', amountHuf: 41200, dueDate: '2026-11-20', status: 'open' },
     ],
     paymentMethod: { kind: 'card', label: 'Bankkártya **** 0002', declines: true },
+    terms: acceptedCurrentTerms(),
   }),
 
   'rendezett-szamlak': id => ({
@@ -67,5 +80,6 @@ export const scenarios: Record<ScenarioName, Scenario> = {
       { id: `${id}-B2`, meterId: `${id}-E1`, period: '2026. október', amountHuf: 16100, dueDate: '2026-11-20', status: 'paid' },
     ],
     paymentMethod: { kind: 'direct-debit', label: 'Csoportos beszedés' },
+    terms: acceptedCurrentTerms(),
   }),
 }
