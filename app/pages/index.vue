@@ -1,5 +1,8 @@
 <script setup lang="ts">
+const method = ref<'customer' | 'meter'>('customer')
 const customerId = ref('')
+const meterId = ref('')
+const error = ref('')
 const showDemo = useRuntimeConfig().public.demoUsers
 const demoUsers = [
   { id: 'DEMO-OKOS', name: 'Teszt Elek', note: 'okosmérő, villany + gáz, nyitott számlák' },
@@ -7,9 +10,38 @@ const demoUsers = [
   { id: 'DEMO-KARTYA', name: 'Pech Péter', note: 'a kártyaterhelés elutasításra kerül' },
   { id: 'DEMO-RENDEZETT', name: 'Rendes Réka', note: 'minden számla kiegyenlítve' },
 ]
+
+function setMethod(next: 'customer' | 'meter') {
+  if (next === method.value) return
+  method.value = next
+  customerId.value = ''
+  meterId.value = ''
+  error.value = ''
+}
+
 async function login() {
-  const id = customerId.value.trim()
-  if (id) await navigateTo(`/fiok/${encodeURIComponent(id)}`)
+  error.value = ''
+  if (method.value === 'customer') {
+    const id = customerId.value.trim()
+    if (id) await navigateTo(`/fiok/${encodeURIComponent(id)}`)
+    return
+  }
+
+  const meter = meterId.value.trim()
+  if (!meter) {
+    error.value = 'Add meg a mérőóra ID-t.'
+    return
+  }
+
+  let customer: string
+  try {
+    ({ customerId: customer } = await $fetch<{ customerId: string }>(`/api/lookup/meter/${encodeURIComponent(meter)}`))
+  }
+  catch (e: any) {
+    error.value = e?.data?.message ?? 'Nem található ügyfél ehhez a mérőóra ID-hoz.'
+    return
+  }
+  await navigateTo(`/fiok/${encodeURIComponent(customer)}`)
 }
 </script>
 
@@ -32,8 +64,35 @@ async function login() {
           Add meg az ügyfélazonosítódat a belépéshez.
         </p>
         <form class="login" @submit.prevent="login">
-          <label for="cid">Ügyfélazonosító</label>
-          <input id="cid" v-model="customerId" autocomplete="off" placeholder="pl. T1A2B3C4D">
+          <div class="methods" role="group" aria-label="Belépési mód">
+            <button
+              type="button"
+              data-testid="login-method-customer"
+              :class="{ active: method === 'customer' }"
+              :aria-pressed="method === 'customer'"
+              @click="setMethod('customer')"
+            >
+              Ügyfél-azonosító
+            </button>
+            <button
+              type="button"
+              data-testid="login-method-meter"
+              :class="{ active: method === 'meter' }"
+              :aria-pressed="method === 'meter'"
+              @click="setMethod('meter')"
+            >
+              Mérőóra ID
+            </button>
+          </div>
+          <template v-if="method === 'customer'">
+            <label for="cid">Ügyfélazonosító</label>
+            <input id="cid" v-model="customerId" autocomplete="off" placeholder="pl. T1A2B3C4D">
+          </template>
+          <template v-else>
+            <label for="meter">Mérőóra ID</label>
+            <input id="meter" v-model="meterId" data-testid="meter-id-input" autocomplete="off" placeholder="pl. T1A2B3C4D-E1">
+          </template>
+          <p v-if="error" class="msg err login-error" role="alert">{{ error }}</p>
           <button type="submit">Belépés</button>
         </form>
       </div>
