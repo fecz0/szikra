@@ -17,6 +17,10 @@ export function sapGetCustomer(event: H3Event, id: string) {
   return $fetch<SapCustomer>(`${baseUrl(event)}/customers/${encodeURIComponent(id)}`)
 }
 
+export function sapFindCustomerByMeter(event: H3Event, meterId: string) {
+  return $fetch<{ customerId: string }>(`${baseUrl(event)}/meters/${encodeURIComponent(meterId)}`)
+}
+
 export function sapPayBill(event: H3Event, customerId: string, billId: string) {
   return $fetch<{ billId: string, status: string }>(
     `${baseUrl(event)}/customers/${encodeURIComponent(customerId)}/payments`,
