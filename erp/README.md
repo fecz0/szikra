@@ -69,6 +69,11 @@ A `server/domain/pricing.ts` adatvezérelt tarifa-motor (a díjcsomagok paramét
 - **Szimulátor** (`/partner/:id/dijcsomagok`): a 12 havi adatból minden díjcsomag éves energiadíja, megtakarítás a jelenlegihez képest, „Váltás kérése” előtöltött díjcsomag-váltási ügyre.
 - Az órás tőzsdei ár modell (éjjel olcsóbb, nyári délben a napelemek leviszik, este csúcs); a havi átlaga a HUPX-jellegű havi átlag. Demó-érték, nem piaci adat.
 
+## Bemutató
+
+- **Forgatókönyv:** [docs/demo/tarifa-szimulator-forgatokonyv.md](../docs/demo/tarifa-szimulator-forgatokonyv.md): lépésről lépésre, pontos számokkal; a `tests/e2e/demo-flow.spec.ts` minden futáskor végigjátssza.
+- **ERPNext demó felhasználó (csak olvasó):** `demo@szikra.test` / `SzikraDemo!2026xQ`, szerepkör: `Szikra Demo`. A seed hozza létre (`pnpm erp:seed`). Helyi gépre való, ne használd élesben.
+
 ## Négy szem elve
 
 A leállás és az 1 Mrd Ft feletti havi átvételi elszámolás csak **két különböző** jóváhagyó elfogadása után lép életbe (`server/domain/approvals.ts`). Ugyanaz a személy kétszer nem hagyhat jóvá, a javaslattevő a saját javaslatát nem (409). A jóváhagyók: admin, megfelelőségi felelős (leállás); pénzügyi, admin, megfelelőségi felelős (elszámolás). Minden lépés az auditnaplóba kerül (`Szikra Event`, `kind = audit`).

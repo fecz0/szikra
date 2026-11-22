@@ -3,6 +3,7 @@
 // Használat: PORTAL=http://127.0.0.1:3200 node erp/live-smoke.ts
 import { readFileSync } from 'node:fs'
 import { ErpClient } from '../server/utils/erp/client.ts'
+import { DEMO_ERP_PASSWORD, DEMO_ERP_USER } from './demo-user.ts'
 
 const PORTAL = process.env.PORTAL ?? 'http://127.0.0.1:3200'
 const env: Record<string, string> = {}
@@ -137,6 +138,13 @@ try {
   const simu2 = (await adm.call('GET', '/api/partner/DEMO-LANC/tariff-simulation?supplyPointId=DEMO-LANC-E1')).json
   const mine = simu2.results.find((r: any) => r.tariff.name === 'Füstteszt díjcsomag')
   ok(nt.status === 200 && mine && mine.savingVsCurrentHuf > 0, 'az egyedi díjcsomag az ERPNextben tárolódik, és szerepel a szimulációban')
+
+  // az ERPNext demó felhasználó csak olvashat
+  const demo = new ErpClient(env.NUXT_ERP_BASE_URL!, { user: DEMO_ERP_USER, password: DEMO_ERP_PASSWORD })
+  const seen = await Promise.all(['Customer', 'Sales Invoice', 'Szikra Interval Data', 'Szikra Tariff', 'Szikra Deal'].map(d => demo.list(d, { fields: ['name'] }).then(r => r.length).catch(() => -1)))
+  ok(seen.every(n => n >= 0) && seen[0]! >= 8 && seen[2]! === 96, `a demó felhasználó olvashatja az adatot (ügyfél ${seen[0]}, intervallum-hónap ${seen[2]})`)
+  const write = await demo.create('Customer', { customer_name: 'Tiltott teszt', customer_group: 'Commercial', territory: 'All Territories' }).then(() => 'létrejött', (e: any) => `elutasítva (${e.status})`)
+  ok(write.startsWith('elutasítva'), `a demó felhasználó nem írhat: ${write}`)
 
   const ro = new Session()
   await ro.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
