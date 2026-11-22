@@ -42,9 +42,13 @@ export const VAT_PCT = 27
 // ---- demó-értékek ----
 export const EXCISE_PER_KWH = 0.03 // jövedéki adó (validálandó)
 export const FUNDS_PER_KWH = 1.1 // pénzeszközök (KÁT/METÁR), demó
-const FIX_PRICE = 38.9 // Ft/kWh, „Ipari fix 2026”
-const TRADER_MARGIN = 3.2 // Ft/kWh, „Piaci követő”: tőzsdei ár + kereskedői díj
-const ZONE_PRICE = { nappali: 41.2, csucs: 52.6, volgy: 31.4 } // Ft/kWh, „Kereskedelmi csúcs-völgy”
+export const FIX_PRICE = 38.9 // Ft/kWh, „Ipari fix 2026”
+export const TRADER_MARGIN = 3.2 // Ft/kWh, „Piaci követő”: tőzsdei ár + kereskedői díj
+export const ZONE_PRICE = { nappali: 41.2, csucs: 52.6, volgy: 31.4 } // Ft/kWh, „Kereskedelmi csúcs-völgy”
+
+/** HUPX-jellegű havi átlag, Ft/MWh (2025-11 … 2026-10); a „Piaci követő” és a dinamikus díjcsomag alapja (demó-érték). */
+export const HUPX_MONTHLY_HUF_MWH = [46000, 44000, 38000, 33000, 30000, 31000, 36000, 37000, 38000, 41000, 45000, 48000] // index: január = 0
+export const hupxBase = (ym: string) => HUPX_MONTHLY_HUF_MWH[Number(ym.slice(5)) - 1]!
 
 export interface Zones { nappali: number, csucs: number, volgy: number }
 

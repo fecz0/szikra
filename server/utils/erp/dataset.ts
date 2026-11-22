@@ -1,13 +1,13 @@
 import type { Dataset } from '../../domain/types.ts'
 import type { ErpClient } from './client.ts'
-import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, OUTAGE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapAuditEvent, mapDeal, mapInvoice, mapInvoiceLines, mapOutage, mapPartner, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from './mappers.ts'
+import { ACCESS_FIELDS, CUSTOMER_FIELDS, INTERVAL_FIELDS, INVOICE_FIELDS, TARIFF_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, OUTAGE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapAuditEvent, mapDeal, mapInterval, mapInvoice, mapInvoiceLines, mapOutage, mapPartner, mapTariff, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from './mappers.ts'
 
 /** Az ERPNext teljes tartalma portál-formátumban: ez a JSON snapshot (deploy) forrása. */
 export async function fetchDataset(c: ErpClient): Promise<Dataset> {
   const customers = await c.list('Customer', { fields: CUSTOMER_FIELDS, filters: [['szikra_id', 'is', 'set']] })
   const byCustomer = new Map<string, string>(customers.map(x => [x.name, x.szikra_id]))
 
-  const [invoices, supply, issues, access, events, readings, production, deals, schedule, outages, auditEvents] = await Promise.all([
+  const [invoices, supply, issues, access, events, readings, production, deals, schedule, outages, auditEvents, intervals, tariffs] = await Promise.all([
     c.list('Sales Invoice', { fields: INVOICE_FIELDS, filters: [['docstatus', '=', 1]], orderBy: 'posting_date asc' }),
     c.list('Szikra Supply Point', { fields: SUPPLY_FIELDS }),
     c.list('Issue', { fields: ISSUE_FIELDS, orderBy: 'creation asc' }),
@@ -19,6 +19,8 @@ export async function fetchDataset(c: ErpClient): Promise<Dataset> {
     c.list('Szikra Schedule', { fields: SCHEDULE_FIELDS, orderBy: 'date asc' }),
     c.list('Szikra Outage', { fields: OUTAGE_FIELDS, orderBy: 'date_from asc' }),
     c.list('Szikra Event', { fields: ['customer', 'user_id', 'at', 'text'], filters: [['kind', '=', 'audit']], orderBy: 'at asc' }),
+    c.list('Szikra Interval Data', { fields: INTERVAL_FIELDS, orderBy: 'month asc' }),
+    c.list('Szikra Tariff', { fields: TARIFF_FIELDS }),
   ])
   const itemRows = await c.listChild('Sales Invoice Item', 'Sales Invoice', { fields: ITEM_FIELDS, filters: [['docstatus', '=', 1]] })
   const itemsBySi = new Map<string, any[]>()
@@ -42,6 +44,8 @@ export async function fetchDataset(c: ErpClient): Promise<Dataset> {
     deals: deals.map(x => mapDeal(x, byCustomer)),
     schedule: schedule.map(x => mapSchedule(x, byCustomer)),
     outages: outages.map(x => mapOutage(x, byCustomer)),
+    intervals: intervals.map(mapInterval),
+    tariffs: tariffs.map(x => mapTariff(x, byCustomer)),
     audit: auditEvents.filter(e => e.customer).map(e => mapAuditEvent(e, byCustomer)),
     invoices: invoices.filter(i => i.szikra_id).map((i) => {
       const lines = mapInvoiceLines(itemsBySi.get(i.name) ?? [])

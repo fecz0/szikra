@@ -7,6 +7,7 @@ import { fixedDemoDataset } from '../server/domain/scenarios.ts'
 import { VAT_PCT } from '../server/domain/tariffs.ts'
 import { ErpClient } from '../server/utils/erp/client.ts'
 import { payInvoiceInErp } from '../server/utils/erp/actions.ts'
+import { DEMO_ERP_PASSWORD, DEMO_ERP_ROLE, DEMO_ERP_USER } from './demo-user.ts'
 
 const BASE = process.env.ERP_URL ?? 'http://127.0.0.1:8088'
 const c = new ErpClient(BASE, { user: 'Administrator', password: process.env.ERP_ADMIN_PASSWORD ?? 'admin' })
@@ -145,6 +146,19 @@ async function ensureSchema() {
     t('Currency', { fieldname: 'settlement_huf', label: 'Elszámolás', precision: '0', in_list_view: 1 }),
     t('Select', { fieldname: 'status', label: 'Állapot', options: 'tervezet\njovahagyva\nkifizetve', in_list_view: 1 }),
     t('Long Text', { fieldname: 'approvals_json', label: 'Jóváhagyások (JSON)' }),
+  ])
+  await ensureDoctype('Szikra Interval Data', 'hash', [
+    t('Data', { fieldname: 'supply_point', label: 'Fogyasztási hely azonosító', reqd: 1, in_list_view: 1 }),
+    t('Data', { fieldname: 'month', label: 'Hónap', reqd: 1, in_list_view: 1 }),
+    t('Int', { fieldname: 'interval_minutes', label: 'Intervallum (perc)' }),
+    t('Long Text', { fieldname: 'kwh_json', label: 'Fogyasztás intervallumonként, kWh (JSON)' }),
+  ])
+  await ensureDoctype('Szikra Tariff', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Data', { fieldname: 'tariff_name', label: 'Díjcsomag neve', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'kind', label: 'Típus', options: 'fix\nindexed\ntou\ndynamic', in_list_view: 1 }),
+    t('Long Text', { fieldname: 'params_json', label: 'Paraméterek (JSON)' }),
   ])
   await ensureDoctype('Szikra Outage', 'field:szikra_id', [
     t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
@@ -285,6 +299,20 @@ async function seedData() {
   // ÁFA: fix összegű adósor (a számlakép végösszege forintra egyezik)
   const vatAccount = await ensureVatAccount(company)
   let ni = 0
+  const haveIv = new Set((await c.list('Szikra Interval Data', { fields: ['supply_point', 'month'] })).map(r => `${r.supply_point}|${r.month}`))
+  let niv = 0
+  for (const iv of ds.intervals) {
+    if (haveIv.has(`${iv.supplyPointId}|${iv.month}`)) continue
+    await c.create('Szikra Interval Data', { supply_point: iv.supplyPointId, month: iv.month, interval_minutes: iv.intervalMinutes, kwh_json: JSON.stringify(iv.kwh) }); niv++
+  }
+  if (niv) log('intervallumadat-hónap:', niv)
+  const haveTar = new Set((await c.list('Szikra Tariff', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const tf of ds.tariffs) {
+    if (haveTar.has(tf.id)) continue
+    const { id, name, kind, partnerId: _p, ...params } = tf
+    await c.create('Szikra Tariff', { szikra_id: id, customer: customerByPartner.get(tf.partnerId!), tariff_name: name, kind, params_json: JSON.stringify(params) })
+  }
+
   const haveOut = new Set((await c.list('Szikra Outage', { fields: ['szikra_id'] })).map(r => r.szikra_id))
   for (const o of ds.outages) {
     if (haveOut.has(o.id)) continue
@@ -345,6 +373,46 @@ async function seedData() {
   }
 }
 
+/**
+ * Csak olvasó ERPNext-felhasználó a bemutatóhoz: az Administrator jelszava nélkül, véletlen módosítás nélkül mutatható meg,
+ * hogyan él ugyanaz az adat az ERPNextben, amit a portál mutat.
+ */
+async function ensureDemoUser() {
+  if (!(await c.list('Role', { filters: [['name', '=', DEMO_ERP_ROLE]] })).length) {
+    await c.create('Role', { role_name: DEMO_ERP_ROLE, desk_access: 1 })
+    log('szerepkör:', DEMO_ERP_ROLE)
+  }
+  // minden írási jog EXPLICIT nulla: a Frappe a jogosultsági sor kihagyott mezőit nem mindenhol 0-nak veszi
+  const readOnly = { role: DEMO_ERP_ROLE, permlevel: 0, read: 1, select: 1, report: 1, export: 1, print: 1, write: 0, create: 0, delete: 0, submit: 0, cancel: 0, amend: 0, share: 0, email: 0, import: 0 }
+  const isReadOnly = (p: Record<string, unknown>) => !p.write && !p.create && !p.delete && !p.submit && !p.cancel && !p.amend && !p.share
+  // saját DocType-ok: a jogosultsági sor a DocType-on
+  const custom = ['Szikra Supply Point', 'Szikra Portal Access', 'Szikra Event', 'Szikra Meter Reading', 'Szikra Production', 'Szikra Deal', 'Szikra Schedule', 'Szikra Outage', 'Szikra Interval Data', 'Szikra Tariff']
+  for (const name of custom) {
+    const doc = await c.get('DocType', name)
+    const perms = doc.permissions as Record<string, unknown>[]
+    const mine = perms.find(p => p.role === DEMO_ERP_ROLE)
+    if (mine && isReadOnly(mine)) continue
+    await c.update('DocType', name, { permissions: [...perms.filter(p => p.role !== DEMO_ERP_ROLE), readOnly] })
+    log('csak olvasó jogosultság:', name)
+  }
+  // szabványos DocType-ok: Custom DocPerm
+  for (const name of ['Customer', 'Sales Invoice', 'Payment Entry', 'Issue', 'Item', 'Comment']) {
+    const have = await c.list('Custom DocPerm', { fields: ['name', 'write', 'create', 'delete', 'submit', 'cancel', 'amend', 'share'], filters: [['parent', '=', name], ['role', '=', DEMO_ERP_ROLE]] })
+    if (have.length) {
+      if (!isReadOnly(have[0])) await c.update('Custom DocPerm', have[0].name, readOnly)
+      continue
+    }
+    await c.create('Custom DocPerm', { parent: name, parenttype: 'DocType', parentfield: 'permissions', ...readOnly })
+  }
+  if (!(await c.list('User', { filters: [['name', '=', DEMO_ERP_USER]] })).length) {
+    await c.create('User', {
+      email: DEMO_ERP_USER, first_name: 'Demó', last_name: 'Néző', enabled: 1, user_type: 'System User', send_welcome_email: 0,
+      language: 'hu', new_password: DEMO_ERP_PASSWORD, roles: [{ role: DEMO_ERP_ROLE }, { role: 'Desk User' }],
+    })
+    log('ERPNext demó felhasználó:', DEMO_ERP_USER, '(csak olvasó)')
+  }
+}
+
 async function writeKeys() {
   const file = new URL('./.env.local', import.meta.url)
   if (existsSync(file)) return log('API-kulcs már megvan:', file.pathname)
@@ -373,5 +441,6 @@ await ensureLocale()
 await ensureFiscalYear('2025')
 await ensureSchema()
 await seedData()
+await ensureDemoUser()
 await writeKeys()
 log('kész')

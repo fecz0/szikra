@@ -3,6 +3,7 @@
 // Használat: PORTAL=http://127.0.0.1:3200 node erp/live-smoke.ts
 import { readFileSync } from 'node:fs'
 import { ErpClient } from '../server/utils/erp/client.ts'
+import { DEMO_ERP_PASSWORD, DEMO_ERP_USER } from './demo-user.ts'
 
 const PORTAL = process.env.PORTAL ?? 'http://127.0.0.1:3200'
 const env: Record<string, string> = {}
@@ -24,7 +25,7 @@ class Session {
 }
 
 const startedAt = new Date().toISOString().replace('T', ' ').slice(0, 19)
-const created = { issues: [] as string[], payments: [] as string[], schedules: [] as string[], confirmedDeals: [] as string[], outages: [] as string[], resetOutages: [] as string[], settlementMonths: [] as string[] }
+const created = { issues: [] as string[], payments: [] as string[], schedules: [] as string[], confirmedDeals: [] as string[], outages: [] as string[], tariffs: [] as string[], resetOutages: [] as string[], settlementMonths: [] as string[] }
 try {
   const fin = new Session()
   ok((await fin.call('POST', '/api/auth/login', { userId: 'DEMO-PENZUGY' })).status === 200, 'pénzügyi felhasználó belép')
@@ -125,6 +126,26 @@ try {
   ok(aud.length >= 9 && aud.some((e: any) => e.action.includes('leállás jóváhagyva')), `auditnapló: ${aud.length} bejegyzés, a jóváhagyások naplózva`)
   ok((await uzem.call('GET', '/api/partner/DEMO-ATOM/audit')).status === 403, 'az üzemvezető nem látja a naplót')
 
+  // tarifa-motor: szimuláció az ERPNext intervallumadatából, egyedi díjcsomag
+  const adm = new Session()
+  await adm.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
+  const sites = (await adm.call('GET', '/api/partner/DEMO-LANC/tariff-sites')).json
+  ok(sites.length === 8 && sites.every((x: any) => x.hasIntervals), `${sites.length} villany-telephely, mind intervallumadattal`)
+  const simu = (await adm.call('GET', '/api/partner/DEMO-LANC/tariff-simulation?supplyPointId=DEMO-LANC-E1')).json
+  ok(simu.available && simu.results.length >= 4 && simu.reconciliation.diffHuf === 0 && simu.reconciliation.invoices === 12, `a motor az ERPNext-adatból pontosan a számlázott energiadíjat adja (eltérés ${simu.reconciliation?.diffHuf} Ft, ${simu.reconciliation?.invoices} számla)`)
+  const nt = await adm.call('POST', '/api/partner/DEMO-LANC/tariffs', { name: 'Füstteszt díjcsomag', kind: 'fix', fixHufPerKwh: 30 })
+  if (nt.json?.id) created.tariffs.push(nt.json.id)
+  const simu2 = (await adm.call('GET', '/api/partner/DEMO-LANC/tariff-simulation?supplyPointId=DEMO-LANC-E1')).json
+  const mine = simu2.results.find((r: any) => r.tariff.name === 'Füstteszt díjcsomag')
+  ok(nt.status === 200 && mine && mine.savingVsCurrentHuf > 0, 'az egyedi díjcsomag az ERPNextben tárolódik, és szerepel a szimulációban')
+
+  // az ERPNext demó felhasználó csak olvashat
+  const demo = new ErpClient(env.NUXT_ERP_BASE_URL!, { user: DEMO_ERP_USER, password: DEMO_ERP_PASSWORD })
+  const seen = await Promise.all(['Customer', 'Sales Invoice', 'Szikra Interval Data', 'Szikra Tariff', 'Szikra Deal'].map(d => demo.list(d, { fields: ['name'] }).then(r => r.length).catch(() => -1)))
+  ok(seen.every(n => n >= 0) && seen[0]! >= 8 && seen[2]! === 96, `a demó felhasználó olvashatja az adatot (ügyfél ${seen[0]}, intervallum-hónap ${seen[2]})`)
+  const write = await demo.create('Customer', { customer_name: 'Tiltott teszt', customer_group: 'Commercial', territory: 'All Territories' }).then(() => 'létrejött', (e: any) => `elutasítva (${e.status})`)
+  ok(write.startsWith('elutasítva'), `a demó felhasználó nem írhat: ${write}`)
+
   const ro = new Session()
   await ro.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
   ok((await ro.call('POST', '/api/partner/DEMO-ELMARADT/invoices/DEMO-ELMARADT-INV2/pay')).status === 403, 'olvasó szerepkör fizetése 403')
@@ -137,6 +158,10 @@ finally {
   // takarítás: a fizetés visszavonva (könyvelésileg a törölt PE helyes állapota a 'cancelled'), az ügy törölve
   for (const pe of created.payments) {
     await erp.update('Payment Entry', pe, { docstatus: 2 }).catch(e => console.log('cancel:', e.message))
+  }
+  for (const id of created.tariffs) {
+    const row = (await erp.list('Szikra Tariff', { fields: ['name'], filters: [['szikra_id', '=', id]] }))[0]
+    if (row) await erp.request('DELETE', `/api/resource/Szikra%20Tariff/${row.name}`).catch(e => console.log('díjcsomag törlés:', e.message))
   }
   for (const id of created.resetOutages) {
     const row = (await erp.list('Szikra Outage', { fields: ['name'], filters: [['szikra_id', '=', id]] }))[0]

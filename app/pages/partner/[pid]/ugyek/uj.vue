@@ -19,6 +19,12 @@ const points = caps.value.includes('supply.view') ? (await useFetch<SupplyPoint[
 const deals = caps.value.includes('deals.view') ? (await useFetch<Deal[]>(`${base}/deals`)).data : ref<Deal[]>([])
 
 const values = reactive<Record<string, string>>({})
+// előtöltés (pl. a díjcsomag-szimulátorból): ?type=dijcsomag&supply=…&tariff=…
+const route = useRoute()
+if (typeof route.query.type === 'string' && available.value.some(t => t.id === route.query.type)) {
+  type.value = route.query.type as CaseTypeId
+  for (const k of ['supply', 'tariff']) if (typeof route.query[k] === 'string') values[k] = route.query[k] as string
+}
 const error = ref('')
 const huf = (n: number) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft'
 

@@ -2,10 +2,10 @@ import type { Backend } from '../../domain/backend-types'
 import { PaymentDeclined } from '../../domain/backend-types'
 import { caseTypes } from '../../domain/case-types'
 import { REQUIRED_APPROVALS, approvalMessage, checkApproval, needsFourEyes } from '../../domain/approvals'
-import type { AuditEntry, CaseTypeId, Invoice, PortalUser } from '../../domain/types'
+import type { TariffDef, AuditEntry, CaseTypeId, Invoice, PortalUser } from '../../domain/types'
 import { payInvoiceInErp } from '../erp/actions'
 import { ErpClient } from '../erp/client'
-import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, OUTAGE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapDeal, mapInvoice, mapOutage, parseApprovals, mapInvoiceLines, mapPartner, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from '../erp/mappers'
+import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, OUTAGE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapDeal, mapInterval, mapInvoice, mapOutage, mapTariff, parseApprovals, mapInvoiceLines, mapPartner, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from '../erp/mappers'
 
 const utc = (d = new Date()) => d.toISOString().replace('T', ' ').slice(0, 19)
 const fromUtc = (s: string) => new Date(String(s).replace(' ', 'T') + 'Z').toISOString()
@@ -177,6 +177,29 @@ export class ErpNextBackend implements Backend {
     if (!done) throw createError({ statusCode: 409, message: approvalMessage['mar-jovahagyta'] })
     await this.note(partnerId, `Átvételi elszámolás jóváhagyva: ${month} (${by.name})`)
     return done
+  }
+
+  async listIntervals(partnerId: string, supplyPointId?: string) {
+    const points = (await this.listSupplyPoints(partnerId)).filter(p => !supplyPointId || p.id === supplyPointId)
+    if (!points.length) return []
+    const rows = await this.c.list('Szikra Interval Data', { fields: INTERVAL_FIELDS, filters: [['supply_point', 'in', points.map(p => p.id)]], orderBy: 'month asc' })
+    return rows.map(mapInterval)
+  }
+
+  async listTariffs(partnerId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Szikra Tariff', { fields: TARIFF_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]] })
+    return rows.map(r => mapTariff(r, cust.byName))
+  }
+
+  async createTariff(partnerId: string, def: Omit<TariffDef, 'id' | 'partnerId' | 'system'>, by: string) {
+    const customer = await this.erpName(partnerId)
+    const n = (await this.c.list('Szikra Tariff', { fields: ['name'], filters: [['customer', '=', customer]] })).length + 1
+    const id = `${partnerId}-TAR-${String(n).padStart(2, '0')}`
+    const { name, kind, ...params } = def
+    await this.c.create('Szikra Tariff', { szikra_id: id, customer, tariff_name: name, kind, params_json: JSON.stringify(params) })
+    await this.note(partnerId, `Új díjcsomag: ${name} (${by})`)
+    return { ...def, id, partnerId }
   }
 
   async listCases(partnerId: string) {

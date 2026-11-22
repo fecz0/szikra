@@ -133,6 +133,7 @@ export function fixedDemoDataset(): Dataset {
     ds.schedule.push(...f.schedule)
     ds.outages.push(...(f.outages ?? []))
     ds.audit.push(...(f.audit ?? []))
+    ds.intervals.push(...(f.intervals ?? []))
     ds.invoices.push(...f.invoices)
   }
   ds.users.push(...demoUsers)
@@ -153,6 +154,7 @@ export function seedDataset(scenario: ScenarioName, role: Membership['role'], ui
   ds.schedule.push(...f.schedule)
   ds.outages.push(...(f.outages ?? []))
   ds.audit.push(...(f.audit ?? []))
+  ds.intervals.push(...(f.intervals ?? []))
   ds.invoices.push(...f.invoices)
   ds.users.push({ id: userId, name: 'Teszt Elek', email: `${uid}@teszt.szikra.test`, note: 'teszt' })
   ds.memberships.push({ userId, partnerId: f.partner.id, role })

@@ -99,6 +99,35 @@ export interface ScheduleDay {
   submittedBy: string
 }
 
+/** Mérőadat-idősor egy hónapra (intervallumadat): kumulált helyett fogyasztás intervallumonként. */
+export interface IntervalData {
+  supplyPointId: string
+  /** ÉÉÉÉ-HH */
+  month: string
+  intervalMinutes: number
+  /** nap × (1440 / intervalMinutes) érték, kWh */
+  kwh: number[]
+}
+
+export type TariffKind = 'fix' | 'indexed' | 'tou' | 'dynamic'
+
+/** Díjcsomag (adatvezérelt, tehát a felületen is szerkeszthető): az energiadíj számítási módja. */
+export interface TariffDef {
+  id: string
+  name: string
+  kind: TariffKind
+  /** fix: Ft/kWh */
+  fixHufPerKwh?: number
+  /** csúcs-völgy: zónánként Ft/kWh */
+  zoneHufPerKwh?: { nappali: number, csucs: number, volgy: number }
+  /** tőzsdei követő és dinamikus: kereskedői díj, Ft/kWh */
+  marginHufPerKwh?: number
+  monthlyFeeHuf?: number
+  /** rendszer-díjcsomag (nem szerkeszthető) */
+  system?: boolean
+  partnerId?: string
+}
+
 /** Egy jóváhagyás (négy szem elve: két különböző személy kell). */
 export interface Approval {
   userId: string
@@ -232,11 +261,13 @@ export interface Dataset {
   schedule: ScheduleDay[]
   outages: Outage[]
   audit: AuditEntry[]
+  intervals: IntervalData[]
+  tariffs: TariffDef[]
   invoices: Invoice[]
   cases: CaseRecord[]
   notifications: NotificationItem[]
 }
 
 export const emptyDataset = (): Dataset => ({
-  partners: [], users: [], memberships: [], supplyPoints: [], readings: [], production: [], deals: [], schedule: [], outages: [], audit: [], invoices: [], cases: [], notifications: [],
+  partners: [], users: [], memberships: [], supplyPoints: [], readings: [], production: [], deals: [], schedule: [], outages: [], audit: [], intervals: [], tariffs: [], invoices: [], cases: [], notifications: [],
 })
