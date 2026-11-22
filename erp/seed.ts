@@ -32,6 +32,21 @@ async function ensureSetup() {
   throw new Error('a setup wizard nem fejeződött be 5 percen belül')
 }
 
+/** Magyar felület és formátumok. Az időzóna szándékosan UTC marad: az export/leképezés erre számít. */
+async function ensureLocale() {
+  const sys = await c.get('System Settings', 'System Settings')
+  const want = { language: 'hu', date_format: 'dd.mm.yyyy', number_format: '#.###,##', first_day_of_the_week: 'Monday' }
+  if (Object.entries(want).some(([k, v]) => sys[k] !== v)) {
+    await c.update('System Settings', 'System Settings', want)
+    log('magyar nyelv és formátumok beállítva')
+  }
+  const admin = await c.get('User', 'Administrator')
+  if (admin.language !== 'hu') {
+    await c.update('User', 'Administrator', { language: 'hu' })
+    log('Administrator felületi nyelve: hu')
+  }
+}
+
 async function ensureCustomField(dt: string, fieldname: string, def: Record<string, unknown>) {
   const have = await c.list('Custom Field', { fields: ['name'], filters: [['dt', '=', dt], ['fieldname', '=', fieldname]] })
   if (have.length) return
@@ -170,6 +185,7 @@ async function writeKeys() {
 }
 
 await ensureSetup()
+await ensureLocale()
 await ensureSchema()
 await seedData()
 await writeKeys()
