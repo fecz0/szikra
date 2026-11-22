@@ -55,6 +55,26 @@ try {
   const ov = (await fin.call('GET', '/api/partner/DEMO-ELMARADT/overview')).json
   ok(ov.notifications.length >= 2 && ov.openCases === 1, 'értesítések és nyitott ügyek az áttekintésben')
 
+  // használati esetek: lánc (több telephely), napelempark (termelő)
+  const chain = new Session()
+  await chain.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
+  const lanc = (await chain.call('GET', '/api/partner/DEMO-LANC/invoices')).json
+  ok(lanc.length === 144 && lanc.some((i: any) => i.siteLabel === 'Miskolc áruház' && i.status === 'overdue'), 'a lánc 144 számlája telephely-névvel, egy lejárttal jön az ERPNextből')
+  const rd = (await chain.call('GET', '/api/partner/DEMO-LANC/readings')).json
+  ok(rd.length === 12 * 13, `mérőállás-idősor: ${rd.length}`)
+  const prodDenied = await chain.call('GET', '/api/partner/DEMO-NAPELEM/production')
+  ok(prodDenied.status === 403, 'idegen cég termelése nem érhető el')
+
+  const solar = new Session()
+  await solar.call('POST', '/api/auth/login', { userId: 'DEMO-TERMELO' })
+  const prod = (await solar.call('GET', '/api/partner/DEMO-NAPELEM/production')).json
+  const total = prod.reduce((a: number, p: any) => a + p.mwh, 0)
+  ok(prod.length === 24 && total > 22000 && total < 28000, `termelés: ${prod.length} rekord, ${Math.round(total)} MWh`)
+  const sOv = (await solar.call('GET', '/api/partner/DEMO-NAPELEM/overview')).json
+  ok(sOv.invoices === null && sOv.production?.mwh > 0, 'a termelő áttekintésében termelés van, számla nincs')
+  const me2 = (await solar.call('GET', '/api/auth/me')).json
+  ok(me2.companies[0].kind === 'termelo', 'a cég típusa: termelő')
+
   const ro = new Session()
   await ro.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
   ok((await ro.call('POST', '/api/partner/DEMO-ELMARADT/invoices/DEMO-ELMARADT-INV2/pay')).status === 403, 'olvasó szerepkör fizetése 403')

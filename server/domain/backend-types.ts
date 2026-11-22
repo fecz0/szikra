@@ -1,4 +1,4 @@
-import type { AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
+import type { ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
 
 export interface UserWithMemberships {
   user: PortalUser
@@ -19,6 +19,8 @@ export interface Backend {
   /** Fizetés; a PaymentDeclined hibával jelzi a bank elutasítását. */
   payInvoice: (partnerId: string, invoiceId: string, by: string) => Promise<void>
   listSupplyPoints: (partnerId: string) => Promise<SupplyPoint[]>
+  listReadings: (partnerId: string) => Promise<Reading[]>
+  listProduction: (partnerId: string) => Promise<ProductionRecord[]>
   listCases: (partnerId: string) => Promise<CaseRecord[]>
   getCase: (partnerId: string, caseId: string) => Promise<CaseRecord | null>
   createCase: (input: { partnerId: string, type: CaseTypeId, subject: string, by: string, fields: Record<string, string> }) => Promise<CaseRecord>

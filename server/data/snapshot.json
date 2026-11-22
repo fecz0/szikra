@@ -1,6 +1,15 @@
 {
   "partners": [
     {
+      "id": "DEMO-NAPELEM",
+      "name": "Alföldi Napenergia Kft.",
+      "taxNumber": "28345671-2-04",
+      "address": "5000 Szolnok, Napsugár út 1.",
+      "segment": "ipari",
+      "kind": "termelo",
+      "contractNo": "SZ-DEMO-NAPELEM-06"
+    },
+    {
       "id": "DEMO-ELMARADT",
       "name": "Késő Kereskedelmi Zrt.",
       "taxNumber": "23456789-2-09",
@@ -32,20 +41,34 @@
       "address": "9021 Győr, Pontos köz 12.",
       "segment": "ipari",
       "contractNo": "SZ-DEMO-RENDEZETT-04"
+    },
+    {
+      "id": "DEMO-LANC",
+      "name": "Tisza Kereskedelmi Lánc Zrt.",
+      "taxNumber": "25678123-2-13",
+      "address": "4025 Debrecen, Piac utca 12.",
+      "segment": "kereskedelmi",
+      "contractNo": "SZ-DEMO-LANC-05"
     }
   ],
   "users": [
     {
-      "id": "DEMO-PENZUGY",
-      "name": "Nagy Péter",
-      "email": "peter@demo.szikra.test",
-      "note": "Pénzügyi szerepkör: számlák és fizetés, mérőállást nem közölhet"
+      "id": "DEMO-TERMELO",
+      "name": "Kiss Zoltán",
+      "email": "zoltan@demo.szikra.test",
+      "note": "Napelempark-üzemeltető: termelés, átvételi elszámolás, leállás- és kapacitásügyek"
     },
     {
       "id": "DEMO-ADMIN",
       "name": "Kovács Anna",
       "email": "anna@demo.szikra.test",
       "note": "Három cég: adminisztrátor az okosmérős cégnél, olvasó a lejárt számlásnál, pénzügyi a kártyás cégnél"
+    },
+    {
+      "id": "DEMO-PENZUGY",
+      "name": "Nagy Péter",
+      "email": "peter@demo.szikra.test",
+      "note": "Pénzügyi szerepkör: számlák és fizetés, mérőállást nem közölhet"
     },
     {
       "id": "DEMO-MUSZAKI",
@@ -61,6 +84,16 @@
     }
   ],
   "memberships": [
+    {
+      "userId": "DEMO-TERMELO",
+      "partnerId": "DEMO-NAPELEM",
+      "role": "admin"
+    },
+    {
+      "userId": "DEMO-ADMIN",
+      "partnerId": "DEMO-LANC",
+      "role": "admin"
+    },
     {
       "userId": "DEMO-PENZUGY",
       "partnerId": "DEMO-ELMARADT",
@@ -123,6 +156,206 @@
       "unit": "m3"
     },
     {
+      "id": "DEMO-LANC-E1",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-1",
+      "address": "4025 Debrecen, Piac utca 12.",
+      "meterSerial": "E-5100",
+      "smart": true,
+      "lastReading": 4275924,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Debrecen áruház",
+      "tariff": "Ipari fix 2026"
+    },
+    {
+      "id": "DEMO-LANC-E2",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-2",
+      "address": "6720 Szeged, Kárász utca 4.",
+      "meterSerial": "E-5117",
+      "smart": true,
+      "lastReading": 4069657,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Szeged áruház",
+      "tariff": "Ipari fix 2026"
+    },
+    {
+      "id": "DEMO-LANC-E3",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-3",
+      "address": "9021 Győr, Baross út 30.",
+      "meterSerial": "E-5134",
+      "smart": true,
+      "lastReading": 4421378,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Győr áruház",
+      "tariff": "Piaci követő"
+    },
+    {
+      "id": "DEMO-LANC-E4",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-4",
+      "address": "7621 Pécs, Király utca 8.",
+      "meterSerial": "E-5151",
+      "smart": true,
+      "lastReading": 4226428,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Pécs áruház",
+      "tariff": "Piaci követő"
+    },
+    {
+      "id": "DEMO-LANC-E5",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-5",
+      "address": "3525 Miskolc, Széchenyi u. 21.",
+      "meterSerial": "E-5168",
+      "smart": true,
+      "lastReading": 4136317,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Miskolc áruház",
+      "tariff": "Kereskedelmi csúcs-völgy"
+    },
+    {
+      "id": "DEMO-LANC-E6",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-6",
+      "address": "4400 Nyíregyháza, Dohány u. 3.",
+      "meterSerial": "E-5185",
+      "smart": true,
+      "lastReading": 4625592,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Nyíregyháza áruház",
+      "tariff": "Kereskedelmi csúcs-völgy"
+    },
+    {
+      "id": "DEMO-LANC-E7",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-7",
+      "address": "8000 Székesfehérvár, Fő u. 15.",
+      "meterSerial": "E-5202",
+      "smart": true,
+      "lastReading": 4155070,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Székesfehérvár áruház",
+      "tariff": "Ipari fix 2026"
+    },
+    {
+      "id": "DEMO-LANC-E8",
+      "partnerId": "DEMO-LANC",
+      "type": "villany",
+      "pod": "HU-DEMO-E-O-LANC-8",
+      "address": "6000 Kecskemét, Kossuth tér 2.",
+      "meterSerial": "E-5219",
+      "smart": true,
+      "lastReading": 3777833,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Kecskemét áruház",
+      "tariff": "Piaci követő"
+    },
+    {
+      "id": "DEMO-LANC-G1",
+      "partnerId": "DEMO-LANC",
+      "type": "gaz",
+      "pod": "HU-DEMO-G-O-LANC-1",
+      "address": "4025 Debrecen, Piac utca 12.",
+      "meterSerial": "G-5100",
+      "smart": false,
+      "lastReading": 528626,
+      "lastReadingDate": "2026-10-31",
+      "unit": "m3",
+      "label": "Debrecen áruház",
+      "tariff": "Gáz kereskedelmi"
+    },
+    {
+      "id": "DEMO-LANC-G2",
+      "partnerId": "DEMO-LANC",
+      "type": "gaz",
+      "pod": "HU-DEMO-G-O-LANC-2",
+      "address": "6720 Szeged, Kárász utca 4.",
+      "meterSerial": "G-5117",
+      "smart": false,
+      "lastReading": 534419,
+      "lastReadingDate": "2026-10-31",
+      "unit": "m3",
+      "label": "Szeged áruház",
+      "tariff": "Gáz kereskedelmi"
+    },
+    {
+      "id": "DEMO-LANC-G5",
+      "partnerId": "DEMO-LANC",
+      "type": "gaz",
+      "pod": "HU-DEMO-G-O-LANC-5",
+      "address": "3525 Miskolc, Széchenyi u. 21.",
+      "meterSerial": "G-5168",
+      "smart": false,
+      "lastReading": 515318,
+      "lastReadingDate": "2026-10-31",
+      "unit": "m3",
+      "label": "Miskolc áruház",
+      "tariff": "Gáz kereskedelmi"
+    },
+    {
+      "id": "DEMO-LANC-G6",
+      "partnerId": "DEMO-LANC",
+      "type": "gaz",
+      "pod": "HU-DEMO-G-O-LANC-6",
+      "address": "4400 Nyíregyháza, Dohány u. 3.",
+      "meterSerial": "G-5185",
+      "smart": false,
+      "lastReading": 494730,
+      "lastReadingDate": "2026-10-31",
+      "unit": "m3",
+      "label": "Nyíregyháza áruház",
+      "tariff": "Gáz kereskedelmi"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1",
+      "partnerId": "DEMO-NAPELEM",
+      "type": "villany",
+      "pod": "HU-DEMO-T-APELEM-1",
+      "address": "5000 Szolnok, Napsugár út 1.",
+      "meterSerial": "T-2200",
+      "smart": true,
+      "lastReading": 23342762,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "A blokk (12 MW)",
+      "tariff": "Piaci átvétel",
+      "capacityKw": 12000,
+      "direction": "termeles"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2",
+      "partnerId": "DEMO-NAPELEM",
+      "type": "villany",
+      "pod": "HU-DEMO-T-APELEM-2",
+      "address": "5000 Szolnok, Napsugár út 1.",
+      "meterSerial": "T-2231",
+      "smart": true,
+      "lastReading": 17986884,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "B blokk (8 MW)",
+      "tariff": "Átvétel + támogatási prémium",
+      "capacityKw": 8000,
+      "direction": "termeles"
+    },
+    {
       "id": "DEMO-OKOS-E1",
       "partnerId": "DEMO-OKOS",
       "type": "villany",
@@ -159,7 +392,2289 @@
       "unit": "kWh"
     }
   ],
+  "readings": [
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2025-10-31",
+      "value": 3098044
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2025-10-31",
+      "value": 477024
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2025-10-31",
+      "value": 3006854
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2025-10-31",
+      "value": 3530365
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2025-10-31",
+      "value": 486169
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2025-10-31",
+      "value": 3367549
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2025-10-31",
+      "value": 3140256
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2025-10-31",
+      "value": 470831
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2025-10-31",
+      "value": 3876142
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2025-10-31",
+      "value": 461643
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2025-10-31",
+      "value": 3278943
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2025-10-31",
+      "value": 3075638
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2025-10-31",
+      "value": 8670262
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2025-10-31",
+      "value": 8300584
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2025-11-30",
+      "value": 3188782
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2025-11-30",
+      "value": 479422
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2025-11-30",
+      "value": 3087885
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2025-11-30",
+      "value": 3599126
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2025-11-30",
+      "value": 488263
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2025-11-30",
+      "value": 3437784
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2025-11-30",
+      "value": 3219243
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2025-11-30",
+      "value": 472816
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2025-11-30",
+      "value": 3932187
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2025-11-30",
+      "value": 463197
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2025-11-30",
+      "value": 3351002
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2025-11-30",
+      "value": 3129935
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2025-11-30",
+      "value": 9154562
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2025-11-30",
+      "value": 8638284
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2025-12-31",
+      "value": 3282976
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2025-12-31",
+      "value": 484384
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2025-12-31",
+      "value": 3172138
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2025-12-31",
+      "value": 492542
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2025-12-31",
+      "value": 3667959
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2025-12-31",
+      "value": 3503989
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2025-12-31",
+      "value": 3295195
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2025-12-31",
+      "value": 476701
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2025-12-31",
+      "value": 3989717
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2025-12-31",
+      "value": 466091
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2025-12-31",
+      "value": 3422250
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2025-12-31",
+      "value": 3185471
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2025-12-31",
+      "value": 9558062
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2025-12-31",
+      "value": 8876984
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-01-31",
+      "value": 3387969
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-01-31",
+      "value": 491217
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-01-31",
+      "value": 3264473
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-01-31",
+      "value": 498623
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-01-31",
+      "value": 3579385
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-01-31",
+      "value": 3746671
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-01-31",
+      "value": 3382100
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-01-31",
+      "value": 482370
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-01-31",
+      "value": 4053645
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-01-31",
+      "value": 470688
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-01-31",
+      "value": 3502041
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-01-31",
+      "value": 3243416
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-01-31",
+      "value": 10019162
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-01-31",
+      "value": 9195384
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-02-28",
+      "value": 3486851
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-02-28",
+      "value": 499319
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-02-28",
+      "value": 3355195
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-02-28",
+      "value": 506938
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-02-28",
+      "value": 3655378
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-02-28",
+      "value": 3828137
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-02-28",
+      "value": 3469904
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-02-28",
+      "value": 489529
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-02-28",
+      "value": 4121919
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-02-28",
+      "value": 475973
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-02-28",
+      "value": 3579748
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-02-28",
+      "value": 3309139
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-02-28",
+      "value": 10720962
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-02-28",
+      "value": 9691284
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-03-31",
+      "value": 508260
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-03-31",
+      "value": 3597831
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-03-31",
+      "value": 3452739
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-03-31",
+      "value": 515538
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-03-31",
+      "value": 3729566
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-03-31",
+      "value": 3908333
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-03-31",
+      "value": 3564309
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-03-31",
+      "value": 497798
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-03-31",
+      "value": 4191028
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-03-31",
+      "value": 3655566
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-03-31",
+      "value": 481701
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-03-31",
+      "value": 3370512
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-03-31",
+      "value": 10499484
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-03-31",
+      "value": 11880362
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-04-30",
+      "value": 515926
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-04-30",
+      "value": 3698748
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-04-30",
+      "value": 3541141
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-04-30",
+      "value": 522672
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-04-30",
+      "value": 3983728
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-04-30",
+      "value": 3801311
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-04-30",
+      "value": 3642941
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-04-30",
+      "value": 504753
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-04-30",
+      "value": 4256490
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-04-30",
+      "value": 486622
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-04-30",
+      "value": 3728707
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-04-30",
+      "value": 3431600
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-04-30",
+      "value": 13574662
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-04-30",
+      "value": 11518384
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-05-31",
+      "value": 3796583
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-05-31",
+      "value": 521677
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-05-31",
+      "value": 3622062
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-05-31",
+      "value": 528027
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-05-31",
+      "value": 4051882
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-05-31",
+      "value": 3722533
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-05-31",
+      "value": 3865334
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-05-31",
+      "value": 509545
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-05-31",
+      "value": 4312283
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-05-31",
+      "value": 490298
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-05-31",
+      "value": 3796671
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-05-31",
+      "value": 3484773
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-05-31",
+      "value": 15301262
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-05-31",
+      "value": 12651284
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-06-30",
+      "value": 3882659
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-06-30",
+      "value": 3705067
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-06-30",
+      "value": 524654
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-06-30",
+      "value": 530781
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-06-30",
+      "value": 4118699
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-06-30",
+      "value": 3802206
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-06-30",
+      "value": 3933955
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-06-30",
+      "value": 511924
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-06-30",
+      "value": 4369565
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-06-30",
+      "value": 492117
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-06-30",
+      "value": 3864401
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-06-30",
+      "value": 3539924
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-06-30",
+      "value": 17115262
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-06-30",
+      "value": 13958184
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-07-31",
+      "value": 3978671
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-07-31",
+      "value": 3791205
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-07-31",
+      "value": 525961
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-07-31",
+      "value": 531963
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-07-31",
+      "value": 4187038
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-07-31",
+      "value": 3882106
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-07-31",
+      "value": 4001471
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-07-31",
+      "value": 513015
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-07-31",
+      "value": 4430410
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-07-31",
+      "value": 492987
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-07-31",
+      "value": 3931975
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-07-31",
+      "value": 3594095
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-07-31",
+      "value": 19179962
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-07-31",
+      "value": 15247584
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-08-31",
+      "value": 4071782
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-08-31",
+      "value": 3884309
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-08-31",
+      "value": 526731
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-08-31",
+      "value": 532678
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-08-31",
+      "value": 4261145
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-08-31",
+      "value": 3963667
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-08-31",
+      "value": 4073082
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-08-31",
+      "value": 513701
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-08-31",
+      "value": 4495372
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-08-31",
+      "value": 493505
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-08-31",
+      "value": 4004615
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-08-31",
+      "value": 3650666
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-08-31",
+      "value": 20924862
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-08-31",
+      "value": 16459084
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-09-30",
+      "value": 4176566
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-09-30",
+      "value": 527563
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-09-30",
+      "value": 533429
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-09-30",
+      "value": 3975406
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-09-30",
+      "value": 4341088
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-09-30",
+      "value": 4053728
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-09-30",
+      "value": 4151487
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-09-30",
+      "value": 514366
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-09-30",
+      "value": 4562544
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-09-30",
+      "value": 494040
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-09-30",
+      "value": 4078510
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-09-30",
+      "value": 3715084
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-09-30",
+      "value": 22369462
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-09-30",
+      "value": 17337484
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E1",
+      "date": "2026-10-31",
+      "value": 4275924
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G1",
+      "date": "2026-10-31",
+      "value": 528626
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G2",
+      "date": "2026-10-31",
+      "value": 534419
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E2",
+      "date": "2026-10-31",
+      "value": 4069657
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E3",
+      "date": "2026-10-31",
+      "value": 4421378
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E4",
+      "date": "2026-10-31",
+      "value": 4226428
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G5",
+      "date": "2026-10-31",
+      "value": 515318
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E5",
+      "date": "2026-10-31",
+      "value": 4136317
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E6",
+      "date": "2026-10-31",
+      "value": 4625592
+    },
+    {
+      "supplyPointId": "DEMO-LANC-G6",
+      "date": "2026-10-31",
+      "value": 494730
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E7",
+      "date": "2026-10-31",
+      "value": 4155070
+    },
+    {
+      "supplyPointId": "DEMO-LANC-E8",
+      "date": "2026-10-31",
+      "value": 3777833
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "date": "2026-10-31",
+      "value": 23342762
+    },
+    {
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "date": "2026-10-31",
+      "value": 17986884
+    }
+  ],
+  "production": [
+    {
+      "id": "DEMO-NAPELEM-T1-202511",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2025-11",
+      "mwh": 484.3,
+      "priceHufPerMwh": 40500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 490354,
+      "settlementHuf": 19123796,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202511",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2025-11",
+      "mwh": 337.7,
+      "priceHufPerMwh": 40500,
+      "premiumHuf": 1519650,
+      "imbalanceHuf": 341921,
+      "settlementHuf": 14854579,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202512",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2025-12",
+      "mwh": 403.5,
+      "priceHufPerMwh": 43200,
+      "premiumHuf": 0,
+      "imbalanceHuf": 435780,
+      "settlementHuf": 16995420,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202512",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2025-12",
+      "mwh": 238.7,
+      "priceHufPerMwh": 43200,
+      "premiumHuf": 1074150,
+      "imbalanceHuf": 257796,
+      "settlementHuf": 11128194,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202601",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-01",
+      "mwh": 461.1,
+      "priceHufPerMwh": 41400,
+      "premiumHuf": 0,
+      "imbalanceHuf": 477239,
+      "settlementHuf": 18612301,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202601",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-01",
+      "mwh": 318.4,
+      "priceHufPerMwh": 41400,
+      "premiumHuf": 1432800,
+      "imbalanceHuf": 329544,
+      "settlementHuf": 14285016,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202602",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-02",
+      "mwh": 701.8,
+      "priceHufPerMwh": 39600,
+      "premiumHuf": 0,
+      "imbalanceHuf": 694782,
+      "settlementHuf": 27096498,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202602",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-02",
+      "mwh": 495.9,
+      "priceHufPerMwh": 39600,
+      "premiumHuf": 2231550,
+      "imbalanceHuf": 490941,
+      "settlementHuf": 21378249,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202603",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-03",
+      "mwh": 1159.4,
+      "priceHufPerMwh": 34200,
+      "premiumHuf": 0,
+      "imbalanceHuf": 991287,
+      "settlementHuf": 38660193,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202603",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-03",
+      "mwh": 808.2,
+      "priceHufPerMwh": 34200,
+      "premiumHuf": 3636900,
+      "imbalanceHuf": 691011,
+      "settlementHuf": 30586329,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202604",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-04",
+      "mwh": 1694.3,
+      "priceHufPerMwh": 25740,
+      "premiumHuf": 0,
+      "imbalanceHuf": 1090282,
+      "settlementHuf": 42521000,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202604",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-04",
+      "mwh": 1018.9,
+      "priceHufPerMwh": 25740,
+      "premiumHuf": 4585050,
+      "imbalanceHuf": 655662,
+      "settlementHuf": 30155874,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202605",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-05",
+      "mwh": 1726.6,
+      "priceHufPerMwh": 23400,
+      "premiumHuf": 0,
+      "imbalanceHuf": 1010061,
+      "settlementHuf": 39392379,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202605",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-05",
+      "mwh": 1132.9,
+      "priceHufPerMwh": 23400,
+      "premiumHuf": 5098050,
+      "imbalanceHuf": 662747,
+      "settlementHuf": 30945163,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202606",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-06",
+      "mwh": 1814,
+      "priceHufPerMwh": 24180,
+      "premiumHuf": 0,
+      "imbalanceHuf": 1096563,
+      "settlementHuf": 42765957,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202606",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-06",
+      "mwh": 1306.9,
+      "priceHufPerMwh": 24180,
+      "premiumHuf": 5881050,
+      "imbalanceHuf": 790021,
+      "settlementHuf": 36691871,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202607",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-07",
+      "mwh": 2064.7,
+      "priceHufPerMwh": 28080,
+      "premiumHuf": 0,
+      "imbalanceHuf": 1449419,
+      "settlementHuf": 56527357,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202607",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-07",
+      "mwh": 1289.4,
+      "priceHufPerMwh": 28080,
+      "premiumHuf": 5802300,
+      "imbalanceHuf": 905159,
+      "settlementHuf": 41103493,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202608",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-08",
+      "mwh": 1744.9,
+      "priceHufPerMwh": 28860,
+      "premiumHuf": 0,
+      "imbalanceHuf": 1258945,
+      "settlementHuf": 49098869,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202608",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-08",
+      "mwh": 1211.5,
+      "priceHufPerMwh": 28860,
+      "premiumHuf": 5451750,
+      "imbalanceHuf": 874097,
+      "settlementHuf": 39541543,
+      "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202609",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-09",
+      "mwh": 1444.6,
+      "priceHufPerMwh": 29640,
+      "premiumHuf": 0,
+      "imbalanceHuf": 1070449,
+      "settlementHuf": 41747495,
+      "status": "jovahagyva"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202609",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-09",
+      "mwh": 878.4,
+      "priceHufPerMwh": 29640,
+      "premiumHuf": 3952800,
+      "imbalanceHuf": 650894,
+      "settlementHuf": 29337682,
+      "status": "jovahagyva"
+    },
+    {
+      "id": "DEMO-NAPELEM-T1-202610",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T1",
+      "month": "2026-10",
+      "mwh": 973.3,
+      "priceHufPerMwh": 36900,
+      "premiumHuf": 0,
+      "imbalanceHuf": 897869,
+      "settlementHuf": 35016901,
+      "status": "tervezet"
+    },
+    {
+      "id": "DEMO-NAPELEM-T2-202610",
+      "partnerId": "DEMO-NAPELEM",
+      "supplyPointId": "DEMO-NAPELEM-T2",
+      "month": "2026-10",
+      "mwh": 649.4,
+      "priceHufPerMwh": 36900,
+      "premiumHuf": 2922300,
+      "imbalanceHuf": 599072,
+      "settlementHuf": 26286088,
+      "status": "tervezet"
+    }
+  ],
   "invoices": [
+    {
+      "id": "DEMO-LANC-INV-E1-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2025. november",
+      "amountHuf": 5535018,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2025. november",
+      "amountHuf": 803330,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2025. november",
+      "amountHuf": 4942891,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2025. november",
+      "amountHuf": 701490,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2025. november",
+      "amountHuf": 3988138,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2025. november",
+      "amountHuf": 4073630,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2025. november",
+      "amountHuf": 5055168,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2025. november",
+      "amountHuf": 664975,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2025. november",
+      "amountHuf": 3586880,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2025. november",
+      "amountHuf": 520590,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2025. november",
+      "amountHuf": 4395599,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202511",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2025. november",
+      "amountHuf": 3149226,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2025. december",
+      "amountHuf": 5745834,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2025. december",
+      "amountHuf": 1662270,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2025. december",
+      "amountHuf": 5139433,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2025. december",
+      "amountHuf": 1433465,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2025. december",
+      "amountHuf": 3992314,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2025. december",
+      "amountHuf": 3839890,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2025. december",
+      "amountHuf": 4860928,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2025. december",
+      "amountHuf": 1301475,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2025. december",
+      "amountHuf": 3681920,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2025. december",
+      "amountHuf": 969490,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2025. december",
+      "amountHuf": 4346128,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202512",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2025. december",
+      "amountHuf": 3221088,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. január",
+      "amountHuf": 6404573,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. január",
+      "amountHuf": 2289055,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. január",
+      "amountHuf": 5632435,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. január",
+      "amountHuf": 2037135,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. január",
+      "amountHuf": 4565296,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. január",
+      "amountHuf": 4372968,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. január",
+      "amountHuf": 5561920,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. január",
+      "amountHuf": 1899115,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. január",
+      "amountHuf": 4091392,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. január",
+      "amountHuf": 1539995,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. január",
+      "amountHuf": 4867251,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202601",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. január",
+      "amountHuf": 3360810,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. február",
+      "amountHuf": 6031802,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. február",
+      "amountHuf": 2714170,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. február",
+      "amountHuf": 5534042,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. február",
+      "amountHuf": 2785525,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. február",
+      "amountHuf": 4725028,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. február",
+      "amountHuf": 4407594,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. február",
+      "amountHuf": 5619456,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. február",
+      "amountHuf": 2398265,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. február",
+      "amountHuf": 4369536,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. február",
+      "amountHuf": 1770475,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. február",
+      "amountHuf": 4740127,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202602",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. február",
+      "amountHuf": 3811934,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. március",
+      "amountHuf": 6769780,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. március",
+      "amountHuf": 2995235,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. március",
+      "amountHuf": 5950184,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. március",
+      "amountHuf": 2881000,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. március",
+      "amountHuf": 4651368,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. március",
+      "amountHuf": 4302904,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. március",
+      "amountHuf": 6041920,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. március",
+      "amountHuf": 2770115,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. március",
+      "amountHuf": 4422976,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. március",
+      "amountHuf": 1918880,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. március",
+      "amountHuf": 4624898,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202603",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. március",
+      "amountHuf": 3559634,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. április",
+      "amountHuf": 6155937,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. április",
+      "amountHuf": 2568110,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. április",
+      "amountHuf": 5392522,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. április",
+      "amountHuf": 2389890,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. április",
+      "amountHuf": 4372910,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. április",
+      "amountHuf": 4161210,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. április",
+      "amountHuf": 5032448,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. április",
+      "amountHuf": 2329925,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. április",
+      "amountHuf": 4189568,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. április",
+      "amountHuf": 1648535,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. április",
+      "amountHuf": 4461601,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202604",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. április",
+      "amountHuf": 3543104,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. május",
+      "amountHuf": 5967935,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. május",
+      "amountHuf": 1926585,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. május",
+      "amountHuf": 4936181,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. május",
+      "amountHuf": 1793925,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. május",
+      "amountHuf": 3952932,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. május",
+      "amountHuf": 3713334,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. május",
+      "amountHuf": 5093888,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. május",
+      "amountHuf": 1605320,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. május",
+      "amountHuf": 3570752,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. május",
+      "amountHuf": 1231460,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. május",
+      "amountHuf": 4145804,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202605",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. május",
+      "amountHuf": 3084034,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. június",
+      "amountHuf": 5250636,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. június",
+      "amountHuf": 997295,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. június",
+      "amountHuf": 5063305,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. június",
+      "amountHuf": 922590,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. június",
+      "amountHuf": 3875386,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. június",
+      "amountHuf": 3980018,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. június",
+      "amountHuf": 5099072,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. június",
+      "amountHuf": 796965,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. június",
+      "amountHuf": 3666048,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. június",
+      "amountHuf": 609365,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. június",
+      "amountHuf": 4131530,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202606",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. június",
+      "amountHuf": 3198758,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. július",
+      "amountHuf": 5856732,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. július",
+      "amountHuf": 437845,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. július",
+      "amountHuf": 5254418,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. július",
+      "amountHuf": 395970,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. július",
+      "amountHuf": 3963662,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. július",
+      "amountHuf": 3915928,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. július",
+      "amountHuf": 5113600,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. július",
+      "amountHuf": 365485,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. július",
+      "amountHuf": 3894080,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. július",
+      "amountHuf": 291450,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. július",
+      "amountHuf": 4122014,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202607",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. július",
+      "amountHuf": 3141918,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid"
+    },
     {
       "id": "DEMO-ELMARADT-INV1",
       "partnerId": "DEMO-ELMARADT",
@@ -169,6 +2684,126 @@
       "issueDate": "2026-09-01",
       "dueDate": "2026-09-20",
       "status": "overdue"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. augusztus",
+      "amountHuf": 5679771,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. augusztus",
+      "amountHuf": 257950,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. augusztus",
+      "amountHuf": 5679344,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. augusztus",
+      "amountHuf": 239525,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. augusztus",
+      "amountHuf": 4298206,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. augusztus",
+      "amountHuf": 4153438,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. augusztus",
+      "amountHuf": 5219904,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. augusztus",
+      "amountHuf": 229810,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. augusztus",
+      "amountHuf": 4157568,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. augusztus",
+      "amountHuf": 173530,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. augusztus",
+      "amountHuf": 4431040,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202608",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. augusztus",
+      "amountHuf": 3281118,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid"
     },
     {
       "id": "DEMO-ELMARADT-INV2",
@@ -188,6 +2823,126 @@
       "amountHuf": 1520000,
       "issueDate": "2026-10-01",
       "dueDate": "2026-10-20",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. szeptember",
+      "amountHuf": 6391824,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. szeptember",
+      "amountHuf": 278720,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. szeptember",
+      "amountHuf": 5556917,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. szeptember",
+      "amountHuf": 251585,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. szeptember",
+      "amountHuf": 4636694,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. szeptember",
+      "amountHuf": 4547490,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. szeptember",
+      "amountHuf": 5763904,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "overdue"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. szeptember",
+      "amountHuf": 222775,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. szeptember",
+      "amountHuf": 4299008,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. szeptember",
+      "amountHuf": 179225,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. szeptember",
+      "amountHuf": 4507595,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202609",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. szeptember",
+      "amountHuf": 3736244,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
       "status": "paid"
     },
     {
@@ -229,6 +2984,126 @@
       "issueDate": "2026-11-05",
       "dueDate": "2026-11-25",
       "status": "paid"
+    },
+    {
+      "id": "DEMO-LANC-INV-E1-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E1",
+      "period": "2026. október",
+      "amountHuf": 6060838,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-G1-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G1",
+      "period": "2026. október",
+      "amountHuf": 356105,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E2-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E2",
+      "period": "2026. október",
+      "amountHuf": 5749311,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-G2-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G2",
+      "period": "2026. október",
+      "amountHuf": 331650,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E3-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E3",
+      "period": "2026. október",
+      "amountHuf": 4656820,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E4-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E4",
+      "period": "2026. október",
+      "amountHuf": 4346578,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E5-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E5",
+      "period": "2026. október",
+      "amountHuf": 5285696,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-G5-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G5",
+      "period": "2026. október",
+      "amountHuf": 318920,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E6-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E6",
+      "period": "2026. október",
+      "amountHuf": 4035072,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-G6-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-G6",
+      "period": "2026. október",
+      "amountHuf": 231150,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E7-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E7",
+      "period": "2026. október",
+      "amountHuf": 4670160,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
+    },
+    {
+      "id": "DEMO-LANC-INV-E8-202610",
+      "partnerId": "DEMO-LANC",
+      "supplyPointId": "DEMO-LANC-E8",
+      "period": "2026. október",
+      "amountHuf": 3639442,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open"
     }
   ],
   "cases": [],

@@ -48,6 +48,57 @@ export const caseTypes: Record<CaseTypeId, CaseTypeDef> = {
       { key: 'reading', label: 'Mérőállás', kind: 'number', required: true },
     ],
   },
+  reszletfizetes: {
+    id: 'reszletfizetes', ucId: 'UC-13', label: 'Részletfizetési kérelem',
+    hint: 'Nagyobb összegű számla kiegyenlítése részletekben.',
+    capability: 'invoices.pay',
+    fields: [
+      { key: 'invoice', label: 'Számla', kind: 'invoice', required: true },
+      { key: 'months', label: 'Kért részletek száma (hónap)', kind: 'number', required: true },
+      { key: 'note', label: 'Indoklás', kind: 'textarea' },
+    ],
+  },
+  dijcsomag: {
+    id: 'dijcsomag', ucId: 'UC-14', label: 'Díjcsomag-váltás',
+    hint: 'Másik díjcsomagra váltás egy fogyasztási helyen.',
+    capability: 'contracts.manage',
+    fields: [
+      { key: 'supply', label: 'Fogyasztási hely', kind: 'supply', required: true },
+      { key: 'tariff', label: 'Kért díjcsomag', kind: 'text', required: true },
+      { key: 'note', label: 'Megjegyzés', kind: 'textarea' },
+    ],
+  },
+  'uj-fogyasztasi-hely': {
+    id: 'uj-fogyasztasi-hely', ucId: 'UC-05', label: 'Új fogyasztási hely',
+    hint: 'Új telephely felvétele a szerződésbe.',
+    capability: 'contracts.manage',
+    fields: [
+      { key: 'address', label: 'A fogyasztási hely címe', kind: 'text', required: true },
+      { key: 'energy', label: 'Energiafajta (villany/gáz)', kind: 'text', required: true },
+      { key: 'volume', label: 'Várható éves fogyasztás (MWh)', kind: 'number' },
+    ],
+  },
+  'leallas-bejelentes': {
+    id: 'leallas-bejelentes', ucId: 'UC-12', label: 'Leállás- és hibabejelentés',
+    hint: 'Tervezett vagy váratlan leállás, hiba bejelentése.',
+    capability: 'supply.reading',
+    fields: [
+      { key: 'supply', label: 'Fogyasztási / termelési hely', kind: 'supply', required: true },
+      { key: 'from', label: 'Kezdete (ÉÉÉÉ-HH-NN)', kind: 'text', required: true },
+      { key: 'to', label: 'Várható vége (ÉÉÉÉ-HH-NN)', kind: 'text' },
+      { key: 'reason', label: 'Ok', kind: 'textarea', required: true },
+    ],
+  },
+  'kapacitas-modositas': {
+    id: 'kapacitas-modositas', ucId: 'CAP-07', label: 'Kapacitás-módosítás',
+    hint: 'Csatlakozási vagy szerződött kapacitás módosítása.',
+    capability: 'contracts.manage',
+    fields: [
+      { key: 'supply', label: 'Fogyasztási / termelési hely', kind: 'supply', required: true },
+      { key: 'newCapacityKw', label: 'Kért kapacitás (kW)', kind: 'number', required: true },
+      { key: 'reason', label: 'Indoklás', kind: 'textarea' },
+    ],
+  },
   ajanlatkeres: {
     id: 'ajanlatkeres', ucId: 'CAP-07', label: 'Ajánlatkérés',
     hint: 'Új fogyasztási hely vagy új szerződés ajánlata.',
