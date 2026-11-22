@@ -37,6 +37,8 @@ async function logout() {
       <NuxtLink :to="`/partner/${pid}`" exact-active-class="on">Áttekintés</NuxtLink>
       <NuxtLink v-if="has('invoices.view') && !producer" :to="`/partner/${pid}/szamlak`" active-class="on">Számlák</NuxtLink>
       <NuxtLink v-if="has('production.view') && producer" :to="`/partner/${pid}/termeles`" active-class="on">Termelés és elszámolás</NuxtLink>
+      <NuxtLink v-if="has('outages.view') && producer" :to="`/partner/${pid}/leallasok`" active-class="on">Leállások</NuxtLink>
+      <NuxtLink v-if="has('audit.view')" :to="`/partner/${pid}/naplo`" active-class="on">Napló</NuxtLink>
       <NuxtLink v-if="has('deals.view') && trader" :to="`/partner/${pid}/ugyletek`" active-class="on">Ügyletek</NuxtLink>
       <NuxtLink v-if="has('schedule.view') && trader" :to="`/partner/${pid}/menetrend`" active-class="on">Menetrend</NuxtLink>
       <NuxtLink v-if="has('supply.view') && !trader" :to="`/partner/${pid}/fogyasztasi-helyek`" active-class="on">{{ producer ? 'Termelőhelyek' : 'Fogyasztási helyek' }}</NuxtLink>

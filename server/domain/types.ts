@@ -1,5 +1,5 @@
 export type Segment = 'ipari' | 'kereskedelmi' | 'kozuzemi'
-export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo'
+export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo' | 'megfelelo'
 export type Energy = 'villany' | 'gaz'
 export type PartnerKind = 'fogyaszto' | 'termelo' | 'kereskedo'
 
@@ -99,6 +99,27 @@ export interface ScheduleDay {
   submittedBy: string
 }
 
+/** Egy jóváhagyás (négy szem elve: két különböző személy kell). */
+export interface Approval {
+  userId: string
+  name: string
+  at: string
+}
+
+/** Blokk-leállás (üzemanyagcsere, karbantartás, rendkívüli leállás). */
+export interface Outage {
+  id: string
+  partnerId: string
+  supplyPointId: string
+  kind: 'tervezett' | 'rendkivuli'
+  from: string
+  to: string
+  purpose: string
+  proposedBy: { userId: string, name: string }
+  status: 'jovahagyasra-var' | 'jovahagyva'
+  approvals: Approval[]
+}
+
 /** Havi termelés és az átvételi elszámolás (a partner nekünk számláz). */
 export interface ProductionRecord {
   id: string
@@ -115,6 +136,8 @@ export interface ProductionRecord {
   /** fizetendő nekünk a partner felé: mwh*ár + prémium - kiegyenlítés */
   settlementHuf: number
   status: 'tervezet' | 'jovahagyva' | 'kifizetve'
+  /** nagy összegű elszámolásnál (lásd approvals.ts) a két jóváhagyás */
+  approvals?: Approval[]
 }
 
 /** A számla egy tétele (számlakép): energia, rendszerhasználati díj, pénzeszköz/adó. Nettó összeg. */
@@ -207,11 +230,13 @@ export interface Dataset {
   production: ProductionRecord[]
   deals: Deal[]
   schedule: ScheduleDay[]
+  outages: Outage[]
+  audit: AuditEntry[]
   invoices: Invoice[]
   cases: CaseRecord[]
   notifications: NotificationItem[]
 }
 
 export const emptyDataset = (): Dataset => ({
-  partners: [], users: [], memberships: [], supplyPoints: [], readings: [], production: [], deals: [], schedule: [], invoices: [], cases: [], notifications: [],
+  partners: [], users: [], memberships: [], supplyPoints: [], readings: [], production: [], deals: [], schedule: [], outages: [], audit: [], invoices: [], cases: [], notifications: [],
 })

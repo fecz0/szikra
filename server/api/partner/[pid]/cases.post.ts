@@ -6,7 +6,8 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ type?: string, fields?: Record<string, string> }>(event)
   const def = caseTypes[body.type as CaseTypeId]
   if (!def) throw createError({ statusCode: 400, message: 'Ismeretlen ügytípus' })
-  // az ügytípus saját jogosultságot kér (pl. mérőállás: supply.reading)
+  // ügyet csak az indíthat, akinek van cases.create képessége ÉS az ügytípus saját jogosultsága is (pl. mérőállás: supply.reading)
+  await requireCapability(event, pid, 'cases.create')
   const { user } = await requireCapability(event, pid, def.capability)
 
   const fields: Record<string, string> = {}

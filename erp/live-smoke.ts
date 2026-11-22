@@ -23,7 +23,8 @@ class Session {
   }
 }
 
-const created = { issues: [] as string[], payments: [] as string[], schedules: [] as string[], confirmedDeals: [] as string[] }
+const startedAt = new Date().toISOString().replace('T', ' ').slice(0, 19)
+const created = { issues: [] as string[], payments: [] as string[], schedules: [] as string[], confirmedDeals: [] as string[], outages: [] as string[], resetOutages: [] as string[], settlementMonths: [] as string[] }
 try {
   const fin = new Session()
   ok((await fin.call('POST', '/api/auth/login', { userId: 'DEMO-PENZUGY' })).status === 200, 'pénzügyi felhasználó belép')
@@ -97,6 +98,33 @@ try {
   const nk = (await trader.call('GET', '/api/partner/DEMO-NAGYKER/invoices/DEMO-NAGYKER-INV-202610')).json
   ok(nk.invoice.lines.length === 3 && nk.invoice.amountHuf > 1_000_000_000, `nagykereskedői számla: ${nk.invoice.lines.length} tétel, ${Math.round(nk.invoice.amountHuf / 1e6)} M Ft`)
 
+  // atomerőmű: négy szem elve leállásra és elszámolásra
+  const vez = new Session(); const meg = new Session(); const uzem = new Session()
+  await vez.call('POST', '/api/auth/login', { userId: 'DEMO-ATOMVEZETO' })
+  await meg.call('POST', '/api/auth/login', { userId: 'DEMO-MEGFELELO' })
+  await uzem.call('POST', '/api/auth/login', { userId: 'DEMO-ATOMUZEM' })
+  const aprod = (await vez.call('GET', '/api/partner/DEMO-ATOM/production')).json
+  const atwh = aprod.reduce((a: number, p: any) => a + p.mwh, 0)
+  ok(aprod.length === 48 && atwh > 14_000_000 && atwh < 17_000_000, `atomerőmű: ${aprod.length} rekord, ${(atwh / 1e6).toFixed(1)} TWh`)
+  created.resetOutages.push('DEMO-ATOM-OUT-06')
+  const a1 = await vez.call('POST', '/api/partner/DEMO-ATOM/outages/DEMO-ATOM-OUT-06/approve')
+  ok(a1.status === 200 && a1.json.approvals.length === 1 && a1.json.status === 'jovahagyasra-var', 'leállás 1/2 jóváhagyás (ERPNext)')
+  ok((await vez.call('POST', '/api/partner/DEMO-ATOM/outages/DEMO-ATOM-OUT-06/approve')).status === 409, 'ugyanaz a jóváhagyó másodszor nem jó (négy szem)')
+  ok((await uzem.call('POST', '/api/partner/DEMO-ATOM/outages/DEMO-ATOM-OUT-06/approve')).status === 403, 'az üzemvezető nem hagyhat jóvá')
+  const a2 = await meg.call('POST', '/api/partner/DEMO-ATOM/outages/DEMO-ATOM-OUT-06/approve')
+  const eo = (await erp.list('Szikra Outage', { fields: ['status', 'approvals_json'], filters: [['szikra_id', '=', 'DEMO-ATOM-OUT-06']] }))[0]
+  ok(a2.status === 200 && eo.status === 'jovahagyva' && JSON.parse(eo.approvals_json).length === 2, 'a második, különböző jóváhagyó véglegesíti (ERPNext: jovahagyva, 2 jóváhagyás)')
+  const prop = await uzem.call('POST', '/api/partner/DEMO-ATOM/outages', { supplyPointId: 'DEMO-ATOM-T1', kind: 'rendkivuli', from: new Date(Date.now() + 5 * 86_400_000).toISOString().slice(0, 10), to: new Date(Date.now() + 6 * 86_400_000).toISOString().slice(0, 10), purpose: 'Füstteszt' })
+  if (prop.json?.id) created.outages.push(prop.json.id)
+  ok(prop.status === 200 && (await uzem.call('POST', `/api/partner/DEMO-ATOM/outages/${prop.json.id}/approve`)).status === 403, 'a javaslat rögzül, a javaslattevő jóváhagyni nem tud')
+  created.settlementMonths.push('2026-10')
+  ok((await vez.call('POST', '/api/partner/DEMO-ATOM/settlements/approve', { month: '2026-10' })).status === 200, 'az októberi elszámolás második jóváhagyása')
+  const set = await erp.list('Szikra Production', { fields: ['status'], filters: [['month', '=', '2026-10'], ['szikra_id', 'like', 'DEMO-ATOM-%']] })
+  ok(set.length === 4 && set.every((r: any) => r.status === 'jovahagyva'), 'a 4 blokk októberi elszámolása jóváhagyva az ERPNextben')
+  const aud = (await meg.call('GET', '/api/partner/DEMO-ATOM/audit')).json
+  ok(aud.length >= 9 && aud.some((e: any) => e.action.includes('leállás jóváhagyva')), `auditnapló: ${aud.length} bejegyzés, a jóváhagyások naplózva`)
+  ok((await uzem.call('GET', '/api/partner/DEMO-ATOM/audit')).status === 403, 'az üzemvezető nem látja a naplót')
+
   const ro = new Session()
   await ro.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
   ok((await ro.call('POST', '/api/partner/DEMO-ELMARADT/invoices/DEMO-ELMARADT-INV2/pay')).status === 403, 'olvasó szerepkör fizetése 403')
@@ -110,6 +138,21 @@ finally {
   for (const pe of created.payments) {
     await erp.update('Payment Entry', pe, { docstatus: 2 }).catch(e => console.log('cancel:', e.message))
   }
+  for (const id of created.resetOutages) {
+    const row = (await erp.list('Szikra Outage', { fields: ['name'], filters: [['szikra_id', '=', id]] }))[0]
+    if (row) await erp.update('Szikra Outage', row.name, { status: 'jovahagyasra-var', approvals_json: '[]' }).catch(e => console.log('leállás visszaállítás:', e.message))
+  }
+  for (const id of created.outages) {
+    const row = (await erp.list('Szikra Outage', { fields: ['name'], filters: [['szikra_id', '=', id]] }))[0]
+    if (row) await erp.request('DELETE', `/api/resource/Szikra%20Outage/${row.name}`).catch(e => console.log('leállás törlés:', e.message))
+  }
+  for (const m of created.settlementMonths) {
+    // az eredeti állapot: egy jóváhagyás (Szűcs Réka), tervezet
+    for (const r of await erp.list('Szikra Production', { fields: ['name', 'approvals_json'], filters: [['month', '=', m], ['szikra_id', 'like', 'DEMO-ATOM-%']] })) {
+      const first = JSON.parse(r.approvals_json || '[]').slice(0, 1)
+      await erp.update('Szikra Production', r.name, { status: 'tervezet', approvals_json: JSON.stringify(first) }).catch(e => console.log('elszámolás visszaállítás:', e.message))
+    }
+  }
   for (const d of created.confirmedDeals) {
     const row = (await erp.list('Szikra Deal', { fields: ['name'], filters: [['szikra_id', '=', d]] }))[0]
     if (row) await erp.update('Szikra Deal', row.name, { status: 'visszaigazolasra-var' }).catch(e => console.log('deal visszaállítás:', e.message))
@@ -122,7 +165,8 @@ finally {
     for (const cm of await erp.list('Comment', { filters: [['reference_name', '=', i]] })) await erp.request('DELETE', `/api/resource/Comment/${cm.name}`).catch(() => {})
     await erp.request('DELETE', `/api/resource/Issue/${encodeURIComponent(i)}`).catch(e => console.log('issue törlés:', e.message))
   }
-  for (const ev of await erp.list('Szikra Event', {})) await erp.request('DELETE', `/api/resource/Szikra%20Event/${ev.name}`).catch(() => {})
+  // csak a füstteszt alatt keletkezett események törlése (az előre betöltött auditnapló marad)
+  for (const ev of await erp.list('Szikra Event', { fields: ['name', 'at'], filters: [['at', '>=', startedAt]] })) await erp.request('DELETE', `/api/resource/Szikra%20Event/${ev.name}`).catch(() => {})
   const left = (await erp.list('Sales Invoice', { fields: ['szikra_id', 'outstanding_amount'], filters: [['szikra_id', '=', 'DEMO-ELMARADT-INV1']] }))[0]
   ok(left.outstanding_amount > 0, 'takarítás után a számla újra nyitott')
 }

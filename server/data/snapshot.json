@@ -22,6 +22,15 @@
       "contractNo": "SZ-DEMO-NAGYKER-07"
     },
     {
+      "id": "DEMO-ATOM",
+      "name": "Dunai Atomerőmű Zrt.",
+      "taxNumber": "10456789-2-17",
+      "address": "7030 Paks, Dunai út 4.",
+      "segment": "ipari",
+      "kind": "termelo",
+      "contractNo": "SZ-DEMO-ATOM-08"
+    },
+    {
       "id": "DEMO-ELMARADT",
       "name": "Késő Kereskedelmi Zrt.",
       "taxNumber": "23456789-2-09",
@@ -65,6 +74,36 @@
   ],
   "users": [
     {
+      "id": "DEMO-MEGFELELO",
+      "name": "Kovács Judit",
+      "email": "judit@demo.szikra.test",
+      "note": "Megfelelőségi felelős: auditnapló, leállások és elszámolások második jóváhagyója; mást nem módosíthat"
+    },
+    {
+      "id": "DEMO-ATOMVEZETO",
+      "name": "Dr. Horváth Péter",
+      "email": "peter.h@demo.szikra.test",
+      "note": "Atomerőmű vezérigazgató (admin): leállások és nagy összegű elszámolások jóváhagyása (négy szem: az egyik jóváhagyó)"
+    },
+    {
+      "id": "DEMO-ELSZAMOLAS",
+      "name": "Szűcs Réka",
+      "email": "reka@demo.szikra.test",
+      "note": "Elszámolás (pénzügy): a nagykereskedő számlái és limitje, és a napelempark átvételi elszámolása"
+    },
+    {
+      "id": "DEMO-ATOMUZEM",
+      "name": "Gál Tibor",
+      "email": "tibor@demo.szikra.test",
+      "note": "Atomerőmű üzemvezető (műszaki): leállás javaslata; jóváhagyni nem tud"
+    },
+    {
+      "id": "DEMO-VEZETO",
+      "name": "Dr. Balogh Katalin",
+      "email": "katalin@demo.szikra.test",
+      "note": "Cégcsoport-vezető: adminisztrátor a nagykereskedőnél, olvasó a láncnál és a napelemparknál"
+    },
+    {
       "id": "DEMO-ADMIN",
       "name": "Kovács Anna",
       "email": "anna@demo.szikra.test",
@@ -95,18 +134,6 @@
       "note": "Műszaki szerepkör: fogyasztási helyek, mérőállás, ajánlatkérés; számlát nem lát"
     },
     {
-      "id": "DEMO-VEZETO",
-      "name": "Dr. Balogh Katalin",
-      "email": "katalin@demo.szikra.test",
-      "note": "Cégcsoport-vezető: adminisztrátor a nagykereskedőnél, olvasó a láncnál és a napelemparknál"
-    },
-    {
-      "id": "DEMO-ELSZAMOLAS",
-      "name": "Szűcs Réka",
-      "email": "reka@demo.szikra.test",
-      "note": "Elszámolás (pénzügy): a nagykereskedő számlái és limitje, és a napelempark átvételi elszámolása"
-    },
-    {
       "id": "DEMO-UZEMVEZETO",
       "name": "Farkas Imre",
       "email": "imre@demo.szikra.test",
@@ -120,6 +147,31 @@
     }
   ],
   "memberships": [
+    {
+      "userId": "DEMO-MEGFELELO",
+      "partnerId": "DEMO-ATOM",
+      "role": "megfelelo"
+    },
+    {
+      "userId": "DEMO-ATOMVEZETO",
+      "partnerId": "DEMO-ATOM",
+      "role": "admin"
+    },
+    {
+      "userId": "DEMO-ELSZAMOLAS",
+      "partnerId": "DEMO-ATOM",
+      "role": "penzugy"
+    },
+    {
+      "userId": "DEMO-ATOMUZEM",
+      "partnerId": "DEMO-ATOM",
+      "role": "muszaki"
+    },
+    {
+      "userId": "DEMO-VEZETO",
+      "partnerId": "DEMO-ATOM",
+      "role": "olvaso"
+    },
     {
       "userId": "DEMO-ADMIN",
       "partnerId": "DEMO-OKOS",
@@ -202,6 +254,70 @@
     }
   ],
   "supplyPoints": [
+    {
+      "id": "DEMO-ATOM-T1",
+      "partnerId": "DEMO-ATOM",
+      "type": "villany",
+      "pod": "HU-DEMO-T--ATOM-1",
+      "address": "7030 Paks, Dunai út 4.",
+      "meterSerial": "T-7013",
+      "smart": true,
+      "lastReading": 23596130471,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Blokk 1 (500 MW)",
+      "tariff": "Hosszú távú PPA (fix ár)",
+      "capacityKw": 500000,
+      "direction": "termeles"
+    },
+    {
+      "id": "DEMO-ATOM-T2",
+      "partnerId": "DEMO-ATOM",
+      "type": "villany",
+      "pod": "HU-DEMO-T--ATOM-2",
+      "address": "7030 Paks, Dunai út 4.",
+      "meterSerial": "T-7026",
+      "smart": true,
+      "lastReading": 23076116686,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Blokk 2 (500 MW)",
+      "tariff": "Hosszú távú PPA (fix ár)",
+      "capacityKw": 500000,
+      "direction": "termeles"
+    },
+    {
+      "id": "DEMO-ATOM-T3",
+      "partnerId": "DEMO-ATOM",
+      "type": "villany",
+      "pod": "HU-DEMO-T--ATOM-3",
+      "address": "7030 Paks, Dunai út 4.",
+      "meterSerial": "T-7039",
+      "smart": true,
+      "lastReading": 23041498004,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Blokk 3 (500 MW)",
+      "tariff": "Hosszú távú PPA (fix ár)",
+      "capacityKw": 500000,
+      "direction": "termeles"
+    },
+    {
+      "id": "DEMO-ATOM-T4",
+      "partnerId": "DEMO-ATOM",
+      "type": "villany",
+      "pod": "HU-DEMO-T--ATOM-4",
+      "address": "7030 Paks, Dunai út 4.",
+      "meterSerial": "T-7052",
+      "smart": true,
+      "lastReading": 23802695248,
+      "lastReadingDate": "2026-10-31",
+      "unit": "kWh",
+      "label": "Blokk 4 (500 MW)",
+      "tariff": "Hosszú távú PPA (fix ár)",
+      "capacityKw": 500000,
+      "direction": "termeles"
+    },
     {
       "id": "DEMO-ELMARADT-E1",
       "partnerId": "DEMO-ELMARADT",
@@ -489,6 +605,26 @@
   ],
   "readings": [
     {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2025-10-31",
+      "value": 19737916471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2025-10-31",
+      "value": 19287645686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2025-10-31",
+      "value": 19238460004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2025-10-31",
+      "value": 19727645248
+    },
+    {
       "supplyPointId": "DEMO-LANC-E1",
       "date": "2025-10-31",
       "value": 3098044
@@ -557,6 +693,26 @@
       "supplyPointId": "DEMO-NAPELEM-T2",
       "date": "2025-10-31",
       "value": 8300584
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2025-11-30",
+      "value": 20095375471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2025-11-30",
+      "value": 19644779686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2025-11-30",
+      "value": 20085630248
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2025-11-30",
+      "value": 19594896004
     },
     {
       "supplyPointId": "DEMO-LANC-E1",
@@ -629,6 +785,26 @@
       "value": 8638284
     },
     {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2025-12-31",
+      "value": 20465449471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2025-12-31",
+      "value": 20011669686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2025-12-31",
+      "value": 19964894004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2025-12-31",
+      "value": 20455998248
+    },
+    {
       "supplyPointId": "DEMO-LANC-E1",
       "date": "2025-12-31",
       "value": 3278444
@@ -697,6 +873,26 @@
       "supplyPointId": "DEMO-NAPELEM-T2",
       "date": "2025-12-31",
       "value": 8876984
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-01-31",
+      "value": 20834694471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-01-31",
+      "value": 20379598686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-01-31",
+      "value": 20332871004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-01-31",
+      "value": 20822945248
     },
     {
       "supplyPointId": "DEMO-LANC-E1",
@@ -769,6 +965,26 @@
       "value": 9195384
     },
     {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-02-28",
+      "value": 21166431471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-02-28",
+      "value": 20712469686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-02-28",
+      "value": 20665075004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-02-28",
+      "value": 21156712248
+    },
+    {
       "supplyPointId": "DEMO-LANC-E1",
       "date": "2026-02-28",
       "value": 3483944
@@ -837,6 +1053,26 @@
       "supplyPointId": "DEMO-NAPELEM-T2",
       "date": "2026-02-28",
       "value": 9691284
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-03-31",
+      "value": 21320816471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-03-31",
+      "value": 21082435686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-03-31",
+      "value": 21032801004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-03-31",
+      "value": 21525299248
     },
     {
       "supplyPointId": "DEMO-LANC-E1",
@@ -909,6 +1145,26 @@
       "value": 10499484
     },
     {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-04-30",
+      "value": 21438861686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-04-30",
+      "value": 21415984471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-04-30",
+      "value": 21389234004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-04-30",
+      "value": 21881625248
+    },
+    {
       "supplyPointId": "DEMO-LANC-E1",
       "date": "2026-04-30",
       "value": 3687044
@@ -977,6 +1233,26 @@
       "supplyPointId": "DEMO-NAPELEM-T2",
       "date": "2026-04-30",
       "value": 11518384
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-05-31",
+      "value": 21534084686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-05-31",
+      "value": 21783715471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-05-31",
+      "value": 21756061004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-05-31",
+      "value": 22250110248
     },
     {
       "supplyPointId": "DEMO-LANC-G1",
@@ -1049,6 +1325,26 @@
       "value": 12651284
     },
     {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-06-30",
+      "value": 21616954686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-06-30",
+      "value": 22141558471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-06-30",
+      "value": 22112640004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-06-30",
+      "value": 22605694248
+    },
+    {
       "supplyPointId": "DEMO-LANC-G1",
       "date": "2026-06-30",
       "value": 467003
@@ -1117,6 +1413,26 @@
       "supplyPointId": "DEMO-NAPELEM-T2",
       "date": "2026-06-30",
       "value": 13958184
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-07-31",
+      "value": 21983303686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-07-31",
+      "value": 22508057471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-07-31",
+      "value": 22482792004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-07-31",
+      "value": 22972223248
     },
     {
       "supplyPointId": "DEMO-LANC-E1",
@@ -1189,6 +1505,26 @@
       "value": 15247584
     },
     {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-08-31",
+      "value": 22874213471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-08-31",
+      "value": 22649807004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-08-31",
+      "value": 22352094686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-08-31",
+      "value": 23339655248
+    },
+    {
       "supplyPointId": "DEMO-LANC-E1",
       "date": "2026-08-31",
       "value": 4049144
@@ -1259,6 +1595,26 @@
       "value": 16459084
     },
     {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-09-30",
+      "value": 23228756471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-09-30",
+      "value": 22673594004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-09-30",
+      "value": 22707373686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-09-30",
+      "value": 23696028248
+    },
+    {
       "supplyPointId": "DEMO-LANC-E1",
       "date": "2026-09-30",
       "value": 4153644
@@ -1327,6 +1683,26 @@
       "supplyPointId": "DEMO-NAPELEM-T1",
       "date": "2026-09-30",
       "value": 22369462
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T1",
+      "date": "2026-10-31",
+      "value": 23596130471
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T3",
+      "date": "2026-10-31",
+      "value": 23041498004
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T2",
+      "date": "2026-10-31",
+      "value": 23076116686
+    },
+    {
+      "supplyPointId": "DEMO-ATOM-T4",
+      "date": "2026-10-31",
+      "value": 23802695248
     },
     {
       "supplyPointId": "DEMO-LANC-E1",
@@ -1401,6 +1777,102 @@
   ],
   "production": [
     {
+      "id": "DEMO-ATOM-T1-202511",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2025-11",
+      "mwh": 357459,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47899506,
+      "settlementHuf": 11926976994,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2025-12-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2025-12-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202511",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2025-11",
+      "mwh": 357134,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47855956,
+      "settlementHuf": 11916133044,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2025-12-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2025-12-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202511",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2025-11",
+      "mwh": 356436,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47762424,
+      "settlementHuf": 11892843576,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2025-12-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2025-12-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202511",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2025-11",
+      "mwh": 357985,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47969990,
+      "settlementHuf": 11944527510,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2025-12-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2025-12-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "DEMO-NAPELEM-T1-202511",
       "partnerId": "DEMO-NAPELEM",
       "supplyPointId": "DEMO-NAPELEM-T1",
@@ -1423,6 +1895,102 @@
       "imbalanceHuf": 341921,
       "settlementHuf": 14854579,
       "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-ATOM-T1-202512",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2025-12",
+      "mwh": 370074,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49589916,
+      "settlementHuf": 12347889084,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-01-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-01-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202512",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2025-12",
+      "mwh": 366890,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49163260,
+      "settlementHuf": 12241651740,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-01-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-01-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202512",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2025-12",
+      "mwh": 369998,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49579732,
+      "settlementHuf": 12345353268,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-01-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-01-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202512",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2025-12",
+      "mwh": 370368,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49629312,
+      "settlementHuf": 12357698688,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-01-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-01-07T09:30:00.000Z"
+        }
+      ]
     },
     {
       "id": "DEMO-NAPELEM-T1-202512",
@@ -1449,6 +2017,102 @@
       "status": "kifizetve"
     },
     {
+      "id": "DEMO-ATOM-T1-202601",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-01",
+      "mwh": 369245,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49478830,
+      "settlementHuf": 12320228670,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-02-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-02-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202601",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-01",
+      "mwh": 367929,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49302486,
+      "settlementHuf": 12276319014,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-02-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-02-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202601",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-01",
+      "mwh": 367977,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49308918,
+      "settlementHuf": 12277920582,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-02-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-02-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202601",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-01",
+      "mwh": 366947,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49170898,
+      "settlementHuf": 12243553602,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-02-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-02-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "DEMO-NAPELEM-T1-202601",
       "partnerId": "DEMO-NAPELEM",
       "supplyPointId": "DEMO-NAPELEM-T1",
@@ -1471,6 +2135,102 @@
       "imbalanceHuf": 329544,
       "settlementHuf": 14285016,
       "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-ATOM-T1-202602",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-02",
+      "mwh": 331737,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 44452758,
+      "settlementHuf": 11068736742,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-03-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-03-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202602",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-02",
+      "mwh": 332871,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 44604714,
+      "settlementHuf": 11106573786,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-03-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-03-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202602",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-02",
+      "mwh": 332204,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 44515336,
+      "settlementHuf": 11084318664,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-03-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-03-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202602",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-02",
+      "mwh": 333767,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 44724778,
+      "settlementHuf": 11136469722,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-03-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-03-07T09:30:00.000Z"
+        }
+      ]
     },
     {
       "id": "DEMO-NAPELEM-T1-202602",
@@ -1497,6 +2257,102 @@
       "status": "kifizetve"
     },
     {
+      "id": "DEMO-ATOM-T1-202603",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-03",
+      "mwh": 154385,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 20687590,
+      "settlementHuf": 5151209910,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-04-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-04-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202603",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-03",
+      "mwh": 369966,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49575444,
+      "settlementHuf": 12344285556,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-04-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-04-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202603",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-03",
+      "mwh": 367726,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49275284,
+      "settlementHuf": 12269545716,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-04-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-04-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202603",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-03",
+      "mwh": 368587,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49390658,
+      "settlementHuf": 12298273842,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-04-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-04-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "DEMO-NAPELEM-T1-202603",
       "partnerId": "DEMO-NAPELEM",
       "supplyPointId": "DEMO-NAPELEM-T1",
@@ -1519,6 +2375,102 @@
       "imbalanceHuf": 691011,
       "settlementHuf": 30586329,
       "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-ATOM-T1-202604",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-04",
+      "mwh": 95168,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 12752512,
+      "settlementHuf": 3175375488,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-05-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-05-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202604",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-04",
+      "mwh": 356426,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47761084,
+      "settlementHuf": 11892509916,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-05-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-05-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202604",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-04",
+      "mwh": 356433,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47762022,
+      "settlementHuf": 11892743478,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-05-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-05-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202604",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-04",
+      "mwh": 356326,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47747684,
+      "settlementHuf": 11889173316,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-05-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-05-07T09:30:00.000Z"
+        }
+      ]
     },
     {
       "id": "DEMO-NAPELEM-T1-202604",
@@ -1545,6 +2497,102 @@
       "status": "kifizetve"
     },
     {
+      "id": "DEMO-ATOM-T1-202605",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-05",
+      "mwh": 367731,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49275954,
+      "settlementHuf": 12269712546,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-06-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-06-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202605",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-05",
+      "mwh": 95223,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 12759882,
+      "settlementHuf": 3177210618,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-06-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-06-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202605",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-05",
+      "mwh": 366827,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49154818,
+      "settlementHuf": 12239549682,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-06-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-06-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202605",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-05",
+      "mwh": 368485,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49376990,
+      "settlementHuf": 12294870510,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-06-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-06-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "DEMO-NAPELEM-T1-202605",
       "partnerId": "DEMO-NAPELEM",
       "supplyPointId": "DEMO-NAPELEM-T1",
@@ -1567,6 +2615,102 @@
       "imbalanceHuf": 662747,
       "settlementHuf": 30945163,
       "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-ATOM-T1-202606",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-06",
+      "mwh": 357843,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47950962,
+      "settlementHuf": 11939789538,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-07-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-07-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202606",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-06",
+      "mwh": 82870,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 11104580,
+      "settlementHuf": 2765040420,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-07-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-07-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202606",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-06",
+      "mwh": 356579,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47781586,
+      "settlementHuf": 11897614914,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-07-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-07-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202606",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-06",
+      "mwh": 355584,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47648256,
+      "settlementHuf": 11864415744,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-07-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-07-07T09:30:00.000Z"
+        }
+      ]
     },
     {
       "id": "DEMO-NAPELEM-T1-202606",
@@ -1593,6 +2737,102 @@
       "status": "kifizetve"
     },
     {
+      "id": "DEMO-ATOM-T1-202607",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-07",
+      "mwh": 366499,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49110866,
+      "settlementHuf": 12228605634,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-08-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-08-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202607",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-07",
+      "mwh": 366349,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49090766,
+      "settlementHuf": 12223600734,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-08-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-08-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202607",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-07",
+      "mwh": 370152,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49600368,
+      "settlementHuf": 12350491632,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-08-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-08-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202607",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-07",
+      "mwh": 366529,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49114886,
+      "settlementHuf": 12229606614,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-08-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-08-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "DEMO-NAPELEM-T1-202607",
       "partnerId": "DEMO-NAPELEM",
       "supplyPointId": "DEMO-NAPELEM-T1",
@@ -1615,6 +2855,102 @@
       "imbalanceHuf": 905159,
       "settlementHuf": 41103493,
       "status": "kifizetve"
+    },
+    {
+      "id": "DEMO-ATOM-T1-202608",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-08",
+      "mwh": 366156,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49064904,
+      "settlementHuf": 12217161096,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-09-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-09-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202608",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-08",
+      "mwh": 368791,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49417994,
+      "settlementHuf": 12305080506,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-09-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-09-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202608",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-08",
+      "mwh": 167015,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 22380010,
+      "settlementHuf": 5572622490,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-09-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-09-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202608",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-08",
+      "mwh": 367432,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49235888,
+      "settlementHuf": 12259736112,
+      "status": "kifizetve",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-09-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-09-07T09:30:00.000Z"
+        }
+      ]
     },
     {
       "id": "DEMO-NAPELEM-T1-202608",
@@ -1641,6 +2977,102 @@
       "status": "kifizetve"
     },
     {
+      "id": "DEMO-ATOM-T1-202609",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-09",
+      "mwh": 354543,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47508762,
+      "settlementHuf": 11829681738,
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-10-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-10-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202609",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-09",
+      "mwh": 355279,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47607386,
+      "settlementHuf": 11854239114,
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-10-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-10-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202609",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-09",
+      "mwh": 23787,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 3187458,
+      "settlementHuf": 793677042,
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-10-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-10-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202609",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-09",
+      "mwh": 356373,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 47753982,
+      "settlementHuf": 11890741518,
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-10-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-10-07T09:30:00.000Z"
+        }
+      ]
+    },
+    {
       "id": "DEMO-NAPELEM-T1-202609",
       "partnerId": "DEMO-NAPELEM",
       "supplyPointId": "DEMO-NAPELEM-T1",
@@ -1663,6 +3095,82 @@
       "imbalanceHuf": 650894,
       "settlementHuf": 29337682,
       "status": "jovahagyva"
+    },
+    {
+      "id": "DEMO-ATOM-T1-202610",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "month": "2026-10",
+      "mwh": 367374,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49228116,
+      "settlementHuf": 12257800884,
+      "status": "tervezet",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-11-06T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T2-202610",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "month": "2026-10",
+      "mwh": 368743,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49411562,
+      "settlementHuf": 12303478938,
+      "status": "tervezet",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-11-06T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T3-202610",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "month": "2026-10",
+      "mwh": 367904,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 49299136,
+      "settlementHuf": 12275484864,
+      "status": "tervezet",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-11-06T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-T4-202610",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "month": "2026-10",
+      "mwh": 106667,
+      "priceHufPerMwh": 33500,
+      "premiumHuf": 0,
+      "imbalanceHuf": 14293378,
+      "settlementHuf": 3559051122,
+      "status": "tervezet",
+      "approvals": [
+        {
+          "userId": "DEMO-ELSZAMOLAS",
+          "name": "Szűcs Réka",
+          "at": "2026-11-06T09:30:00.000Z"
+        }
+      ]
     },
     {
       "id": "DEMO-NAPELEM-T1-202610",
@@ -2243,6 +3751,245 @@
       ],
       "status": "elfogadva",
       "submittedBy": "Varga Dávid"
+    }
+  ],
+  "outages": [
+    {
+      "id": "DEMO-ATOM-OUT-01",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "kind": "tervezett",
+      "from": "2026-03-14",
+      "to": "2026-04-22",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2025-12-11T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-MEGFELELO",
+          "name": "Kovács Judit",
+          "at": "2025-12-12T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-OUT-02",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "kind": "tervezett",
+      "from": "2026-05-09",
+      "to": "2026-06-23",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-01-13T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-MEGFELELO",
+          "name": "Kovács Judit",
+          "at": "2026-01-14T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-OUT-03",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "kind": "tervezett",
+      "from": "2026-08-15",
+      "to": "2026-09-28",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-03-17T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-MEGFELELO",
+          "name": "Kovács Judit",
+          "at": "2026-03-18T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-OUT-04",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T4",
+      "kind": "tervezett",
+      "from": "2026-10-10",
+      "to": "2026-11-20",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-MEGFELELO",
+          "name": "Kovács Judit",
+          "at": "2026-05-19T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-05-20T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-OUT-08",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "kind": "rendkivuli",
+      "from": "2026-12-02",
+      "to": "2026-12-04",
+      "purpose": "Hűtővíz-szivattyú javítása",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyasra-var",
+      "approvals": []
+    },
+    {
+      "id": "DEMO-ATOM-OUT-05",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T1",
+      "kind": "tervezett",
+      "from": "2027-03-20",
+      "to": "2027-04-28",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyasra-var",
+      "approvals": [
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-11-17T09:30:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "DEMO-ATOM-OUT-06",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T2",
+      "kind": "tervezett",
+      "from": "2027-05-15",
+      "to": "2027-06-30",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyasra-var",
+      "approvals": []
+    },
+    {
+      "id": "DEMO-ATOM-OUT-07",
+      "partnerId": "DEMO-ATOM",
+      "supplyPointId": "DEMO-ATOM-T3",
+      "kind": "tervezett",
+      "from": "2027-08-10",
+      "to": "2027-09-25",
+      "purpose": "Üzemanyagcsere és időszakos karbantartás",
+      "proposedBy": {
+        "userId": "DEMO-ATOMUZEM",
+        "name": "Gál Tibor"
+      },
+      "status": "jovahagyva",
+      "approvals": [
+        {
+          "userId": "DEMO-ATOMVEZETO",
+          "name": "Dr. Horváth Péter",
+          "at": "2026-10-06T09:30:00.000Z"
+        },
+        {
+          "userId": "DEMO-MEGFELELO",
+          "name": "Kovács Judit",
+          "at": "2026-10-07T09:30:00.000Z"
+        }
+      ]
+    }
+  ],
+  "audit": [
+    {
+      "at": "2026-11-15T07:58:00.000Z",
+      "userId": "DEMO-ATOMUZEM",
+      "partnerId": "DEMO-ATOM",
+      "action": "belépés"
+    },
+    {
+      "at": "2026-11-16T08:12:00.000Z",
+      "userId": "DEMO-ELSZAMOLAS",
+      "partnerId": "DEMO-ATOM",
+      "action": "átvételi elszámolás jóváhagyva (1/2): 2026-09"
+    },
+    {
+      "at": "2026-11-17T09:03:00.000Z",
+      "userId": "DEMO-ATOMVEZETO",
+      "partnerId": "DEMO-ATOM",
+      "action": "átvételi elszámolás jóváhagyva (2/2): 2026-09"
+    },
+    {
+      "at": "2026-11-17T13:40:00.000Z",
+      "userId": "DEMO-ATOMUZEM",
+      "partnerId": "DEMO-ATOM",
+      "action": "leállás javasolva: DEMO-ATOM-OUT-05"
+    },
+    {
+      "at": "2026-11-18T10:22:00.000Z",
+      "userId": "DEMO-ATOMVEZETO",
+      "partnerId": "DEMO-ATOM",
+      "action": "leállás jóváhagyva (1/2): DEMO-ATOM-OUT-05"
+    },
+    {
+      "at": "2026-11-19T08:47:00.000Z",
+      "userId": "DEMO-ELSZAMOLAS",
+      "partnerId": "DEMO-ATOM",
+      "action": "átvételi elszámolás jóváhagyva (1/2): 2026-10"
+    },
+    {
+      "at": "2026-11-20T11:05:00.000Z",
+      "userId": "DEMO-ATOMUZEM",
+      "partnerId": "DEMO-ATOM",
+      "action": "leállás javasolva: DEMO-ATOM-OUT-06"
+    },
+    {
+      "at": "2026-11-21T14:31:00.000Z",
+      "userId": "DEMO-ATOMUZEM",
+      "partnerId": "DEMO-ATOM",
+      "action": "leállás javasolva: DEMO-ATOM-OUT-08"
+    },
+    {
+      "at": "2026-11-21T15:02:00.000Z",
+      "userId": "DEMO-MEGFELELO",
+      "partnerId": "DEMO-ATOM",
+      "action": "belépés"
     }
   ],
   "invoices": [

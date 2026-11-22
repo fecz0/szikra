@@ -5,6 +5,8 @@ interface Overview {
   openCases: number
   invoices: { open: number, overdue: number, outstandingHuf: number } | null
   supply: { count: number, lastReadingDate: string | null } | null
+  approvals: { settlementMonthsAwaiting: number } | null
+  outages: { pendingApproval: number, next: { from: string, to: string, supplyPointId: string } | null } | null
   trading: { pendingDeals: number | null, disputedDeals: number | null, credit: { usedPct: number, limitHuf: number, usedHuf: number, guaranteeDaysLeft: number | null } | null, tomorrowSubmitted: boolean | null } | null
   production: { month: string | null, mwh: number, settlementHuf: number, openSettlements: number } | null
   notifications: { id: string, at: string, text: string }[]
@@ -21,6 +23,17 @@ const huf = (n: number) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft'
         <strong data-testid="outstanding">{{ huf(o.invoices.outstandingHuf) }}</strong>
         <p>{{ o.invoices.open }} nyitott, {{ o.invoices.overdue }} lejárt</p>
         <NuxtLink :to="`/partner/${pid}/szamlak`">Számlák megtekintése</NuxtLink>
+      </div>
+      <div v-if="o.outages" class="tile" data-testid="tile-outages">
+        <h3>Leállások</h3>
+        <strong data-testid="pending-outages">{{ o.outages.pendingApproval }}</strong>
+        <p>jóváhagyásra vár<span v-if="o.outages.next"> · következő: {{ o.outages.next.from }} – {{ o.outages.next.to }}</span></p>
+        <NuxtLink :to="`/partner/${pid}/leallasok`">Leállási terv</NuxtLink>
+      </div>
+      <div v-if="o.approvals && o.approvals.settlementMonthsAwaiting" class="tile" data-testid="tile-settlement-approval">
+        <h3>Elszámolás jóváhagyásra vár</h3>
+        <strong data-testid="settlement-months">{{ o.approvals.settlementMonthsAwaiting }} hónap</strong>
+        <NuxtLink :to="`/partner/${pid}/termeles`">Termelés és elszámolás</NuxtLink>
       </div>
       <div v-if="o.trading?.credit" class="tile" data-testid="tile-credit">
         <h3>Hitelkeret-kihasználtság</h3>

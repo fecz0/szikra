@@ -1,10 +1,11 @@
 import type { Backend } from '../../domain/backend-types'
 import { PaymentDeclined } from '../../domain/backend-types'
 import { caseTypes } from '../../domain/case-types'
+import { REQUIRED_APPROVALS, approvalMessage, checkApproval, needsFourEyes } from '../../domain/approvals'
 import type { AuditEntry, CaseTypeId, Invoice, PortalUser } from '../../domain/types'
 import { payInvoiceInErp } from '../erp/actions'
 import { ErpClient } from '../erp/client'
-import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapDeal, mapInvoice, mapInvoiceLines, mapPartner, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from '../erp/mappers'
+import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, OUTAGE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapDeal, mapInvoice, mapOutage, parseApprovals, mapInvoiceLines, mapPartner, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from '../erp/mappers'
 
 const utc = (d = new Date()) => d.toISOString().replace('T', ' ').slice(0, 19)
 const fromUtc = (s: string) => new Date(String(s).replace(' ', 'T') + 'Z').toISOString()
@@ -129,6 +130,53 @@ export class ErpNextBackend implements Backend {
     else await this.c.create('Szikra Schedule', { szikra_id: id, customer, date: day.date, commodity: day.commodity, ...body })
     await this.note(partnerId, `Menetrend benyújtva: ${day.commodity === 'villany' ? 'villany' : 'gáz'}, ${day.date} (${day.by})`)
     return { id, partnerId, date: day.date, commodity: day.commodity, values: day.values, status: 'benyujtva' as const, submittedBy: day.by }
+  }
+
+  async listOutages(partnerId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Szikra Outage', { fields: OUTAGE_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]], orderBy: 'date_from asc' })
+    return rows.map(r => mapOutage(r, cust.byName))
+  }
+
+  async proposeOutage(partnerId: string, input: { supplyPointId: string, kind: 'tervezett' | 'rendkivuli', from: string, to: string, purpose: string, by: { userId: string, name: string } }) {
+    const customer = await this.erpName(partnerId)
+    const n = (await this.c.list('Szikra Outage', { fields: ['name'], filters: [['customer', '=', customer]] })).length + 1
+    const id = `${partnerId}-OUT-${String(n).padStart(2, '0')}`
+    await this.c.create('Szikra Outage', { szikra_id: id, customer, supply_point: input.supplyPointId, kind: input.kind, date_from: input.from, date_to: input.to, purpose: input.purpose, proposed_by_id: input.by.userId, proposed_by_name: input.by.name, status: 'jovahagyasra-var', approvals_json: '[]' })
+    await this.note(partnerId, `Új leállás-javaslat: ${input.from} – ${input.to} (${input.by.name})`)
+    return { id, partnerId, supplyPointId: input.supplyPointId, kind: input.kind, from: input.from, to: input.to, purpose: input.purpose, proposedBy: input.by, status: 'jovahagyasra-var' as const, approvals: [] }
+  }
+
+  async approveOutage(partnerId: string, outageId: string, by: { userId: string, name: string }) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Szikra Outage', { fields: ['name', ...OUTAGE_FIELDS], filters: [['customer', '=', await this.erpName(partnerId)], ['szikra_id', '=', outageId]] })
+    if (!rows.length) throw createError({ statusCode: 404, message: 'A leállás nem található' })
+    const o = mapOutage(rows[0], cust.byName)
+    if (o.status === 'jovahagyva') throw createError({ statusCode: 409, message: 'A leállás már jóvá van hagyva' })
+    const check = checkApproval(o.approvals, by.userId, o.proposedBy.userId)
+    if (check !== 'ok') throw createError({ statusCode: 409, message: approvalMessage[check] })
+    o.approvals.push({ ...by, at: new Date().toISOString() })
+    if (o.approvals.length >= REQUIRED_APPROVALS) o.status = 'jovahagyva'
+    await this.c.update('Szikra Outage', rows[0].name, { approvals_json: JSON.stringify(o.approvals), status: o.status })
+    await this.note(partnerId, `Leállás jóváhagyva (${o.approvals.length}/${REQUIRED_APPROVALS}): ${o.from} – ${o.to}`)
+    return o
+  }
+
+  async approveSettlements(partnerId: string, month: string, by: { userId: string, name: string }) {
+    const rows = await this.c.list('Szikra Production', { fields: ['name', 'settlement_huf', 'status', 'approvals_json'], filters: [['customer', '=', await this.erpName(partnerId)], ['month', '=', month], ['status', '=', 'tervezet']] })
+    const recs = rows.filter(r => needsFourEyes(Math.round(Number(r.settlement_huf))))
+    if (!recs.length) throw createError({ statusCode: 404, message: 'Nincs jóváhagyásra váró elszámolás ebben a hónapban' })
+    let done = 0
+    for (const r of recs) {
+      const approvals = parseApprovals(r.approvals_json)
+      if (checkApproval(approvals, by.userId) !== 'ok') continue
+      approvals.push({ ...by, at: new Date().toISOString() })
+      await this.c.update('Szikra Production', r.name, { approvals_json: JSON.stringify(approvals), status: approvals.length >= REQUIRED_APPROVALS ? 'jovahagyva' : 'tervezet' })
+      done++
+    }
+    if (!done) throw createError({ statusCode: 409, message: approvalMessage['mar-jovahagyta'] })
+    await this.note(partnerId, `Átvételi elszámolás jóváhagyva: ${month} (${by.name})`)
+    return done
   }
 
   async listCases(partnerId: string) {
