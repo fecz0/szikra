@@ -4,7 +4,7 @@ import { caseTypes } from '../../domain/case-types'
 import type { AuditEntry, CaseTypeId, Invoice, PortalUser } from '../../domain/types'
 import { payInvoiceInErp } from '../erp/actions'
 import { ErpClient } from '../erp/client'
-import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, ISSUE_FIELDS, PRODUCTION_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapInvoice, mapPartner, mapProduction, mapReading, mapSupplyPoint } from '../erp/mappers'
+import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, ISSUE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapInvoice, mapInvoiceLines, mapPartner, mapProduction, mapReading, mapSupplyPoint } from '../erp/mappers'
 
 const utc = (d = new Date()) => d.toISOString().replace('T', ' ').slice(0, 19)
 const fromUtc = (s: string) => new Date(String(s).replace(' ', 'T') + 'Z').toISOString()
@@ -60,6 +60,15 @@ export class ErpNextBackend implements Backend {
 
   async listInvoices(partnerId: string) {
     return (await this.invoicesFor(partnerId)).invoices
+  }
+
+  async getInvoice(partnerId: string, invoiceId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Sales Invoice', { fields: INVOICE_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)], ['szikra_id', '=', invoiceId], ['docstatus', '=', 1]] })
+    if (!rows.length) return null
+    const items = await this.c.listChild('Sales Invoice Item', 'Sales Invoice', { fields: ITEM_FIELDS, filters: [['parent', '=', rows[0].name]] })
+    const lines = mapInvoiceLines(items)
+    return { ...mapInvoice(rows[0], cust.byName), ...(lines ? { lines } : {}) }
   }
 
   async payInvoice(partnerId: string, invoiceId: string, by: string) {

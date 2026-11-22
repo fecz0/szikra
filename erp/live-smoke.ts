@@ -60,6 +60,9 @@ try {
   await chain.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
   const lanc = (await chain.call('GET', '/api/partner/DEMO-LANC/invoices')).json
   ok(lanc.length === 144 && lanc.some((i: any) => i.siteLabel === 'Miskolc áruház' && i.status === 'overdue'), 'a lánc 144 számlája telephely-névvel, egy lejárttal jön az ERPNextből')
+  const det = (await chain.call('GET', '/api/partner/DEMO-LANC/invoices/DEMO-LANC-INV-E1-202610')).json
+  const net = det.invoice.lines.reduce((a: number, l: any) => a + l.amountHuf, 0)
+  ok(det.invoice.lines.length === 7 && det.totals.net === net && net + det.totals.vat === det.invoice.amountHuf && det.supplyPoint.networkCategory === 'KIF III.', `számlakép az ERPNextből: ${det.invoice.lines.length} tétel, nettó ${net}, ÁFA ${det.totals.vat}, bruttó ${det.invoice.amountHuf}`)
   const rd = (await chain.call('GET', '/api/partner/DEMO-LANC/readings')).json
   ok(rd.length === 12 * 13, `mérőállás-idősor: ${rd.length}`)
   const prodDenied = await chain.call('GET', '/api/partner/DEMO-NAPELEM/production')

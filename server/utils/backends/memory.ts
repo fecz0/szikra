@@ -75,6 +75,10 @@ export class MemoryBackend implements Backend {
     return this.ds.invoices.filter(i => i.partnerId === partnerId)
   }
 
+  async getInvoice(partnerId: string, invoiceId: string) {
+    return this.ds.invoices.find(i => i.id === invoiceId && i.partnerId === partnerId) ?? null
+  }
+
   async payInvoice(partnerId: string, invoiceId: string, by: string) {
     const inv = this.ds.invoices.find(i => i.id === invoiceId && i.partnerId === partnerId)
     if (!inv) throw createError({ statusCode: 404, message: 'A számla nem található' })

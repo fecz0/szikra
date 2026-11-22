@@ -47,6 +47,9 @@ export interface SupplyPoint {
   /** Termelő esetén a névleges teljesítmény */
   capacityKw?: number
   direction?: 'fogyasztas' | 'termeles'
+  /** szerződött teljesítmény (kW villany) és hálózati kategória (pl. „KIF III.”) */
+  contractedKw?: number
+  networkCategory?: string
 }
 
 /** Mérőállás-idősor egy pontja (kumulált állás a leolvasás napján). */
@@ -74,6 +77,29 @@ export interface ProductionRecord {
   status: 'tervezet' | 'jovahagyva' | 'kifizetve'
 }
 
+/** A számla egy tétele (számlakép): energia, rendszerhasználati díj, pénzeszköz/adó. Nettó összeg. */
+export interface InvoiceLine {
+  code: string
+  label: string
+  category: 'energia' | 'rendszerhasznalat' | 'penzeszkoz-ado'
+  quantity: number
+  unit: string
+  unitPrice: number
+  amountHuf: number
+}
+
+/** Mérőadatok az elszámolási időszakra. */
+export interface InvoiceUsage {
+  periodFrom: string
+  periodTo: string
+  prevReading: number
+  currReading: number
+  total: number
+  unit: 'kWh' | 'm3'
+  /** villany: zónánkénti fogyasztás (nappali 6–17, csúcs 17–22, völgy 22–6) */
+  zones?: { nappali: number, csucs: number, volgy: number }
+}
+
 export interface Invoice {
   id: string
   partnerId: string
@@ -83,6 +109,9 @@ export interface Invoice {
   issueDate: string
   dueDate: string
   status: 'open' | 'paid' | 'overdue'
+  /** tételes számlakép (nettó tételek); az amountHuf a bruttó végösszeg */
+  lines?: InvoiceLine[]
+  usage?: InvoiceUsage
 }
 
 /** Ügytípusok (UC-xx): a közös keretrendszer konfigurációja a `case-types.ts`-ben. */

@@ -1,3 +1,5 @@
+import { electricityLines, gasLines, totals } from './tariffs.ts'
+import type { NetworkCategory, Zones } from './tariffs.ts'
 import type { Invoice, Partner, ProductionRecord, Reading, SupplyPoint } from './types.ts'
 
 /**
@@ -42,9 +44,6 @@ const CHAIN_SITES: Site[] = [
   { label: 'Székesfehérvár áruház', city: 'Székesfehérvár', address: '8000 Székesfehérvár, Fő u. 15.', elecMwh: 72, tariff: 'Ipari fix 2026' },
   { label: 'Kecskemét áruház', city: 'Kecskemét', address: '6000 Kecskemét, Kossuth tér 2.', elecMwh: 58, tariff: 'Piaci követő' },
 ]
-/** Ft/kWh villany, tarifa szerint (valós nagyságrend: nem-lakossági, rendszerhasználati díjakkal) */
-const ELEC_PRICE: Record<string, number> = { 'Ipari fix 2026': 61, 'Piaci követő': 58, 'Kereskedelmi csúcs-völgy': 64 }
-const GAS_PRICE_PER_M3 = 335
 
 export interface Bundle {
   partner: Partner
@@ -54,7 +53,7 @@ export interface Bundle {
   production: ProductionRecord[]
 }
 
-/** Kereskedelmi lánc: több telephely, villany + (egy részén) gáz, 12 havi számla. */
+/** Kereskedelmi lánc: több telephely, villany + (egy részén) gáz, 12 havi tételes számla (valós díjszerkezet, lásd tariffs.ts). */
 export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.length): Bundle {
   const r = rng(id)
   const partner: Partner = { id, name, taxNumber: '25678123-2-13', address: '4025 Debrecen, Piac utca 12.', segment: 'kereskedelmi', contractNo: `SZ-${id}-05` }
@@ -65,24 +64,51 @@ export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.len
     for (const type of kinds) {
       const spId = `${id}-${type === 'villany' ? 'E' : 'G'}${si + 1}`
       const unit = type === 'villany' ? 'kWh' as const : 'm3' as const
+      // a nagyobb telephelyek KIF III. (idősoros, lekötött teljesítménnyel), a kisebbek KIF IV. (okos mérős)
+      const category: NetworkCategory = s.elecMwh >= 80 ? 'KIF III.' : 'KIF IV.'
+      const contractedKw = Math.round(s.elecMwh * 1000 / 730 * 2.2 / 10) * 10
+      const contractedKwhH = Math.round(s.elecMwh * 0.9)
       let cum = type === 'villany' ? 3_000_000 + Math.floor(r() * 900_000) : 400_000 + Math.floor(r() * 120_000)
       let last = cum; let lastDate = ''
       readings.push({ supplyPointId: spId, date: '2025-10-31', value: cum })
       for (const ym of MONTHS) {
         const noise = 0.94 + r() * 0.12
         const use = type === 'villany'
-          ? round(s.elecMwh * 1000 * ELEC_SHAPE[monthIdx(ym)]! * noise)
-          : round(s.elecMwh * 28 * GAS_SHAPE[monthIdx(ym)]! * noise)
+          ? round(s.elecMwh * 1000 * ELEC_SHAPE[monthIdx(ym)]! * noise, 100)
+          : round(s.elecMwh * 28 * GAS_SHAPE[monthIdx(ym)]! * noise, 5)
+        const prev = cum
         cum += use; last = cum; lastDate = lastDay(ym)
         readings.push({ supplyPointId: spId, date: lastDate, value: cum })
-        const amount = type === 'villany' ? round(use * (ELEC_PRICE[s.tariff] ?? 60)) : round(use * GAS_PRICE_PER_M3)
+
+        // zónák (nappali 6–17, csúcs 17–22, völgy 22–6): a boltok nappal és este fogyasztanak többet
+        let zones: Zones | undefined
+        let lines
+        if (type === 'villany') {
+          const nap = round(use * (0.52 + r() * 0.06), 100); const csucs = round(use * (0.24 + r() * 0.04), 100)
+          zones = { nappali: nap, csucs, volgy: use - nap - csucs }
+          lines = electricityLines({ zones, tariff: s.tariff, hupxHufPerMwh: BASE_PRICE_HUF_MWH[monthIdx(ym)]!, contractedKw, category })
+        }
+        else {
+          lines = gasLines({ m3: use, contractedKwhH })
+        }
+        const t = totals(lines)
         const issue = nextMonth5th(ym); const due = addDays(issue, 20)
         // egy telephely szeptemberi villanyszámlája lejárt (tartozás), az október végi számlák még nyitottak
         const overdue = s.city === 'Miskolc' && type === 'villany' && ym === '2026-09'
         const open = due >= REF_DATE || overdue
-        invoices.push({ id: `${id}-INV-${spId.split('-').pop()}-${ym.replace('-', '')}`, partnerId: id, supplyPointId: spId, period: monthLabel(ym), amountHuf: amount, issueDate: issue, dueDate: due, status: open ? (due < REF_DATE ? 'overdue' : 'open') : 'paid' })
+        const first = `${ym}-01`
+        invoices.push({
+          id: `${id}-INV-${spId.split('-').pop()}-${ym.replace('-', '')}`, partnerId: id, supplyPointId: spId, period: monthLabel(ym),
+          amountHuf: t.gross, issueDate: issue, dueDate: due, status: open ? (due < REF_DATE ? 'overdue' : 'open') : 'paid',
+          lines, usage: { periodFrom: first, periodTo: lastDate, prevReading: prev, currReading: cum, total: use, unit, ...(zones ? { zones } : {}) },
+        })
       }
-      supplyPoints.push({ id: spId, partnerId: id, type, pod: `HU-DEMO-${type === 'villany' ? 'E' : 'G'}-${id.slice(-6)}-${si + 1}`, address: s.address, meterSerial: `${type === 'villany' ? 'E' : 'G'}-${5100 + si * 17}`, smart: type === 'villany', lastReading: last, lastReadingDate: lastDate, unit, label: s.label, tariff: type === 'villany' ? s.tariff : 'Gáz kereskedelmi' })
+      supplyPoints.push({
+        id: spId, partnerId: id, type, pod: `HU-DEMO-${type === 'villany' ? 'E' : 'G'}-${id.slice(-6)}-${si + 1}`, address: s.address,
+        meterSerial: `${type === 'villany' ? 'E' : 'G'}-${5100 + si * 17}`, smart: type === 'villany', lastReading: last, lastReadingDate: lastDate,
+        unit, label: s.label, tariff: type === 'villany' ? s.tariff : 'Gáz kereskedelmi',
+        ...(type === 'villany' ? { contractedKw, networkCategory: category } : { contractedKw: contractedKwhH, networkCategory: 'Gáz elosztás' }),
+      })
     }
   })
   return { partner, supplyPoints, readings, invoices, production: [] }

@@ -16,6 +16,8 @@ export interface Backend {
   listUsers: () => Promise<PortalUser[]>
   getUser: (userId: string) => Promise<UserWithMemberships | null>
   listInvoices: (partnerId: string) => Promise<Invoice[]>
+  /** egy számla tételes számlaképpel (tételek, mérőadatok) */
+  getInvoice: (partnerId: string, invoiceId: string) => Promise<Invoice | null>
   /** Fizetés; a PaymentDeclined hibával jelzi a bank elutasítását. */
   payInvoice: (partnerId: string, invoiceId: string, by: string) => Promise<void>
   listSupplyPoints: (partnerId: string) => Promise<SupplyPoint[]>
