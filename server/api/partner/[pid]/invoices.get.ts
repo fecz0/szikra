@@ -8,6 +8,8 @@ export default defineEventHandler(async (event) => {
   const byId = new Map(points.map(p => [p.id, p]))
   return invoices.map((i) => {
     const sp = i.supplyPointId ? byId.get(i.supplyPointId) : undefined
-    return { ...i, siteLabel: sp?.label, energy: sp?.type }
+    // a számlalista nem kell a tételekhez; azokat a részletező végpont adja
+    const { lines: _l, usage: _u, ...rest } = i
+    return { ...rest, siteLabel: sp?.label, energy: sp?.type }
   })
 })

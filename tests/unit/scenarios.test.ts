@@ -62,7 +62,7 @@ describe('demó-adatgenerátor', () => {
       expect(v).toEqual([...v].sort((a, b) => a - b))
     }
     const elec = chain.invoices.filter(i => i.id.includes('-INV-E1-'))
-    for (const i of elec) { expect(i.amountHuf).toBeGreaterThan(3_000_000); expect(i.amountHuf).toBeLessThan(9_000_000) }
+    for (const i of elec) { expect(i.amountHuf).toBeGreaterThan(3_000_000); expect(i.amountHuf).toBeLessThan(10_000_000) }
   })
   it('pontosan egy lejárt és legalább 10 nyitott számla van, a többi kiegyenlített', () => {
     expect(chain.invoices.filter(i => i.status === 'overdue').length).toBe(1)

@@ -55,6 +55,11 @@ export class ErpClient {
     return (await this.request<{ data: T[] }>('GET', `/api/resource/${encodeURIComponent(doctype)}?${q}`)).data
   }
 
+  /** Gyermektábla (pl. Sales Invoice Item) listázása: a Frappe a szülő doctype nevét is kéri. */
+  async listChild<T = any>(doctype: string, parent: string, opts: { fields?: string[], filters?: unknown[] } = {}): Promise<T[]> {
+    return this.method<T[]>('frappe.client.get_list', { doctype, parent, fields: opts.fields ?? ['name'], filters: opts.filters ?? [], limit_page_length: 0 }, 'GET')
+  }
+
   async get<T = any>(doctype: string, name: string): Promise<T> {
     return (await this.request<{ data: T }>('GET', `/api/resource/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`)).data
   }

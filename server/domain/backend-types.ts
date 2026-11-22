@@ -1,4 +1,4 @@
-import type { ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
+import type { Deal, ScheduleDay, ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
 
 export interface UserWithMemberships {
   user: PortalUser
@@ -16,11 +16,18 @@ export interface Backend {
   listUsers: () => Promise<PortalUser[]>
   getUser: (userId: string) => Promise<UserWithMemberships | null>
   listInvoices: (partnerId: string) => Promise<Invoice[]>
+  /** egy számla tételes számlaképpel (tételek, mérőadatok) */
+  getInvoice: (partnerId: string, invoiceId: string) => Promise<Invoice | null>
   /** Fizetés; a PaymentDeclined hibával jelzi a bank elutasítását. */
   payInvoice: (partnerId: string, invoiceId: string, by: string) => Promise<void>
   listSupplyPoints: (partnerId: string) => Promise<SupplyPoint[]>
   listReadings: (partnerId: string) => Promise<Reading[]>
   listProduction: (partnerId: string) => Promise<ProductionRecord[]>
+  listDeals: (partnerId: string) => Promise<Deal[]>
+  /** Ügylet visszaigazolása (a partner elfogadja a kereskedői visszaigazolást). */
+  confirmDeal: (partnerId: string, dealId: string, by: string) => Promise<void>
+  listSchedule: (partnerId: string) => Promise<ScheduleDay[]>
+  submitSchedule: (partnerId: string, day: { date: string, commodity: Deal['commodity'], values: number[], by: string }) => Promise<ScheduleDay>
   listCases: (partnerId: string) => Promise<CaseRecord[]>
   getCase: (partnerId: string, caseId: string) => Promise<CaseRecord | null>
   createCase: (input: { partnerId: string, type: CaseTypeId, subject: string, by: string, fields: Record<string, string> }) => Promise<CaseRecord>

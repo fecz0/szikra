@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { caseTypes } from '../../../../../server/domain/case-types'
-import type { CaseTypeId, Invoice, SupplyPoint } from '../../../../../server/domain/types'
+import type { CaseTypeId, Deal, Invoice, SupplyPoint } from '../../../../../server/domain/types'
 
 definePageMeta({ layout: 'partner', middleware: 'auth' })
 const pid = String(useRoute().params.pid)
@@ -15,6 +15,8 @@ const def = computed(() => (type.value ? caseTypes[type.value] : null))
 
 const invoices = caps.value.includes('invoices.view') ? (await useFetch<Invoice[]>(`${base}/invoices`)).data : ref<Invoice[]>([])
 const points = caps.value.includes('supply.view') ? (await useFetch<SupplyPoint[]>(`${base}/supply-points`)).data : ref<SupplyPoint[]>([])
+
+const deals = caps.value.includes('deals.view') ? (await useFetch<Deal[]>(`${base}/deals`)).data : ref<Deal[]>([])
 
 const values = reactive<Record<string, string>>({})
 const error = ref('')
@@ -51,6 +53,9 @@ async function submit() {
           </select>
           <select v-else-if="f.kind === 'supply'" :id="`f-${f.key}`" v-model="values[f.key]" :data-testid="`field-${f.key}`">
             <option v-for="s in points" :key="s.id" :value="s.id">{{ s.label ?? s.pod }} · {{ s.type === 'villany' ? 'villany' : 'gáz' }}</option>
+          </select>
+          <select v-else-if="f.kind === 'deal'" :id="`f-${f.key}`" v-model="values[f.key]" :data-testid="`field-${f.key}`">
+            <option v-for="d in deals" :key="d.id" :value="d.id">{{ d.product }} · {{ d.volume }} {{ d.volumeUnit }} · {{ d.deliveryFrom }} – {{ d.deliveryTo }}</option>
           </select>
           <textarea v-else-if="f.kind === 'textarea'" :id="`f-${f.key}`" v-model="values[f.key]" rows="3" :data-testid="`field-${f.key}`" />
           <input v-else :id="`f-${f.key}`" v-model="values[f.key]" :type="f.kind === 'number' ? 'number' : 'text'" :data-testid="`field-${f.key}`">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Invoice } from '../../../../server/domain/types'
+import type { Invoice } from '../../../../../server/domain/types'
 
 type Row = Invoice & { siteLabel?: string, energy?: 'villany' | 'gaz' }
 definePageMeta({ layout: 'partner', middleware: 'auth' })
@@ -66,7 +66,7 @@ async function pay(id: string) {
       <thead><tr><th>Időszak</th><th v-if="sites.length > 1">Hely</th><th>Összeg</th><th>Esedékes</th><th>Állapot</th><th /></tr></thead>
       <tbody>
         <tr v-for="i in rows" :key="i.id" :data-testid="`invoice-${i.id}`">
-          <td>{{ i.period }}</td>
+          <td><NuxtLink :to="`/partner/${pid}/szamlak/${encodeURIComponent(i.id)}`" :data-testid="`open-${i.id}`">{{ i.period }}</NuxtLink></td>
           <td v-if="sites.length > 1">{{ i.siteLabel }}<span v-if="i.supplyPointId" class="hint"> · {{ i.energy === 'gaz' ? 'gáz' : 'villany' }}</span></td>
           <td>{{ huf(i.amountHuf) }}</td>
           <td>{{ i.dueDate }}</td>

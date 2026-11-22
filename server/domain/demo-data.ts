@@ -1,4 +1,6 @@
-import type { Invoice, Partner, ProductionRecord, Reading, SupplyPoint } from './types.ts'
+import { electricityLines, gasLines, totals } from './tariffs.ts'
+import type { NetworkCategory, Zones } from './tariffs.ts'
+import type { Deal, Invoice, InvoiceLine, Partner, ProductionRecord, Reading, ScheduleDay, SupplyPoint } from './types.ts'
 
 /**
  * Determinista demó-adatgenerátor: 12 hónap számla, mérőállás és termelés valós nagyságrendű árakkal.
@@ -42,9 +44,6 @@ const CHAIN_SITES: Site[] = [
   { label: 'Székesfehérvár áruház', city: 'Székesfehérvár', address: '8000 Székesfehérvár, Fő u. 15.', elecMwh: 72, tariff: 'Ipari fix 2026' },
   { label: 'Kecskemét áruház', city: 'Kecskemét', address: '6000 Kecskemét, Kossuth tér 2.', elecMwh: 58, tariff: 'Piaci követő' },
 ]
-/** Ft/kWh villany, tarifa szerint (valós nagyságrend: nem-lakossági, rendszerhasználati díjakkal) */
-const ELEC_PRICE: Record<string, number> = { 'Ipari fix 2026': 61, 'Piaci követő': 58, 'Kereskedelmi csúcs-völgy': 64 }
-const GAS_PRICE_PER_M3 = 335
 
 export interface Bundle {
   partner: Partner
@@ -52,9 +51,11 @@ export interface Bundle {
   readings: Reading[]
   invoices: Invoice[]
   production: ProductionRecord[]
+  deals: Deal[]
+  schedule: ScheduleDay[]
 }
 
-/** Kereskedelmi lánc: több telephely, villany + (egy részén) gáz, 12 havi számla. */
+/** Kereskedelmi lánc: több telephely, villany + (egy részén) gáz, 12 havi tételes számla (valós díjszerkezet, lásd tariffs.ts). */
 export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.length): Bundle {
   const r = rng(id)
   const partner: Partner = { id, name, taxNumber: '25678123-2-13', address: '4025 Debrecen, Piac utca 12.', segment: 'kereskedelmi', contractNo: `SZ-${id}-05` }
@@ -65,27 +66,54 @@ export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.len
     for (const type of kinds) {
       const spId = `${id}-${type === 'villany' ? 'E' : 'G'}${si + 1}`
       const unit = type === 'villany' ? 'kWh' as const : 'm3' as const
+      // a nagyobb telephelyek KIF III. (idősoros, lekötött teljesítménnyel), a kisebbek KIF IV. (okos mérős)
+      const category: NetworkCategory = s.elecMwh >= 80 ? 'KIF III.' : 'KIF IV.'
+      const contractedKw = Math.round(s.elecMwh * 1000 / 730 * 2.2 / 10) * 10
+      const contractedKwhH = Math.round(s.elecMwh * 0.9)
       let cum = type === 'villany' ? 3_000_000 + Math.floor(r() * 900_000) : 400_000 + Math.floor(r() * 120_000)
       let last = cum; let lastDate = ''
       readings.push({ supplyPointId: spId, date: '2025-10-31', value: cum })
       for (const ym of MONTHS) {
         const noise = 0.94 + r() * 0.12
         const use = type === 'villany'
-          ? round(s.elecMwh * 1000 * ELEC_SHAPE[monthIdx(ym)]! * noise)
-          : round(s.elecMwh * 28 * GAS_SHAPE[monthIdx(ym)]! * noise)
+          ? round(s.elecMwh * 1000 * ELEC_SHAPE[monthIdx(ym)]! * noise, 100)
+          : round(s.elecMwh * 28 * GAS_SHAPE[monthIdx(ym)]! * noise, 5)
+        const prev = cum
         cum += use; last = cum; lastDate = lastDay(ym)
         readings.push({ supplyPointId: spId, date: lastDate, value: cum })
-        const amount = type === 'villany' ? round(use * (ELEC_PRICE[s.tariff] ?? 60)) : round(use * GAS_PRICE_PER_M3)
+
+        // zónák (nappali 6–17, csúcs 17–22, völgy 22–6): a boltok nappal és este fogyasztanak többet
+        let zones: Zones | undefined
+        let lines
+        if (type === 'villany') {
+          const nap = round(use * (0.52 + r() * 0.06), 100); const csucs = round(use * (0.24 + r() * 0.04), 100)
+          zones = { nappali: nap, csucs, volgy: use - nap - csucs }
+          lines = electricityLines({ zones, tariff: s.tariff, hupxHufPerMwh: BASE_PRICE_HUF_MWH[monthIdx(ym)]!, contractedKw, category })
+        }
+        else {
+          lines = gasLines({ m3: use, contractedKwhH })
+        }
+        const t = totals(lines)
         const issue = nextMonth5th(ym); const due = addDays(issue, 20)
         // egy telephely szeptemberi villanyszámlája lejárt (tartozás), az október végi számlák még nyitottak
         const overdue = s.city === 'Miskolc' && type === 'villany' && ym === '2026-09'
         const open = due >= REF_DATE || overdue
-        invoices.push({ id: `${id}-INV-${spId.split('-').pop()}-${ym.replace('-', '')}`, partnerId: id, supplyPointId: spId, period: monthLabel(ym), amountHuf: amount, issueDate: issue, dueDate: due, status: open ? (due < REF_DATE ? 'overdue' : 'open') : 'paid' })
+        const first = `${ym}-01`
+        invoices.push({
+          id: `${id}-INV-${spId.split('-').pop()}-${ym.replace('-', '')}`, partnerId: id, supplyPointId: spId, period: monthLabel(ym),
+          amountHuf: t.gross, issueDate: issue, dueDate: due, status: open ? (due < REF_DATE ? 'overdue' : 'open') : 'paid',
+          lines, usage: { periodFrom: first, periodTo: lastDate, prevReading: prev, currReading: cum, total: use, unit, ...(zones ? { zones } : {}) },
+        })
       }
-      supplyPoints.push({ id: spId, partnerId: id, type, pod: `HU-DEMO-${type === 'villany' ? 'E' : 'G'}-${id.slice(-6)}-${si + 1}`, address: s.address, meterSerial: `${type === 'villany' ? 'E' : 'G'}-${5100 + si * 17}`, smart: type === 'villany', lastReading: last, lastReadingDate: lastDate, unit, label: s.label, tariff: type === 'villany' ? s.tariff : 'Gáz kereskedelmi' })
+      supplyPoints.push({
+        id: spId, partnerId: id, type, pod: `HU-DEMO-${type === 'villany' ? 'E' : 'G'}-${id.slice(-6)}-${si + 1}`, address: s.address,
+        meterSerial: `${type === 'villany' ? 'E' : 'G'}-${5100 + si * 17}`, smart: type === 'villany', lastReading: last, lastReadingDate: lastDate,
+        unit, label: s.label, tariff: type === 'villany' ? s.tariff : 'Gáz kereskedelmi',
+        ...(type === 'villany' ? { contractedKw, networkCategory: category } : { contractedKw: contractedKwhH, networkCategory: 'Gáz elosztás' }),
+      })
     }
   })
-  return { partner, supplyPoints, readings, invoices, production: [] }
+  return { partner, supplyPoints, readings, invoices, production: [], deals: [], schedule: [] }
 }
 
 /** Napenergia: havi termelés a névleges teljesítményből, szezonális alakkal. */
@@ -117,5 +145,84 @@ export function buildSolarPark(id: string, name: string, blocks: Array<{ label: 
     }
     supplyPoints.push({ id: spId, partnerId: id, type: 'villany', pod: `HU-DEMO-T-${id.slice(-6)}-${bi + 1}`, address: partner.address, meterSerial: `T-${2200 + bi * 31}`, smart: true, lastReading: Math.round(cum), lastReadingDate: lastDate, unit: 'kWh', label: `${b.label} (${b.mw} MW)`, tariff: b.premium ? 'Átvétel + támogatási prémium' : 'Piaci átvétel', capacityKw: b.mw * 1000, direction: 'termeles' })
   })
-  return { partner, supplyPoints, readings, invoices: [], production }
+  return { partner, supplyPoints, readings, invoices: [], production, deals: [], schedule: [] }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Nagykereskedelem: határidős ügyletek, napi menetrend, hitelkeret; havi elszámoló számlák (valós nagyságrend)
+// ---------------------------------------------------------------------------------------------
+
+const dayMs = 86_400_000
+const eachDay = (from: string, to: string) => { const out: string[] = []; for (let t = Date.parse(from); t <= Date.parse(to); t += dayMs) out.push(new Date(t).toISOString().slice(0, 10)); return out }
+const isWeekday = (iso: string) => { const d = new Date(iso + 'T00:00:00Z').getUTCDay(); return d >= 1 && d <= 5 }
+const overlap = (a0: string, a1: string, b0: string, b1: string) => { const f = a0 > b0 ? a0 : b0; const t = a1 < b1 ? a1 : b1; return f <= t ? eachDay(f, t) : [] }
+
+/** Egy ügylet mennyisége (MWh) egy időablakban: bázis = MW × 24 h, csúcs = MW × 12 h hétköznap, gáz = MWh/nap. */
+export function dealMwh(d: Pick<Deal, 'commodity' | 'product' | 'volume'>, from: string, to: string): number {
+  const days = eachDay(from, to)
+  if (d.commodity === 'gaz') return d.volume * days.length
+  if (d.product === 'Csúcs') return d.volume * 12 * days.filter(isWeekday).length
+  return d.volume * 24 * days.length
+}
+
+interface DealSpec { key: string, commodity: Deal['commodity'], product: string, side: Deal['side'], volume: number, price: number, fx: number, from: string, to: string, trade: string, status: Deal['status'], code?: string }
+
+const DEAL_SPECS: DealSpec[] = [
+  { key: '01', commodity: 'villany', product: 'Bázis', side: 'vetel', volume: 25, price: 96.4, fx: 395, from: '2025-11-01', to: '2026-12-31', trade: '2025-09-12', status: 'visszaigazolva', code: 'NK-BAZIS' },
+  { key: '02', commodity: 'villany', product: 'Csúcs', side: 'vetel', volume: 10, price: 112, fx: 395, from: '2025-11-01', to: '2026-12-31', trade: '2025-09-12', status: 'visszaigazolva', code: 'NK-CSUCS' },
+  { key: '03', commodity: 'gaz', product: 'Gáz bázis', side: 'vetel', volume: 60, price: 37.5, fx: 395, from: '2025-11-01', to: '2026-12-31', trade: '2025-09-15', status: 'visszaigazolva', code: 'NK-GAZ' },
+  { key: '04', commodity: 'villany', product: 'Bázis', side: 'vetel', volume: 20, price: 98.5, fx: 392, from: '2026-07-01', to: '2026-09-30', trade: '2026-05-18', status: 'teljesitve', code: 'NK-BAZIS-NEGYED' },
+  { key: '05', commodity: 'villany', product: 'Csúcs', side: 'vetel', volume: 10, price: 109, fx: 392, from: '2026-07-01', to: '2026-09-30', trade: '2026-05-18', status: 'teljesitve', code: 'NK-CSUCS-NEGYED' },
+  { key: '06', commodity: 'villany', product: 'Bázis', side: 'vetel', volume: 40, price: 109, fx: 396, from: '2027-01-01', to: '2027-03-31', trade: '2026-10-20', status: 'visszaigazolva' },
+  { key: '07', commodity: 'villany', product: 'Bázis', side: 'vetel', volume: 30, price: 104.5, fx: 397, from: '2027-04-01', to: '2027-06-30', trade: '2026-11-20', status: 'visszaigazolasra-var' },
+  { key: '08', commodity: 'villany', product: 'Csúcs', side: 'vetel', volume: 10, price: 121, fx: 397, from: '2027-01-01', to: '2027-03-31', trade: '2026-11-21', status: 'visszaigazolasra-var' },
+  { key: '09', commodity: 'villany', product: 'Bázis', side: 'eladas', volume: 15, price: 101.3, fx: 396, from: '2026-11-01', to: '2026-12-31', trade: '2026-10-28', status: 'visszaigazolva' },
+  { key: '10', commodity: 'villany', product: 'Csúcs', side: 'vetel', volume: 5, price: 119, fx: 396, from: '2026-12-01', to: '2026-12-31', trade: '2026-11-12', status: 'vitatott' },
+  { key: '11', commodity: 'gaz', product: 'Gáz téli szezon', side: 'vetel', volume: 100, price: 38.5, fx: 396, from: '2026-11-01', to: '2027-03-31', trade: '2026-10-05', status: 'visszaigazolva' },
+  { key: '12', commodity: 'gaz', product: 'Gáz bázis', side: 'vetel', volume: 80, price: 34.2, fx: 397, from: '2027-04-01', to: '2027-06-30', trade: '2026-11-19', status: 'visszaigazolasra-var' },
+]
+
+const INVOICE_LABELS: Record<string, string> = {
+  'NK-BAZIS': 'Villamos energia, bázis', 'NK-CSUCS': 'Villamos energia, csúcs', 'NK-GAZ': 'Földgáz, bázis',
+  'NK-BAZIS-NEGYED': 'Villamos energia, bázis (negyedéves)', 'NK-CSUCS-NEGYED': 'Villamos energia, csúcs (negyedéves)',
+}
+export const WHOLESALE_LINE_LABELS = INVOICE_LABELS
+
+export function buildWholesale(id: string, name: string): Bundle {
+  const partner: Partner = {
+    id, name, taxNumber: '24987654-2-41', address: '1138 Budapest, Dunavirág utca 2.', segment: 'kereskedelmi', kind: 'kereskedo',
+    contractNo: `SZ-${id}-07`, creditLimitHuf: 3_000_000_000, guaranteeHuf: 1_500_000_000, guaranteeExpiry: '2027-02-28',
+  }
+  const deals: Deal[] = DEAL_SPECS.map(d => ({
+    id: `${id}-D${d.key}`, partnerId: id, commodity: d.commodity, product: d.product, side: d.side, volume: d.volume,
+    volumeUnit: d.commodity === 'gaz' ? 'MWh/nap' : 'MW', priceEurMwh: d.price, fxHufPerEur: d.fx, deliveryFrom: d.from, deliveryTo: d.to,
+    totalMwh: dealMwh({ commodity: d.commodity, product: d.product, volume: d.volume }, d.from, d.to), tradeDate: d.trade, status: d.status,
+  }))
+
+  // havi elszámoló számlák: a vételi ügyletek leszállított mennyisége × ár (HUF/MWh = EUR ár × árfolyam)
+  const invoices: Invoice[] = []
+  for (const ym of MONTHS) {
+    const from = `${ym}-01`; const to = lastDay(ym)
+    const lines: InvoiceLine[] = []
+    for (const spec of DEAL_SPECS) {
+      if (!spec.code || spec.side !== 'vetel') continue
+      const days = overlap(spec.from, spec.to, from, to)
+      if (!days.length) continue
+      const mwh = dealMwh({ commodity: spec.commodity, product: spec.product, volume: spec.volume }, days[0]!, days.at(-1)!)
+      const unitPrice = Math.round(spec.price * spec.fx)
+      lines.push({ code: spec.code, label: INVOICE_LABELS[spec.code]!, category: 'energia', quantity: mwh, unit: 'MWh', unitPrice, amountHuf: mwh * unitPrice })
+    }
+    const t = totals(lines)
+    const issue = nextMonth5th(ym); const due = addDays(issue, 20)
+    invoices.push({ id: `${id}-INV-${ym.replace('-', '')}`, partnerId: id, period: monthLabel(ym), amountHuf: t.gross, issueDate: issue, dueDate: due, status: due >= REF_DATE ? 'open' : 'paid', lines })
+  }
+
+  // napi menetrend: az elmúlt hét és a mai nap; a holnapi hiányzik (azt a partner nyújtja be)
+  const schedule: ScheduleDay[] = []
+  for (const date of eachDay(addDays(REF_DATE, -7), REF_DATE)) {
+    const peak = isWeekday(date)
+    schedule.push({ id: `${id}-SCH-E-${date.replaceAll('-', '')}`, partnerId: id, date, commodity: 'villany', values: Array.from({ length: 24 }, (_, h) => 25 + (peak && h >= 8 && h < 20 ? 10 : 0)), status: 'elfogadva', submittedBy: 'Varga Dávid' })
+    schedule.push({ id: `${id}-SCH-G-${date.replaceAll('-', '')}`, partnerId: id, date, commodity: 'gaz', values: [160], status: 'elfogadva', submittedBy: 'Varga Dávid' })
+  }
+  return { partner, supplyPoints: [], readings: [], invoices, production: [], deals, schedule }
 }

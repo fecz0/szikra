@@ -4,7 +4,7 @@ import { caseTypes } from '../../domain/case-types'
 import type { AuditEntry, CaseTypeId, Invoice, PortalUser } from '../../domain/types'
 import { payInvoiceInErp } from '../erp/actions'
 import { ErpClient } from '../erp/client'
-import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, ISSUE_FIELDS, PRODUCTION_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapInvoice, mapPartner, mapProduction, mapReading, mapSupplyPoint } from '../erp/mappers'
+import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, DEAL_FIELDS, ISSUE_FIELDS, ITEM_FIELDS, PRODUCTION_FIELDS, SCHEDULE_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapDeal, mapInvoice, mapInvoiceLines, mapPartner, mapProduction, mapReading, mapSchedule, mapSupplyPoint } from '../erp/mappers'
 
 const utc = (d = new Date()) => d.toISOString().replace('T', ' ').slice(0, 19)
 const fromUtc = (s: string) => new Date(String(s).replace(' ', 'T') + 'Z').toISOString()
@@ -62,6 +62,15 @@ export class ErpNextBackend implements Backend {
     return (await this.invoicesFor(partnerId)).invoices
   }
 
+  async getInvoice(partnerId: string, invoiceId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Sales Invoice', { fields: INVOICE_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)], ['szikra_id', '=', invoiceId], ['docstatus', '=', 1]] })
+    if (!rows.length) return null
+    const items = await this.c.listChild('Sales Invoice Item', 'Sales Invoice', { fields: ITEM_FIELDS, filters: [['parent', '=', rows[0].name]] })
+    const lines = mapInvoiceLines(items)
+    return { ...mapInvoice(rows[0], cust.byName), ...(lines ? { lines } : {}) }
+  }
+
   async payInvoice(partnerId: string, invoiceId: string, by: string) {
     const { rows, invoices } = await this.invoicesFor(partnerId)
     const inv: Invoice | undefined = invoices.find(i => i.id === invoiceId)
@@ -89,6 +98,37 @@ export class ErpNextBackend implements Backend {
     const cust = await this.cust()
     const rows = await this.c.list('Szikra Production', { fields: PRODUCTION_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]], orderBy: 'month asc' })
     return rows.map(r => mapProduction(r, cust.byName))
+  }
+
+  async listDeals(partnerId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Szikra Deal', { fields: DEAL_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]], orderBy: 'trade_date desc' })
+    return rows.map(r => mapDeal(r, cust.byName))
+  }
+
+  async confirmDeal(partnerId: string, dealId: string, by: string) {
+    const rows = await this.c.list('Szikra Deal', { fields: ['name', 'status', 'product'], filters: [['customer', '=', await this.erpName(partnerId)], ['szikra_id', '=', dealId]] })
+    if (!rows.length) throw createError({ statusCode: 404, message: 'Az ügylet nem található' })
+    if (rows[0].status !== 'visszaigazolasra-var') throw createError({ statusCode: 409, message: 'Az ügylet nem vár visszaigazolásra' })
+    await this.c.update('Szikra Deal', rows[0].name, { status: 'visszaigazolva' })
+    await this.note(partnerId, `Ügylet visszaigazolva: ${rows[0].product} (${by})`)
+  }
+
+  async listSchedule(partnerId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Szikra Schedule', { fields: SCHEDULE_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]], orderBy: 'date desc' })
+    return rows.map(r => mapSchedule(r, cust.byName))
+  }
+
+  async submitSchedule(partnerId: string, day: { date: string, commodity: 'villany' | 'gaz', values: number[], by: string }) {
+    const id = `${partnerId}-SCH-${day.commodity === 'villany' ? 'E' : 'G'}-${day.date.replaceAll('-', '')}`
+    const customer = await this.erpName(partnerId)
+    const have = await this.c.list('Szikra Schedule', { fields: ['name'], filters: [['szikra_id', '=', id]] })
+    const body = { values_json: JSON.stringify(day.values), status: 'benyujtva', submitted_by: day.by }
+    if (have.length) await this.c.update('Szikra Schedule', have[0].name, body)
+    else await this.c.create('Szikra Schedule', { szikra_id: id, customer, date: day.date, commodity: day.commodity, ...body })
+    await this.note(partnerId, `Menetrend benyújtva: ${day.commodity === 'villany' ? 'villany' : 'gáz'}, ${day.date} (${day.by})`)
+    return { id, partnerId, date: day.date, commodity: day.commodity, values: day.values, status: 'benyujtva' as const, submittedBy: day.by }
   }
 
   async listCases(partnerId: string) {

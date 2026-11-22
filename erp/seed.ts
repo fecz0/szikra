@@ -2,8 +2,9 @@
 // Használat (az ERPNext fusson: docker compose -p szikra-erp -f erp/compose.yml up -d):
 //   node erp/seed.ts
 // Idempotens: ami már megvan (szikra_id alapján), azt kihagyja.
-import { existsSync, writeFileSync } from 'node:fs'
+import { existsSync, unlinkSync, writeFileSync } from 'node:fs'
 import { fixedDemoDataset } from '../server/domain/scenarios.ts'
+import { VAT_PCT } from '../server/domain/tariffs.ts'
 import { ErpClient } from '../server/utils/erp/client.ts'
 import { payInvoiceInErp } from '../server/utils/erp/actions.ts'
 
@@ -56,8 +57,12 @@ async function ensureLocale() {
 }
 
 async function ensureCustomField(dt: string, fieldname: string, def: Record<string, unknown>) {
-  const have = await c.list('Custom Field', { fields: ['name'], filters: [['dt', '=', dt], ['fieldname', '=', fieldname]] })
-  if (have.length) return
+  const have = await c.list('Custom Field', { fields: ['name', 'options'], filters: [['dt', '=', dt], ['fieldname', '=', fieldname]] })
+  if (have.length) {
+    // a Select mezők új opcióit (pl. új partnertípus) utólag is felvesszük
+    if (def.options && have[0].options !== def.options) { await c.update('Custom Field', have[0].name, { options: def.options }); log('mező opciói frissítve:', `${dt}.${fieldname}`) }
+    return
+  }
   await c.create('Custom Field', { dt, fieldname, label: fieldname, ...def })
   log('mező:', `${dt}.${fieldname}`)
 }
@@ -69,9 +74,11 @@ async function ensureDoctype(name: string, autoname: string, fields: Record<stri
     const doc = await c.get('DocType', name)
     const known = new Set((doc.fields as { fieldname: string }[]).map(f => f.fieldname))
     const missing = fields.filter(f => !known.has(String(f.fieldname)))
-    if (missing.length) {
-      await c.update('DocType', name, { fields: [...doc.fields, ...missing.map((f, i) => ({ idx: doc.fields.length + i + 1, ...f }))] })
-      log('DocType bővítve:', name, missing.map(f => f.fieldname).join(', '))
+    const optionChanges = (doc.fields as { fieldname: string, options?: string }[]).filter(f => fields.some(w => w.fieldname === f.fieldname && w.options && w.options !== f.options))
+    if (missing.length || optionChanges.length) {
+      const patched = (doc.fields as any[]).map(f => ({ ...f, options: fields.find(w => w.fieldname === f.fieldname)?.options ?? f.options }))
+      await c.update('DocType', name, { fields: [...patched, ...missing.map((f, i) => ({ idx: doc.fields.length + i + 1, ...f }))] })
+      log('DocType bővítve:', name, [...missing.map(f => f.fieldname), ...optionChanges.map(f => `${f.fieldname} (opciók)`)].join(', '))
     }
     return
   }
@@ -90,10 +97,15 @@ async function ensureSchema() {
   await ensureCustomField('Customer', 'szikra_segment', t('Select', { options: 'ipari\nkereskedelmi\nkozuzemi' }))
   await ensureCustomField('Customer', 'szikra_contract_no', t('Data'))
   await ensureCustomField('Customer', 'szikra_card_declines', t('Check'))
-  await ensureCustomField('Customer', 'szikra_kind', t('Select', { options: 'fogyaszto\ntermelo' }))
+  await ensureCustomField('Customer', 'szikra_credit_limit', t('Currency'))
+  await ensureCustomField('Customer', 'szikra_guarantee', t('Currency'))
+  await ensureCustomField('Customer', 'szikra_guarantee_expiry', t('Date'))
+  await ensureCustomField('Customer', 'szikra_kind', t('Select', { options: 'fogyaszto\ntermelo\nkereskedo' }))
   await ensureCustomField('Sales Invoice', 'szikra_id', t('Data'))
   await ensureCustomField('Sales Invoice', 'szikra_period', t('Data'))
   await ensureCustomField('Sales Invoice', 'szikra_supply_point', t('Data'))
+  await ensureCustomField('Sales Invoice', 'szikra_usage', t('Long Text'))
+  await ensureCustomField('Sales Invoice Item', 'szikra_category', t('Data'))
   await ensureCustomField('Issue', 'szikra_case_type', t('Data'))
   await ensureCustomField('Issue', 'szikra_fields', t('Long Text'))
   await ensureCustomField('Issue', 'szikra_created_by', t('Data'))
@@ -113,6 +125,8 @@ async function ensureSchema() {
     t('Data', { fieldname: 'tariff', label: 'Díjcsomag' }),
     t('Float', { fieldname: 'capacity_kw', label: 'Névleges teljesítmény (kW)' }),
     t('Select', { fieldname: 'direction', label: 'Irány', options: 'fogyasztas\ntermeles' }),
+    t('Float', { fieldname: 'contracted_kw', label: 'Szerződött teljesítmény (kW, gáz: kWh/h)' }),
+    t('Data', { fieldname: 'network_category', label: 'Hálózati kategória' }),
   ])
   await ensureDoctype('Szikra Meter Reading', 'hash', [
     t('Data', { fieldname: 'supply_point', label: 'Fogyasztási hely azonosító', reqd: 1, in_list_view: 1 }),
@@ -131,13 +145,38 @@ async function ensureSchema() {
     t('Currency', { fieldname: 'settlement_huf', label: 'Elszámolás', precision: '0', in_list_view: 1 }),
     t('Select', { fieldname: 'status', label: 'Állapot', options: 'tervezet\njovahagyva\nkifizetve', in_list_view: 1 }),
   ])
+  await ensureDoctype('Szikra Deal', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Ügylet azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'commodity', label: 'Energia', options: 'villany\ngaz', reqd: 1 }),
+    t('Data', { fieldname: 'product', label: 'Termék', in_list_view: 1 }),
+    t('Select', { fieldname: 'side', label: 'Irány', options: 'vetel\neladas' }),
+    t('Float', { fieldname: 'volume', label: 'Mennyiség (MW vagy MWh/nap)' }),
+    t('Select', { fieldname: 'volume_unit', label: 'Mértékegység', options: 'MW\nMWh/nap' }),
+    t('Float', { fieldname: 'price_eur_mwh', label: 'Ár (EUR/MWh)', precision: '2' }),
+    t('Float', { fieldname: 'fx_huf_per_eur', label: 'Árfolyam (HUF/EUR)', precision: '2' }),
+    t('Date', { fieldname: 'delivery_from', label: 'Szállítás kezdete' }),
+    t('Date', { fieldname: 'delivery_to', label: 'Szállítás vége' }),
+    t('Float', { fieldname: 'total_mwh', label: 'Teljes mennyiség (MWh)', precision: '0' }),
+    t('Date', { fieldname: 'trade_date', label: 'Kötés napja' }),
+    t('Select', { fieldname: 'status', label: 'Állapot', options: 'visszaigazolasra-var\nvisszaigazolva\nvitatott\nteljesitve', in_list_view: 1 }),
+  ])
+  await ensureDoctype('Szikra Schedule', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Date', { fieldname: 'date', label: 'Nap', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'commodity', label: 'Energia', options: 'villany\ngaz' }),
+    t('Long Text', { fieldname: 'values_json', label: 'Értékek (JSON)' }),
+    t('Select', { fieldname: 'status', label: 'Állapot', options: 'benyujtva\nelfogadva', in_list_view: 1 }),
+    t('Data', { fieldname: 'submitted_by', label: 'Benyújtotta' }),
+  ])
   await ensureDoctype('Szikra Portal Access', 'hash', [
     t('Data', { fieldname: 'user_id', label: 'Felhasználó azonosító', reqd: 1, in_list_view: 1 }),
     t('Data', { fieldname: 'full_name', label: 'Név', reqd: 1 }),
     t('Data', { fieldname: 'email', label: 'E-mail' }),
     t('Small Text', { fieldname: 'note', label: 'Megjegyzés' }),
     t('Link', { fieldname: 'customer', label: 'Cég', options: 'Customer', reqd: 1, in_list_view: 1 }),
-    t('Select', { fieldname: 'role', label: 'Szerepkör', options: 'admin\npenzugy\nmuszaki\nolvaso', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'role', label: 'Szerepkör', options: 'admin\npenzugy\nmuszaki\nolvaso\nkereskedo', reqd: 1, in_list_view: 1 }),
   ])
   await ensureDoctype('Szikra Event', 'hash', [
     t('Link', { fieldname: 'customer', label: 'Cég', options: 'Customer' }),
@@ -147,6 +186,16 @@ async function ensureSchema() {
     t('Small Text', { fieldname: 'text', label: 'Szöveg' }),
     t('Check', { fieldname: 'is_read', label: 'Olvasott' }),
   ])
+}
+
+async function ensureVatAccount(company: string): Promise<string> {
+  const have = await c.list('Account', { fields: ['name'], filters: [['company', '=', company], ['account_name', '=', 'ÁFA']] })
+  if (have.length) return have[0].name
+  const parent = (await c.list('Account', { fields: ['name'], filters: [['company', '=', company], ['account_name', '=', 'Duties and Taxes'], ['is_group', '=', 1]] }))[0]
+  if (!parent) throw new Error('nincs „Duties and Taxes” csoport a számlatükörben')
+  const acc = await c.create('Account', { account_name: 'ÁFA', parent_account: parent.name, company, account_type: 'Tax', is_group: 0 })
+  log('számla (főkönyv):', acc.name)
+  return acc.name
 }
 
 async function seedData() {
@@ -169,13 +218,14 @@ async function seedData() {
       customer_name: p.name, customer_type: 'Company', customer_group: 'Commercial', territory: 'All Territories',
       tax_id: p.taxNumber, szikra_id: p.id, szikra_address: p.address, szikra_segment: p.segment,
       szikra_contract_no: p.contractNo, szikra_card_declines: p.cardDeclines ? 1 : 0, szikra_kind: p.kind ?? 'fogyaszto',
+      szikra_credit_limit: p.creditLimitHuf ?? 0, szikra_guarantee: p.guaranteeHuf ?? 0, szikra_guarantee_expiry: p.guaranteeExpiry ?? null,
     })
     customerByPartner.set(p.id, doc.name)
     log('ügyfél:', doc.name)
   }
 
   for (const s of ds.supplyPoints) {
-    const extra = { label: s.label ?? '', tariff: s.tariff ?? '', capacity_kw: s.capacityKw ?? 0, direction: s.direction ?? 'fogyasztas' }
+    const extra = { label: s.label ?? '', tariff: s.tariff ?? '', capacity_kw: s.capacityKw ?? 0, direction: s.direction ?? 'fogyasztas', contracted_kw: s.contractedKw ?? 0, network_category: s.networkCategory ?? '' }
     if ((await c.list('Szikra Supply Point', { filters: [['szikra_id', '=', s.id]] })).length) {
       await c.update('Szikra Supply Point', s.id, extra) // a később felvett mezők pótlása
       continue
@@ -183,7 +233,7 @@ async function seedData() {
     await c.create('Szikra Supply Point', {
       szikra_id: s.id, customer: customerByPartner.get(s.partnerId), energy: s.type, pod: s.pod, address: s.address,
       meter_serial: s.meterSerial, smart: s.smart ? 1 : 0, last_reading: s.lastReading, last_reading_date: s.lastReadingDate, unit: s.unit,
-      label: s.label ?? '', tariff: s.tariff ?? '', capacity_kw: s.capacityKw ?? 0, direction: s.direction ?? 'fogyasztas',
+      ...extra,
     })
     log('fogyasztási hely:', s.id)
   }
@@ -204,15 +254,49 @@ async function seedData() {
   }
   if (np) log('termelési rekord:', np)
 
+  // számlatételek: mértékegységek és tételtörzs a generált tételekből
+  const lineDefs = new Map<string, { label: string, unit: string }>()
+  for (const inv of ds.invoices) for (const l of inv.lines ?? []) lineDefs.set(l.code, { label: l.label, unit: l.unit })
+  const haveUom = new Set((await c.list('UOM', { fields: ['name'] })).map(r => r.name))
+  for (const u of new Set([...lineDefs.values()].map(d => d.unit))) {
+    if (!haveUom.has(u)) { await c.create('UOM', { uom_name: u, enabled: 1 }); log('mértékegység:', u) }
+  }
+  const haveItem = new Set((await c.list('Item', { fields: ['item_code'] })).map(r => r.item_code))
+  for (const [code, d] of lineDefs) {
+    if (haveItem.has(code)) continue
+    await c.create('Item', { item_code: code, item_name: d.label, item_group: 'Services', stock_uom: d.unit, is_stock_item: 0 })
+  }
+  if (lineDefs.size) log('tételtörzs:', lineDefs.size, 'tétel')
+
+  // ÁFA: fix összegű adósor (a számlakép végösszege forintra egyezik)
+  const vatAccount = await ensureVatAccount(company)
   let ni = 0
+  const haveDeals = new Set((await c.list('Szikra Deal', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const d of ds.deals) {
+    if (haveDeals.has(d.id)) continue
+    await c.create('Szikra Deal', { szikra_id: d.id, customer: customerByPartner.get(d.partnerId), commodity: d.commodity, product: d.product, side: d.side, volume: d.volume, volume_unit: d.volumeUnit, price_eur_mwh: d.priceEurMwh, fx_huf_per_eur: d.fxHufPerEur, delivery_from: d.deliveryFrom, delivery_to: d.deliveryTo, total_mwh: d.totalMwh, trade_date: d.tradeDate, status: d.status })
+  }
+  if (ds.deals.length) log('ügyletek:', ds.deals.length)
+  const haveSch = new Set((await c.list('Szikra Schedule', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const sc of ds.schedule) {
+    if (haveSch.has(sc.id)) continue
+    await c.create('Szikra Schedule', { szikra_id: sc.id, customer: customerByPartner.get(sc.partnerId), date: sc.date, commodity: sc.commodity, values_json: JSON.stringify(sc.values), status: sc.status, submitted_by: sc.submittedBy })
+  }
+  if (ds.schedule.length) log('menetrend:', ds.schedule.length)
+
   const existing = new Set((await c.list('Sales Invoice', { fields: ['szikra_id'] })).map(r => r.szikra_id))
   for (const inv of ds.invoices) {
     if (existing.has(inv.id)) continue
     const sp = ds.supplyPoints.find(s => s.id === inv.supplyPointId)
+    const net = (inv.lines ?? []).reduce((a, l) => a + l.amountHuf, 0)
     const doc = await c.create('Sales Invoice', {
       company, customer: customerByPartner.get(inv.partnerId), posting_date: inv.issueDate, set_posting_time: 1, due_date: inv.dueDate,
       szikra_id: inv.id, szikra_period: inv.period, szikra_supply_point: inv.supplyPointId ?? '',
-      items: [{ item_code: sp?.type === 'gaz' ? 'Földgáz' : 'Villamos energia', qty: 1, rate: inv.amountHuf }],
+      ...(inv.usage ? { szikra_usage: JSON.stringify(inv.usage) } : {}),
+      items: inv.lines
+        ? inv.lines.map(l => ({ item_code: l.code, qty: l.quantity, rate: l.unitPrice, szikra_category: l.category }))
+        : [{ item_code: sp?.type === 'gaz' ? 'Földgáz' : 'Villamos energia', qty: 1, rate: inv.amountHuf }],
+      ...(inv.lines ? { taxes: [{ charge_type: 'Actual', account_head: vatAccount, description: `ÁFA ${VAT_PCT}%`, tax_amount: inv.amountHuf - net }] } : {}),
     })
     await c.method('frappe.client.submit', { doc })
     if (inv.status === 'paid') await payInvoiceInErp(c, doc.name, 'DEMO-ELOZMENY')
@@ -244,6 +328,12 @@ async function writeKeys() {
     '',
   ].join('\n'), { mode: 0o600 })
   log('API-kulcs kiírva:', file.pathname)
+  // a token tényleges működését is ellenőrizzük: friss site-nál a worker-ek eltérő titkosítókulcsot cache-elhetnek
+  const probe = await fetch(`${BASE}/api/method/frappe.auth.get_logged_user`, { headers: { Authorization: `token ${user.api_key}:${secret}` } })
+  if (!probe.ok) {
+    unlinkSync(file)
+    throw new Error(`az API-token nem működik (${probe.status}). Indítsd újra a backendet: docker compose -p szikra-erp -f erp/compose.yml restart backend websocket queue-short queue-long scheduler frontend, majd futtasd újra a seedet`)
+  }
 }
 
 await ensureSetup()

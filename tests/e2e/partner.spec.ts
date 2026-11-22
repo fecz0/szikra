@@ -3,7 +3,7 @@ import { test, expect } from './support/fixtures'
 test.describe('belépés és cégválasztás', () => {
   test('a belépő oldal listázza a demó felhasználókat', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByTestId('demo-users').getByRole('button')).toHaveCount(5)
+    await expect(page.getByTestId('demo-users').getByRole('button')).toHaveCount(9)
   })
 
   test('több cég: cégválasztó, majd a választott cég oldala', async ({ page }) => {

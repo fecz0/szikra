@@ -37,6 +37,8 @@ export class MemoryBackend implements Backend {
     this.ds.supplyPoints.push(...c.supplyPoints)
     this.ds.readings.push(...c.readings)
     this.ds.production.push(...c.production)
+    this.ds.deals.push(...c.deals)
+    this.ds.schedule.push(...c.schedule)
     this.ds.invoices.push(...c.invoices)
     this.ds.cases.push(...c.cases)
     this.ds.notifications.push(...c.notifications)
@@ -48,6 +50,8 @@ export class MemoryBackend implements Backend {
       this.ds.memberships = this.ds.memberships.filter(m => !gone.has(m.partnerId))
       this.ds.supplyPoints = this.ds.supplyPoints.filter(s => !gone.has(s.partnerId))
       this.ds.production = this.ds.production.filter(p => !gone.has(p.partnerId))
+      this.ds.deals = this.ds.deals.filter(p => !gone.has(p.partnerId))
+      this.ds.schedule = this.ds.schedule.filter(p => !gone.has(p.partnerId))
       const keepSp = new Set(this.ds.supplyPoints.map(s => s.id))
       this.ds.readings = this.ds.readings.filter(r => keepSp.has(r.supplyPointId))
       this.ds.invoices = this.ds.invoices.filter(i => !gone.has(i.partnerId))
@@ -75,6 +79,10 @@ export class MemoryBackend implements Backend {
     return this.ds.invoices.filter(i => i.partnerId === partnerId)
   }
 
+  async getInvoice(partnerId: string, invoiceId: string) {
+    return this.ds.invoices.find(i => i.id === invoiceId && i.partnerId === partnerId) ?? null
+  }
+
   async payInvoice(partnerId: string, invoiceId: string, by: string) {
     const inv = this.ds.invoices.find(i => i.id === invoiceId && i.partnerId === partnerId)
     if (!inv) throw createError({ statusCode: 404, message: 'A számla nem található' })
@@ -96,6 +104,31 @@ export class MemoryBackend implements Backend {
 
   async listProduction(partnerId: string) {
     return this.ds.production.filter(p => p.partnerId === partnerId)
+  }
+
+  async listDeals(partnerId: string) {
+    return this.ds.deals.filter(d => d.partnerId === partnerId).sort((a, b) => b.tradeDate.localeCompare(a.tradeDate))
+  }
+
+  async confirmDeal(partnerId: string, dealId: string, by: string) {
+    const d = this.ds.deals.find(x => x.id === dealId && x.partnerId === partnerId)
+    if (!d) throw createError({ statusCode: 404, message: 'Az ügylet nem található' })
+    if (d.status !== 'visszaigazolasra-var') throw createError({ statusCode: 409, message: 'Az ügylet nem vár visszaigazolásra' })
+    d.status = 'visszaigazolva'
+    this.note(partnerId, `Ügylet visszaigazolva: ${d.product} (${by})`)
+  }
+
+  async listSchedule(partnerId: string) {
+    return this.ds.schedule.filter(s => s.partnerId === partnerId).sort((a, b) => b.date.localeCompare(a.date))
+  }
+
+  async submitSchedule(partnerId: string, day: { date: string, commodity: 'villany' | 'gaz', values: number[], by: string }) {
+    const id = `${partnerId}-SCH-${day.commodity === 'villany' ? 'E' : 'G'}-${day.date.replaceAll('-', '')}`
+    let rec = this.ds.schedule.find(s => s.id === id)
+    if (rec) { rec.values = day.values; rec.status = 'benyujtva'; rec.submittedBy = day.by }
+    else { rec = { id, partnerId, date: day.date, commodity: day.commodity, values: day.values, status: 'benyujtva', submittedBy: day.by }; this.ds.schedule.push(rec) }
+    this.note(partnerId, `Menetrend benyújtva: ${day.commodity === 'villany' ? 'villany' : 'gáz'}, ${day.date} (${day.by})`)
+    return rec
   }
 
   async listCases(partnerId: string) {

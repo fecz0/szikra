@@ -1,7 +1,7 @@
 export type Segment = 'ipari' | 'kereskedelmi' | 'kozuzemi'
-export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso'
+export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo'
 export type Energy = 'villany' | 'gaz'
-export type PartnerKind = 'fogyaszto' | 'termelo'
+export type PartnerKind = 'fogyaszto' | 'termelo' | 'kereskedo'
 
 export interface Partner {
   id: string
@@ -14,6 +14,10 @@ export interface Partner {
   contractNo: string
   /** Demó: a kártyaterhelést a bank elutasítja (hibaág) */
   cardDeclines?: boolean
+  /** Nagykereskedelmi partner: hitelkeret, bankgarancia és lejárata */
+  creditLimitHuf?: number
+  guaranteeHuf?: number
+  guaranteeExpiry?: string
 }
 
 /** Egy felhasználó egy cégnél betöltött szerepköre (CAP-03/04). */
@@ -47,6 +51,9 @@ export interface SupplyPoint {
   /** Termelő esetén a névleges teljesítmény */
   capacityKw?: number
   direction?: 'fogyasztas' | 'termeles'
+  /** szerződött teljesítmény (kW villany) és hálózati kategória (pl. „KIF III.”) */
+  contractedKw?: number
+  networkCategory?: string
 }
 
 /** Mérőállás-idősor egy pontja (kumulált állás a leolvasás napján). */
@@ -54,6 +61,42 @@ export interface Reading {
   supplyPointId: string
   date: string
   value: number
+}
+
+export type Commodity = 'villany' | 'gaz'
+export type DealStatus = 'visszaigazolasra-var' | 'visszaigazolva' | 'vitatott' | 'teljesitve'
+
+/** Nagykereskedelmi ügylet (határidős energiakereskedelem). */
+export interface Deal {
+  id: string
+  partnerId: string
+  commodity: Commodity
+  /** pl. „Bázis”, „Csúcs”, „Gáz bázis” */
+  product: string
+  /** vétel: a partner vesz tőlünk; eladás: a partner ad el nekünk */
+  side: 'vetel' | 'eladas'
+  /** villany: MW, gáz: MWh/nap */
+  volume: number
+  volumeUnit: 'MW' | 'MWh/nap'
+  priceEurMwh: number
+  fxHufPerEur: number
+  deliveryFrom: string
+  deliveryTo: string
+  /** a teljes időszak mennyisége, MWh */
+  totalMwh: number
+  tradeDate: string
+  status: DealStatus
+}
+
+/** Napi menetrend (nominálás): villany óránként MW (24 érték), gáz napi MWh (1 érték). */
+export interface ScheduleDay {
+  id: string
+  partnerId: string
+  date: string
+  commodity: Commodity
+  values: number[]
+  status: 'benyujtva' | 'elfogadva'
+  submittedBy: string
 }
 
 /** Havi termelés és az átvételi elszámolás (a partner nekünk számláz). */
@@ -74,6 +117,29 @@ export interface ProductionRecord {
   status: 'tervezet' | 'jovahagyva' | 'kifizetve'
 }
 
+/** A számla egy tétele (számlakép): energia, rendszerhasználati díj, pénzeszköz/adó. Nettó összeg. */
+export interface InvoiceLine {
+  code: string
+  label: string
+  category: 'energia' | 'rendszerhasznalat' | 'penzeszkoz-ado'
+  quantity: number
+  unit: string
+  unitPrice: number
+  amountHuf: number
+}
+
+/** Mérőadatok az elszámolási időszakra. */
+export interface InvoiceUsage {
+  periodFrom: string
+  periodTo: string
+  prevReading: number
+  currReading: number
+  total: number
+  unit: 'kWh' | 'm3'
+  /** villany: zónánkénti fogyasztás (nappali 6–17, csúcs 17–22, völgy 22–6) */
+  zones?: { nappali: number, csucs: number, volgy: number }
+}
+
 export interface Invoice {
   id: string
   partnerId: string
@@ -83,11 +149,15 @@ export interface Invoice {
   issueDate: string
   dueDate: string
   status: 'open' | 'paid' | 'overdue'
+  /** tételes számlakép (nettó tételek); az amountHuf a bruttó végösszeg */
+  lines?: InvoiceLine[]
+  usage?: InvoiceUsage
 }
 
 /** Ügytípusok (UC-xx): a közös keretrendszer konfigurációja a `case-types.ts`-ben. */
 export type CaseTypeId =
-  | 'szamlareklamacio' | 'tartozasigazolas' | 'meroallas' | 'ajanlatkeres'
+  | 'ugylet-vita' | 'menetrend-modositas'
+    | 'szamlareklamacio' | 'tartozasigazolas' | 'meroallas' | 'ajanlatkeres'
   | 'reszletfizetes' | 'dijcsomag' | 'uj-fogyasztasi-hely'
   | 'leallas-bejelentes' | 'kapacitas-modositas'
 
@@ -135,11 +205,13 @@ export interface Dataset {
   supplyPoints: SupplyPoint[]
   readings: Reading[]
   production: ProductionRecord[]
+  deals: Deal[]
+  schedule: ScheduleDay[]
   invoices: Invoice[]
   cases: CaseRecord[]
   notifications: NotificationItem[]
 }
 
 export const emptyDataset = (): Dataset => ({
-  partners: [], users: [], memberships: [], supplyPoints: [], readings: [], production: [], invoices: [], cases: [], notifications: [],
+  partners: [], users: [], memberships: [], supplyPoints: [], readings: [], production: [], deals: [], schedule: [], invoices: [], cases: [], notifications: [],
 })

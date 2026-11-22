@@ -9,15 +9,19 @@ export type Capability =
   | 'supply.view' | 'supply.reading'
   | 'production.view'
   | 'contracts.manage'
+  | 'deals.view' | 'deals.confirm'
+  | 'schedule.view' | 'schedule.submit'
+  | 'credit.view'
   | 'cases.view' | 'cases.create'
   | 'quotes.create'
   | 'users.view'
 
 export const matrix: Record<Role, readonly Capability[]> = {
-  admin: ['invoices.view', 'invoices.pay', 'supply.view', 'supply.reading', 'production.view', 'contracts.manage', 'cases.view', 'cases.create', 'quotes.create', 'users.view'],
-  penzugy: ['invoices.view', 'invoices.pay', 'production.view', 'cases.view', 'cases.create'],
-  muszaki: ['supply.view', 'supply.reading', 'production.view', 'cases.view', 'cases.create', 'quotes.create'],
-  olvaso: ['invoices.view', 'supply.view', 'production.view', 'cases.view'],
+  admin: ['invoices.view', 'invoices.pay', 'supply.view', 'supply.reading', 'production.view', 'contracts.manage', 'deals.view', 'deals.confirm', 'schedule.view', 'schedule.submit', 'credit.view', 'cases.view', 'cases.create', 'quotes.create', 'users.view'],
+  penzugy: ['invoices.view', 'invoices.pay', 'production.view', 'deals.view', 'credit.view', 'cases.view', 'cases.create'],
+  muszaki: ['supply.view', 'supply.reading', 'production.view', 'schedule.view', 'cases.view', 'cases.create', 'quotes.create'],
+  olvaso: ['invoices.view', 'supply.view', 'production.view', 'deals.view', 'schedule.view', 'credit.view', 'cases.view'],
+  kereskedo: ['invoices.view', 'deals.view', 'deals.confirm', 'schedule.view', 'schedule.submit', 'credit.view', 'cases.view', 'cases.create'],
 }
 
 export const roleLabel: Record<Role, string> = {
@@ -25,6 +29,7 @@ export const roleLabel: Record<Role, string> = {
   penzugy: 'Pénzügyi',
   muszaki: 'Műszaki',
   olvaso: 'Olvasó',
+  kereskedo: 'Kereskedő',
 }
 
 export const can = (role: Role | undefined, cap: Capability) => !!role && matrix[role].includes(cap)

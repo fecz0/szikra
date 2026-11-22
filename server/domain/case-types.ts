@@ -4,7 +4,7 @@ import type { CaseTypeId } from './types.ts'
 export interface CaseField {
   key: string
   label: string
-  kind: 'text' | 'number' | 'invoice' | 'supply' | 'textarea'
+  kind: 'text' | 'number' | 'invoice' | 'supply' | 'deal' | 'textarea'
   required?: boolean
 }
 
@@ -97,6 +97,24 @@ export const caseTypes: Record<CaseTypeId, CaseTypeDef> = {
       { key: 'supply', label: 'Fogyasztási / termelési hely', kind: 'supply', required: true },
       { key: 'newCapacityKw', label: 'Kért kapacitás (kW)', kind: 'number', required: true },
       { key: 'reason', label: 'Indoklás', kind: 'textarea' },
+    ],
+  },
+  'ugylet-vita': {
+    id: 'ugylet-vita', ucId: 'NK-01', label: 'Ügylet-vita',
+    hint: 'Eltérés a visszaigazolásban (ár, mennyiség vagy időszak).',
+    capability: 'deals.confirm',
+    fields: [
+      { key: 'deal', label: 'Ügylet', kind: 'deal', required: true },
+      { key: 'reason', label: 'Az eltérés leírása', kind: 'textarea', required: true },
+    ],
+  },
+  'menetrend-modositas': {
+    id: 'menetrend-modositas', ucId: 'NK-02', label: 'Menetrend-módosítás',
+    hint: 'Már benyújtott napi menetrend módosítása.',
+    capability: 'schedule.submit',
+    fields: [
+      { key: 'date', label: 'Nap (ÉÉÉÉ-HH-NN)', kind: 'text', required: true },
+      { key: 'change', label: 'A kért módosítás', kind: 'textarea', required: true },
     ],
   },
   ajanlatkeres: {
