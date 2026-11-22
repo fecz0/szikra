@@ -41,10 +41,6 @@ main { display:block }
 @media (prefers-color-scheme: dark) { .notice { background:#2a230d; color:#f3dfa0 } }
 
 .login { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px 20px; max-width:440px; box-shadow:0 4px 16px rgba(17,26,35,.08) }
-.methods { display:flex; gap:8px }
-.methods button { flex:1; margin-top:0; background:var(--bg); color:var(--fg); border-color:var(--line) }
-.methods button.active { background:var(--btn); color:var(--btn-fg); border-color:var(--btn) }
-.login-error { margin:12px 0 0 }
 
 /* sávok */
 .band { background:var(--band) }
@@ -81,3 +77,19 @@ code { background:var(--bg); padding:1px 6px; border-radius:4px }
   .hero-in { grid-template-columns:1fr; padding-top:24px }
   .hero-art { display:none }
 }
+
+/* partnerportál */
+.company-bar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap }
+.company-bar h1 { margin:0 }
+button.ghost { background:transparent; color:var(--link); border-color:var(--line); margin:0 }
+.subnav { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 18px }
+.subnav a { padding:8px 16px; border-radius:99px; background:var(--card); border:1px solid var(--line); font-weight:700; color:var(--fg) }
+.subnav a.on { background:var(--navy); color:#fff; border-color:var(--navy) }
+.subnav a:hover { text-decoration:none }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:18px }
+.tiles .tile strong { font-size:1.6rem }
+.demo .tile button { margin-top:8px }
+select, textarea { width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:10px; background:var(--bg); color:var(--fg); font:inherit }
+.list { list-style:none; margin:0; padding:0; display:grid; gap:8px }
+.msgs { display:grid; gap:10px; margin:12px 0 }
+.msgs li { background:var(--bg); border-radius:10px; padding:10px 12px }

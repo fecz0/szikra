@@ -27,6 +27,6 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    env: { PORT: String(PORT), HOST: '127.0.0.1', NUXT_MOCK_SAP: 'true', NUXT_PUBLIC_DEMO_USERS: 'true' },
+    env: { PORT: String(PORT), HOST: '127.0.0.1', NUXT_TEST_SEED: 'true', NUXT_PUBLIC_DEMO_USERS: 'true' },
   },
 })

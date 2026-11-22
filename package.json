@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "description": "Szikra: demó energiaszolgáltatói ügyfélportál, SAP mockkal és automatizált CI/CD + DevSecOps + e2e folyamattal",
+  "description": "Szikra: demó B2B partnerportál ERPNext háttérrel (élő) vagy JSON snapshottal (deploy), CI/CD + DevSecOps + e2e folyamattal",
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
@@ -12,7 +12,14 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "erp:up": "docker compose -p szikra-erp -f erp/compose.yml up -d",
+    "erp:down": "docker compose -p szikra-erp -f erp/compose.yml down",
+    "erp:seed": "node erp/seed.ts",
+    "erp:export": "node erp/export.ts",
+    "erp:snapshot-offline": "node erp/snapshot-from-scenarios.ts",
+    "erp:smoke": "node erp/live-smoke.ts",
+    "dev:erp": "set -a; . erp/.env.local; set +a; nuxt dev"
   },
   "dependencies": {
     "nuxt": "^4.6.3",
