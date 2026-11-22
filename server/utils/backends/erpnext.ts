@@ -4,7 +4,7 @@ import { caseTypes } from '../../domain/case-types'
 import type { AuditEntry, CaseTypeId, Invoice, PortalUser } from '../../domain/types'
 import { payInvoiceInErp } from '../erp/actions'
 import { ErpClient } from '../erp/client'
-import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, ISSUE_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapInvoice, mapPartner, mapSupplyPoint } from '../erp/mappers'
+import { ACCESS_FIELDS, CUSTOMER_FIELDS, INVOICE_FIELDS, ISSUE_FIELDS, PRODUCTION_FIELDS, READING_FIELDS, SUPPLY_FIELDS, mapAccess, mapCase, mapInvoice, mapPartner, mapProduction, mapReading, mapSupplyPoint } from '../erp/mappers'
 
 const utc = (d = new Date()) => d.toISOString().replace('T', ' ').slice(0, 19)
 const fromUtc = (s: string) => new Date(String(s).replace(' ', 'T') + 'Z').toISOString()
@@ -76,6 +76,19 @@ export class ErpNextBackend implements Backend {
   async listSupplyPoints(partnerId: string) {
     const rows = await this.c.list('Szikra Supply Point', { fields: SUPPLY_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]] })
     return rows.map(r => mapSupplyPoint(r, new Map([[r.customer, partnerId]])))
+  }
+
+  async listReadings(partnerId: string) {
+    const points = await this.listSupplyPoints(partnerId)
+    if (!points.length) return []
+    const rows = await this.c.list('Szikra Meter Reading', { fields: READING_FIELDS, filters: [['supply_point', 'in', points.map(p => p.id)]], orderBy: 'date asc' })
+    return rows.map(mapReading)
+  }
+
+  async listProduction(partnerId: string) {
+    const cust = await this.cust()
+    const rows = await this.c.list('Szikra Production', { fields: PRODUCTION_FIELDS, filters: [['customer', '=', await this.erpName(partnerId)]], orderBy: 'month asc' })
+    return rows.map(r => mapProduction(r, cust.byName))
   }
 
   async listCases(partnerId: string) {

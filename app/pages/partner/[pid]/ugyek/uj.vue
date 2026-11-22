@@ -50,7 +50,7 @@ async function submit() {
             <option v-for="i in invoices" :key="i.id" :value="i.id">{{ i.period }} · {{ huf(i.amountHuf) }}</option>
           </select>
           <select v-else-if="f.kind === 'supply'" :id="`f-${f.key}`" v-model="values[f.key]" :data-testid="`field-${f.key}`">
-            <option v-for="s in points" :key="s.id" :value="s.id">{{ s.type === 'villany' ? 'Villany' : 'Gáz' }} · {{ s.pod }}</option>
+            <option v-for="s in points" :key="s.id" :value="s.id">{{ s.label ?? s.pod }} · {{ s.type === 'villany' ? 'villany' : 'gáz' }}</option>
           </select>
           <textarea v-else-if="f.kind === 'textarea'" :id="`f-${f.key}`" v-model="values[f.key]" rows="3" :data-testid="`field-${f.key}`" />
           <input v-else :id="`f-${f.key}`" v-model="values[f.key]" :type="f.kind === 'number' ? 'number' : 'text'" :data-testid="`field-${f.key}`">

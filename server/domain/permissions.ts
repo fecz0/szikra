@@ -7,15 +7,17 @@ import type { Role } from './types.ts'
 export type Capability =
   | 'invoices.view' | 'invoices.pay'
   | 'supply.view' | 'supply.reading'
+  | 'production.view'
+  | 'contracts.manage'
   | 'cases.view' | 'cases.create'
   | 'quotes.create'
   | 'users.view'
 
 export const matrix: Record<Role, readonly Capability[]> = {
-  admin: ['invoices.view', 'invoices.pay', 'supply.view', 'supply.reading', 'cases.view', 'cases.create', 'quotes.create', 'users.view'],
-  penzugy: ['invoices.view', 'invoices.pay', 'cases.view', 'cases.create'],
-  muszaki: ['supply.view', 'supply.reading', 'cases.view', 'cases.create', 'quotes.create'],
-  olvaso: ['invoices.view', 'supply.view', 'cases.view'],
+  admin: ['invoices.view', 'invoices.pay', 'supply.view', 'supply.reading', 'production.view', 'contracts.manage', 'cases.view', 'cases.create', 'quotes.create', 'users.view'],
+  penzugy: ['invoices.view', 'invoices.pay', 'production.view', 'cases.view', 'cases.create'],
+  muszaki: ['supply.view', 'supply.reading', 'production.view', 'cases.view', 'cases.create', 'quotes.create'],
+  olvaso: ['invoices.view', 'supply.view', 'production.view', 'cases.view'],
 }
 
 export const roleLabel: Record<Role, string> = {

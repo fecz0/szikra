@@ -24,7 +24,7 @@ export class MemoryBackend implements Backend {
   }
 
   reset() {
-    this.ds = structuredClone(snapshot) as unknown as Dataset
+    this.ds = { ...emptyDataset(), ...structuredClone(snapshot) } as unknown as Dataset
     this.audit = []
     this.pinned = new Set(this.ds.partners.map(p => p.id))
   }
@@ -35,6 +35,8 @@ export class MemoryBackend implements Backend {
     this.ds.users.push(...c.users)
     this.ds.memberships.push(...c.memberships)
     this.ds.supplyPoints.push(...c.supplyPoints)
+    this.ds.readings.push(...c.readings)
+    this.ds.production.push(...c.production)
     this.ds.invoices.push(...c.invoices)
     this.ds.cases.push(...c.cases)
     this.ds.notifications.push(...c.notifications)
@@ -45,6 +47,9 @@ export class MemoryBackend implements Backend {
       this.ds.partners = this.ds.partners.filter(p => !gone.has(p.id))
       this.ds.memberships = this.ds.memberships.filter(m => !gone.has(m.partnerId))
       this.ds.supplyPoints = this.ds.supplyPoints.filter(s => !gone.has(s.partnerId))
+      this.ds.production = this.ds.production.filter(p => !gone.has(p.partnerId))
+      const keepSp = new Set(this.ds.supplyPoints.map(s => s.id))
+      this.ds.readings = this.ds.readings.filter(r => keepSp.has(r.supplyPointId))
       this.ds.invoices = this.ds.invoices.filter(i => !gone.has(i.partnerId))
       this.ds.cases = this.ds.cases.filter(i => !gone.has(i.partnerId))
     }
@@ -82,6 +87,15 @@ export class MemoryBackend implements Backend {
 
   async listSupplyPoints(partnerId: string) {
     return this.ds.supplyPoints.filter(s => s.partnerId === partnerId)
+  }
+
+  async listReadings(partnerId: string) {
+    const ids = new Set(this.ds.supplyPoints.filter(s => s.partnerId === partnerId).map(s => s.id))
+    return this.ds.readings.filter(r => ids.has(r.supplyPointId))
+  }
+
+  async listProduction(partnerId: string) {
+    return this.ds.production.filter(p => p.partnerId === partnerId)
   }
 
   async listCases(partnerId: string) {

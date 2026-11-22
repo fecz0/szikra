@@ -28,6 +28,18 @@ a deploynak nincs rá szüksége: ott a JSON snapshot (`server/data/snapshot.jso
 
 Admin felület: <http://127.0.0.1:8088> (Administrator / admin; csak helyi használatra, a port csak localhostra van kötve).
 
+## Demó-adatkészlet
+
+A `server/domain/demo-data.ts` determinista generátora 12 hónapot (2025-11 … 2026-10) állít elő valós nagyságrendű árakkal:
+
+| Partner | Típus | Tartalom |
+|---|---|---|
+| Tisza Kereskedelmi Lánc Zrt. (`DEMO-LANC`) | fogyasztó | 8 telephely, villany + gáz (12 hely), 144 számla, mérőállás-idősor, egy lejárt tartozás |
+| Alföldi Napenergia Kft. (`DEMO-NAPELEM`) | termelő | 20 MW napelempark (12 + 8 MW), kb. 24 GWh éves termelés, havi átvételi elszámolás |
+| Napfény, Késő, Pech, Rendes (régi 4) | fogyasztó | a korábbi forgatókönyvek |
+
+A seed a pénzügyi évet (2025) és a sémát is pótolja meglévő ERPNext-en (`ensureFiscalYear`, DocType-migráció).
+
 ## Megjegyzések
 
 - Az `erp/.env.local` (API-kulcs) nincs verziókezelve.

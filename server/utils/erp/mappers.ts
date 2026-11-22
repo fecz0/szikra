@@ -1,12 +1,14 @@
 import { caseTypes } from '../../domain/case-types.ts'
-import type { CaseRecord, CaseStatus, CaseTypeId, Invoice, Partner, PortalUser, Role, Segment, SupplyPoint } from '../../domain/types.ts'
+import type { CaseRecord, CaseStatus, CaseTypeId, Invoice, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
 
 /** ERPNext-mezők -> portál domain-típusok. A seed, az export és az élő adapter ugyanezt használja. */
 
-export const CUSTOMER_FIELDS = ['name', 'customer_name', 'szikra_id', 'tax_id', 'szikra_address', 'szikra_segment', 'szikra_contract_no', 'szikra_card_declines']
+export const CUSTOMER_FIELDS = ['name', 'customer_name', 'szikra_id', 'tax_id', 'szikra_address', 'szikra_segment', 'szikra_contract_no', 'szikra_card_declines', 'szikra_kind']
 export const INVOICE_FIELDS = ['name', 'szikra_id', 'customer', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount', 'szikra_period', 'szikra_supply_point']
-export const SUPPLY_FIELDS = ['name', 'szikra_id', 'customer', 'energy', 'pod', 'address', 'meter_serial', 'smart', 'last_reading', 'last_reading_date', 'unit']
+export const SUPPLY_FIELDS = ['name', 'szikra_id', 'customer', 'energy', 'pod', 'address', 'meter_serial', 'smart', 'last_reading', 'last_reading_date', 'unit', 'label', 'tariff', 'capacity_kw', 'direction']
 export const ISSUE_FIELDS = ['name', 'subject', 'status', 'creation', 'customer', 'szikra_case_type', 'szikra_fields', 'szikra_created_by']
+export const READING_FIELDS = ['supply_point', 'date', 'value']
+export const PRODUCTION_FIELDS = ['szikra_id', 'customer', 'supply_point', 'month', 'mwh', 'price_huf_per_mwh', 'premium_huf', 'imbalance_huf', 'settlement_huf', 'status']
 export const ACCESS_FIELDS = ['name', 'user_id', 'full_name', 'email', 'note', 'customer', 'role']
 
 export const issueStatusToCase: Record<string, CaseStatus> = {
@@ -36,6 +38,7 @@ export function mapPartner(c: any): Partner {
     taxNumber: c.tax_id ?? '',
     address: c.szikra_address ?? '',
     segment: (c.szikra_segment || 'ipari') as Segment,
+    ...(c.szikra_kind === 'termelo' ? { kind: 'termelo' as PartnerKind } : {}),
     contractNo: c.szikra_contract_no ?? '',
     ...(c.szikra_card_declines ? { cardDeclines: true } : {}),
   }
@@ -71,6 +74,30 @@ export function mapSupplyPoint(s: any, partnerIdByCustomer: Map<string, string>)
     lastReading: Number(s.last_reading ?? 0),
     lastReadingDate: s.last_reading_date ?? '',
     unit: s.unit,
+    ...(s.label ? { label: s.label } : {}),
+    ...(s.tariff ? { tariff: s.tariff } : {}),
+    ...(s.capacity_kw ? { capacityKw: Number(s.capacity_kw) } : {}),
+    // a fogyasztás az alapértelmezés, csak a termelés jelölt
+    ...(s.direction === 'termeles' ? { direction: 'termeles' as const } : {}),
+  }
+}
+
+export function mapReading(r: any): Reading {
+  return { supplyPointId: r.supply_point, date: r.date, value: Number(r.value) }
+}
+
+export function mapProduction(p: any, partnerIdByCustomer: Map<string, string>): ProductionRecord {
+  return {
+    id: p.szikra_id || p.name,
+    partnerId: partnerIdByCustomer.get(p.customer) ?? p.customer,
+    supplyPointId: p.supply_point,
+    month: p.month,
+    mwh: Number(p.mwh),
+    priceHufPerMwh: Number(p.price_huf_per_mwh),
+    premiumHuf: Math.round(Number(p.premium_huf ?? 0)),
+    imbalanceHuf: Math.round(Number(p.imbalance_huf ?? 0)),
+    settlementHuf: Math.round(Number(p.settlement_huf)),
+    status: p.status,
   }
 }
 

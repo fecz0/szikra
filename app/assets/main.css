@@ -93,3 +93,12 @@ select, textarea { width:100%; padding:11px 12px; border:2px solid var(--line); 
 .list { list-style:none; margin:0; padding:0; display:grid; gap:8px }
 .msgs { display:grid; gap:10px; margin:12px 0 }
 .msgs li { background:var(--bg); border-radius:10px; padding:10px 12px }
+
+/* diagram */
+.chart { margin:0 0 12px } .chart figcaption { font-weight:700; margin-bottom:4px }
+.chart svg { width:100%; height:auto; display:block }
+.chart .grid line { stroke:var(--line); stroke-width:1 } .chart text { fill:var(--muted); font-size:11px }
+.chart .bar { fill:var(--navy-2) } .chart .lbl { font-size:10px }
+.toolbar { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin:8px 0 14px } .toolbar label { margin:0 } .toolbar select { width:auto; min-width:180px }
+.tag { font-size:.75rem; padding:1px 10px; border-radius:99px; border:1px solid var(--line); background:var(--bg) }
+.list li { display:flex; flex-wrap:wrap; gap:4px 12px; align-items:center }

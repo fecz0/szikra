@@ -5,6 +5,7 @@ interface Overview {
   openCases: number
   invoices: { open: number, overdue: number, outstandingHuf: number } | null
   supply: { count: number, lastReadingDate: string | null } | null
+  production: { month: string | null, mwh: number, settlementHuf: number, openSettlements: number } | null
   notifications: { id: string, at: string, text: string }[]
 }
 const { data: o } = await useFetch<Overview>(`/api/partner/${encodeURIComponent(pid)}/overview`)
@@ -19,6 +20,12 @@ const huf = (n: number) => new Intl.NumberFormat('hu-HU').format(n) + ' Ft'
         <strong data-testid="outstanding">{{ huf(o.invoices.outstandingHuf) }}</strong>
         <p>{{ o.invoices.open }} nyitott, {{ o.invoices.overdue }} lejárt</p>
         <NuxtLink :to="`/partner/${pid}/szamlak`">Számlák megtekintése</NuxtLink>
+      </div>
+      <div v-if="o.production" class="tile" data-testid="tile-production">
+        <h3>Termelés ({{ o.production.month ?? '–' }})</h3>
+        <strong data-testid="last-month-mwh">{{ new Intl.NumberFormat('hu-HU').format(o.production.mwh) }} MWh</strong>
+        <p>Elszámolás: {{ huf(o.production.settlementHuf) }} · nyitott elszámolás: {{ o.production.openSettlements }}</p>
+        <NuxtLink :to="`/partner/${pid}/termeles`">Termelés és elszámolás</NuxtLink>
       </div>
       <div v-if="o.supply" class="tile" data-testid="tile-supply">
         <h3>Fogyasztási helyek</h3>

@@ -1,20 +1,19 @@
-import type { Dataset, Invoice, Membership, Partner, PortalUser, SupplyPoint } from './types.ts'
+import type { Bundle } from './demo-data.ts'
+import { buildChain, buildSolarPark } from './demo-data.ts'
+import type { Dataset, Membership, PortalUser } from './types.ts'
 import { emptyDataset } from './types.ts'
 
-export type ScenarioName = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
+type LegacyName = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
+export type ScenarioName = LegacyName | 'kereskedelmi-lanc' | 'napelempark'
 
-interface Fragment {
-  partner: Partner
-  supplyPoints: SupplyPoint[]
-  invoices: Invoice[]
-}
+type Fragment = Bundle
 
 /**
  * Seed forgatókönyvek: egy forgatókönyv = egy teljes partner-csomag
  * (cég, fogyasztási helyek, számlák). Ugyanezt tölti be az ERPNext seed
  * (`erp/seed.ts`) és a memória-tár a tesztekben; a deploy-hoz ezekből készül a JSON snapshot.
  */
-export const scenarios: Record<ScenarioName, (id: string) => Fragment> = {
+const legacyScenarios: Record<LegacyName, (id: string) => Omit<Fragment, 'readings' | 'production'>> = {
   'okos-ipari': id => ({
     partner: { id, name: `Napfény Energia Kft. (${id})`, taxNumber: '12345678-2-41', address: '1011 Budapest, Minta utca 1.', segment: 'ipari', contractNo: `SZ-${id}-01` },
     supplyPoints: [
@@ -60,18 +59,27 @@ export const scenarios: Record<ScenarioName, (id: string) => Fragment> = {
   }),
 }
 
+export const scenarios: Record<ScenarioName, (id: string) => Fragment> = {
+  ...(Object.fromEntries(Object.entries(legacyScenarios).map(([k, make]) => [k, (id: string): Fragment => ({ readings: [], production: [], ...make(id) })])) as Record<LegacyName, (id: string) => Fragment>),
+  'kereskedelmi-lanc': id => buildChain(id, `Tisza Kereskedelmi Lánc Zrt. (${id})`, 3),
+  'napelempark': id => buildSolarPark(id, `Alföldi Napenergia Kft. (${id})`),
+}
+
 /** Fix demó partnerek (azonosítók a snapshotban is stabilak). */
 export const demoPartnerIds: Record<ScenarioName, string> = {
   'okos-ipari': 'DEMO-OKOS',
   'elmaradt-szamla': 'DEMO-ELMARADT',
   'kartya-elutasitva': 'DEMO-KARTYA',
   'rendezett-szamlak': 'DEMO-RENDEZETT',
+  'kereskedelmi-lanc': 'DEMO-LANC',
+  'napelempark': 'DEMO-NAPELEM',
 }
 
 export const demoUsers: PortalUser[] = [
   { id: 'DEMO-ADMIN', name: 'Kovács Anna', email: 'anna@demo.szikra.test', note: 'Három cég: adminisztrátor az okosmérős cégnél, olvasó a lejárt számlásnál, pénzügyi a kártyás cégnél' },
   { id: 'DEMO-PENZUGY', name: 'Nagy Péter', email: 'peter@demo.szikra.test', note: 'Pénzügyi szerepkör: számlák és fizetés, mérőállást nem közölhet' },
   { id: 'DEMO-MUSZAKI', name: 'Szabó Mária', email: 'maria@demo.szikra.test', note: 'Műszaki szerepkör: fogyasztási helyek, mérőállás, ajánlatkérés; számlát nem lát' },
+  { id: 'DEMO-TERMELO', name: 'Kiss Zoltán', email: 'zoltan@demo.szikra.test', note: 'Napelempark-üzemeltető: termelés, átvételi elszámolás, leállás- és kapacitásügyek' },
   { id: 'DEMO-OLVASO', name: 'Tóth Gábor', email: 'gabor@demo.szikra.test', note: 'Csak olvasó: minden megtekinthető, semmi nem indítható' },
 ]
 
@@ -79,6 +87,8 @@ export const demoMemberships: Membership[] = [
   { userId: 'DEMO-ADMIN', partnerId: 'DEMO-OKOS', role: 'admin' },
   { userId: 'DEMO-ADMIN', partnerId: 'DEMO-ELMARADT', role: 'olvaso' },
   { userId: 'DEMO-ADMIN', partnerId: 'DEMO-KARTYA', role: 'penzugy' },
+  { userId: 'DEMO-ADMIN', partnerId: 'DEMO-LANC', role: 'admin' },
+  { userId: 'DEMO-TERMELO', partnerId: 'DEMO-NAPELEM', role: 'admin' },
   { userId: 'DEMO-PENZUGY', partnerId: 'DEMO-ELMARADT', role: 'penzugy' },
   { userId: 'DEMO-PENZUGY', partnerId: 'DEMO-KARTYA', role: 'penzugy' },
   { userId: 'DEMO-MUSZAKI', partnerId: 'DEMO-OKOS', role: 'muszaki' },
@@ -88,11 +98,14 @@ export const demoMemberships: Membership[] = [
 export function fixedDemoDataset(): Dataset {
   const ds = emptyDataset()
   for (const [name, id] of Object.entries(demoPartnerIds) as [ScenarioName, string][]) {
-    const f = scenarios[name](id)
+    // a fix demóban a teljes lánc (8 telephely), a tesztekben a kicsi változat
+    const f = name === 'kereskedelmi-lanc' ? buildChain(id, `Tisza Kereskedelmi Lánc Zrt. (${id})`) : scenarios[name](id)
     // A fix demó partner neve szép, azonosító-utótag nélkül.
     f.partner.name = f.partner.name.replace(` (${id})`, '')
     ds.partners.push(f.partner)
     ds.supplyPoints.push(...f.supplyPoints)
+    ds.readings.push(...f.readings)
+    ds.production.push(...f.production)
     ds.invoices.push(...f.invoices)
   }
   ds.users.push(...demoUsers)
@@ -107,6 +120,8 @@ export function seedDataset(scenario: ScenarioName, role: Membership['role'], ui
   const ds = emptyDataset()
   ds.partners.push(f.partner)
   ds.supplyPoints.push(...f.supplyPoints)
+  ds.readings.push(...f.readings)
+  ds.production.push(...f.production)
   ds.invoices.push(...f.invoices)
   ds.users.push({ id: userId, name: 'Teszt Elek', email: `${uid}@teszt.szikra.test`, note: 'teszt' })
   ds.memberships.push({ userId, partnerId: f.partner.id, role })
