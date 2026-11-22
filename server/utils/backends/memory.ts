@@ -4,6 +4,7 @@ import { PaymentDeclined } from '../../domain/backend-types'
 import { caseTypes } from '../../domain/case-types'
 import type { AuditEntry, CaseRecord, Dataset } from '../../domain/types'
 import { emptyDataset } from '../../domain/types'
+import type { TariffDef } from '../../domain/types'
 import { REQUIRED_APPROVALS, approvalMessage, checkApproval, needsFourEyes } from '../../domain/approvals'
 
 // Nyilvános demón a seed végpont bárkinek elérhető: a memóriát korlátozzuk.
@@ -43,6 +44,8 @@ export class MemoryBackend implements Backend {
     this.ds.outages.push(...c.outages)
     this.ds.audit.push(...c.audit)
     this.audit.push(...c.audit)
+    this.ds.intervals.push(...c.intervals)
+    this.ds.tariffs.push(...c.tariffs)
     this.ds.invoices.push(...c.invoices)
     this.ds.cases.push(...c.cases)
     this.ds.notifications.push(...c.notifications)
@@ -57,8 +60,10 @@ export class MemoryBackend implements Backend {
       this.ds.deals = this.ds.deals.filter(p => !gone.has(p.partnerId))
       this.ds.schedule = this.ds.schedule.filter(p => !gone.has(p.partnerId))
       this.ds.outages = this.ds.outages.filter(p => !gone.has(p.partnerId))
+      this.ds.tariffs = this.ds.tariffs.filter(p => !gone.has(p.partnerId ?? ''))
       const keepSp = new Set(this.ds.supplyPoints.map(s => s.id))
       this.ds.readings = this.ds.readings.filter(r => keepSp.has(r.supplyPointId))
+      this.ds.intervals = this.ds.intervals.filter(r => keepSp.has(r.supplyPointId))
       this.ds.invoices = this.ds.invoices.filter(i => !gone.has(i.partnerId))
       this.ds.cases = this.ds.cases.filter(i => !gone.has(i.partnerId))
     }
@@ -174,6 +179,23 @@ export class MemoryBackend implements Backend {
     if (!done) throw createError({ statusCode: 409, message: approvalMessage['mar-jovahagyta'] })
     this.note(partnerId, `Átvételi elszámolás jóváhagyva: ${month} (${by.name})`)
     return done
+  }
+
+  async listIntervals(partnerId: string, supplyPointId?: string) {
+    const ids = new Set(this.ds.supplyPoints.filter(s => s.partnerId === partnerId && (!supplyPointId || s.id === supplyPointId)).map(s => s.id))
+    return this.ds.intervals.filter(i => ids.has(i.supplyPointId)).sort((a, b) => a.month.localeCompare(b.month))
+  }
+
+  async listTariffs(partnerId: string) {
+    return this.ds.tariffs.filter(t => t.partnerId === partnerId)
+  }
+
+  async createTariff(partnerId: string, def: Omit<TariffDef, 'id' | 'partnerId' | 'system'>, by: string) {
+    const n = this.ds.tariffs.filter(t => t.partnerId === partnerId).length + 1
+    const rec: TariffDef = { ...def, id: `${partnerId}-TAR-${String(n).padStart(2, '0')}`, partnerId }
+    this.ds.tariffs.push(rec)
+    this.note(partnerId, `Új díjcsomag: ${def.name} (${by})`)
+    return rec
   }
 
   async listCases(partnerId: string) {

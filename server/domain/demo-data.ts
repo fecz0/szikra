@@ -1,6 +1,7 @@
-import { electricityLines, gasLines, totals } from './tariffs.ts'
+import { HUPX_MONTHLY_HUF_MWH, electricityLines, gasLines, totals } from './tariffs.ts'
 import type { NetworkCategory, Zones } from './tariffs.ts'
-import type { AuditEntry, Outage, Deal, Invoice, InvoiceLine, Partner, ProductionRecord, Reading, ScheduleDay, SupplyPoint } from './types.ts'
+import { buildHourly } from './pricing.ts'
+import type { AuditEntry, IntervalData, Outage, Deal, Invoice, InvoiceLine, Partner, ProductionRecord, Reading, ScheduleDay, SupplyPoint } from './types.ts'
 
 /**
  * Determinista demó-adatgenerátor: 12 hónap számla, mérőállás és termelés valós nagyságrendű árakkal.
@@ -55,6 +56,7 @@ export interface Bundle {
   schedule: ScheduleDay[]
   outages?: Outage[]
   audit?: AuditEntry[]
+  intervals?: IntervalData[]
 }
 
 /** Kereskedelmi lánc: több telephely, villany + (egy részén) gáz, 12 havi tételes számla (valós díjszerkezet, lásd tariffs.ts). */
@@ -62,6 +64,7 @@ export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.len
   const r = rng(id)
   const partner: Partner = { id, name, taxNumber: '25678123-2-13', address: '4025 Debrecen, Piac utca 12.', segment: 'kereskedelmi', contractNo: `SZ-${id}-05` }
   const supplyPoints: SupplyPoint[] = []; const readings: Reading[] = []; const invoices: Invoice[] = []
+  const intervals: IntervalData[] = []
   const sites = CHAIN_SITES.slice(0, siteCount)
   sites.forEach((s, si) => {
     const kinds: Array<'villany' | 'gaz'> = s.gas ? ['villany', 'gaz'] : ['villany']
@@ -90,6 +93,8 @@ export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.len
         if (type === 'villany') {
           const nap = round(use * (0.52 + r() * 0.06), 100); const csucs = round(use * (0.24 + r() * 0.04), 100)
           zones = { nappali: nap, csucs, volgy: use - nap - csucs }
+          // óránkénti intervallumadat: a zónaösszegek pontosan a számlázott zónák (külön véletlen, a számlák nem változnak)
+          intervals.push({ supplyPointId: spId, month: ym, intervalMinutes: 60, kwh: buildHourly(ym, zones, spId) })
           lines = electricityLines({ zones, tariff: s.tariff, hupxHufPerMwh: BASE_PRICE_HUF_MWH[monthIdx(ym)]!, contractedKw, category })
         }
         else {
@@ -115,12 +120,12 @@ export function buildChain(id: string, name: string, siteCount = CHAIN_SITES.len
       })
     }
   })
-  return { partner, supplyPoints, readings, invoices, production: [], deals: [], schedule: [] }
+  return { partner, supplyPoints, readings, invoices, production: [], deals: [], schedule: [], intervals }
 }
 
 /** Napenergia: havi termelés a névleges teljesítményből, szezonális alakkal. */
 const SOLAR_SHARE = [3, 5, 8, 10.5, 12, 12.5, 13, 12, 9.5, 6.5, 3.5, 2.5] // % éves hozam, index 0 = január (összeg 100)
-const BASE_PRICE_HUF_MWH = [46000, 44000, 38000, 33000, 30000, 31000, 36000, 37000, 38000, 41000, 45000, 48000] // HUPX-jellegű havi átlag, Ft/MWh
+const BASE_PRICE_HUF_MWH = HUPX_MONTHLY_HUF_MWH
 
 export function buildSolarPark(id: string, name: string, blocks: Array<{ label: string, mw: number, premium: number }> = [{ label: 'A blokk', mw: 12, premium: 0 }, { label: 'B blokk', mw: 8, premium: 4500 }]): Bundle {
   const r = rng(id)

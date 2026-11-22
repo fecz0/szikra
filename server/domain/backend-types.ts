@@ -1,4 +1,4 @@
-import type { Outage, Deal, ScheduleDay, ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
+import type { IntervalData, TariffDef, Outage, Deal, ScheduleDay, ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
 
 export interface UserWithMemberships {
   user: PortalUser
@@ -34,6 +34,11 @@ export interface Backend {
   approveOutage: (partnerId: string, outageId: string, by: { userId: string, name: string }) => Promise<Outage>
   /** Egy hónap nagy összegű elszámolásainak jóváhagyása; a jóváhagyott rekordok számát adja. */
   approveSettlements: (partnerId: string, month: string, by: { userId: string, name: string }) => Promise<number>
+  /** Intervallum-mérőadat; supplyPointId megadásával csak az adott hely hónapjai. */
+  listIntervals: (partnerId: string, supplyPointId?: string) => Promise<IntervalData[]>
+  /** A partner saját (egyedi) díjcsomagjai; a rendszer-díjcsomagok a kódból jönnek. */
+  listTariffs: (partnerId: string) => Promise<TariffDef[]>
+  createTariff: (partnerId: string, def: Omit<TariffDef, 'id' | 'partnerId' | 'system'>, by: string) => Promise<TariffDef>
   listCases: (partnerId: string) => Promise<CaseRecord[]>
   getCase: (partnerId: string, caseId: string) => Promise<CaseRecord | null>
   createCase: (input: { partnerId: string, type: CaseTypeId, subject: string, by: string, fields: Record<string, string> }) => Promise<CaseRecord>

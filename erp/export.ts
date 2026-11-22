@@ -1,6 +1,7 @@
 // ERPNext -> JSON snapshot (a deploy ebből dolgozik, ERPNext nélkül).
 // Használat: node erp/export.ts   (az erp/.env.local kulcsait vagy Administrator/admin belépést használja)
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { formatSnapshot } from './format.ts'
 import { ErpClient } from '../server/utils/erp/client.ts'
 import { fetchDataset } from '../server/utils/erp/dataset.ts'
 
@@ -15,5 +16,5 @@ const c = new ErpClient(BASE, env.NUXT_ERP_API_KEY
 
 const ds = await fetchDataset(c)
 const out = new URL('../server/data/snapshot.json', import.meta.url)
-writeFileSync(out, JSON.stringify(ds, null, 2) + '\n')
+writeFileSync(out, formatSnapshot(ds))
 console.log(`snapshot: ${ds.partners.length} partner, ${ds.users.length} felhasználó, ${ds.invoices.length} számla, ${ds.supplyPoints.length} fogyasztási hely, ${ds.cases.length} ügy -> ${out.pathname}`)

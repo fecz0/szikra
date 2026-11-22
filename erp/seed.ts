@@ -146,6 +146,19 @@ async function ensureSchema() {
     t('Select', { fieldname: 'status', label: 'Állapot', options: 'tervezet\njovahagyva\nkifizetve', in_list_view: 1 }),
     t('Long Text', { fieldname: 'approvals_json', label: 'Jóváhagyások (JSON)' }),
   ])
+  await ensureDoctype('Szikra Interval Data', 'hash', [
+    t('Data', { fieldname: 'supply_point', label: 'Fogyasztási hely azonosító', reqd: 1, in_list_view: 1 }),
+    t('Data', { fieldname: 'month', label: 'Hónap', reqd: 1, in_list_view: 1 }),
+    t('Int', { fieldname: 'interval_minutes', label: 'Intervallum (perc)' }),
+    t('Long Text', { fieldname: 'kwh_json', label: 'Fogyasztás intervallumonként, kWh (JSON)' }),
+  ])
+  await ensureDoctype('Szikra Tariff', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Data', { fieldname: 'tariff_name', label: 'Díjcsomag neve', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'kind', label: 'Típus', options: 'fix\nindexed\ntou\ndynamic', in_list_view: 1 }),
+    t('Long Text', { fieldname: 'params_json', label: 'Paraméterek (JSON)' }),
+  ])
   await ensureDoctype('Szikra Outage', 'field:szikra_id', [
     t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
     t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
@@ -285,6 +298,20 @@ async function seedData() {
   // ÁFA: fix összegű adósor (a számlakép végösszege forintra egyezik)
   const vatAccount = await ensureVatAccount(company)
   let ni = 0
+  const haveIv = new Set((await c.list('Szikra Interval Data', { fields: ['supply_point', 'month'] })).map(r => `${r.supply_point}|${r.month}`))
+  let niv = 0
+  for (const iv of ds.intervals) {
+    if (haveIv.has(`${iv.supplyPointId}|${iv.month}`)) continue
+    await c.create('Szikra Interval Data', { supply_point: iv.supplyPointId, month: iv.month, interval_minutes: iv.intervalMinutes, kwh_json: JSON.stringify(iv.kwh) }); niv++
+  }
+  if (niv) log('intervallumadat-hónap:', niv)
+  const haveTar = new Set((await c.list('Szikra Tariff', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const tf of ds.tariffs) {
+    if (haveTar.has(tf.id)) continue
+    const { id, name, kind, partnerId: _p, ...params } = tf
+    await c.create('Szikra Tariff', { szikra_id: id, customer: customerByPartner.get(tf.partnerId!), tariff_name: name, kind, params_json: JSON.stringify(params) })
+  }
+
   const haveOut = new Set((await c.list('Szikra Outage', { fields: ['szikra_id'] })).map(r => r.szikra_id))
   for (const o of ds.outages) {
     if (haveOut.has(o.id)) continue

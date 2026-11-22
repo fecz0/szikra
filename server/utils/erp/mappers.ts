@@ -1,5 +1,5 @@
 import { caseTypes } from '../../domain/case-types.ts'
-import type { Approval, AuditEntry, Outage, Deal, ScheduleDay, CaseRecord, CaseStatus, CaseTypeId, Invoice, InvoiceLine, InvoiceUsage, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
+import type { IntervalData, TariffDef, Approval, AuditEntry, Outage, Deal, ScheduleDay, CaseRecord, CaseStatus, CaseTypeId, Invoice, InvoiceLine, InvoiceUsage, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
 
 /** ERPNext-mezők -> portál domain-típusok. A seed, az export és az élő adapter ugyanezt használja. */
 
@@ -9,6 +9,8 @@ export const SUPPLY_FIELDS = ['name', 'szikra_id', 'customer', 'energy', 'pod', 
 export const ISSUE_FIELDS = ['name', 'subject', 'status', 'creation', 'customer', 'szikra_case_type', 'szikra_fields', 'szikra_created_by']
 export const ITEM_FIELDS = ['parent', 'item_code', 'item_name', 'qty', 'uom', 'rate', 'amount', 'szikra_category', 'idx']
 export const DEAL_FIELDS = ['szikra_id', 'customer', 'commodity', 'product', 'side', 'volume', 'volume_unit', 'price_eur_mwh', 'fx_huf_per_eur', 'delivery_from', 'delivery_to', 'total_mwh', 'trade_date', 'status']
+export const INTERVAL_FIELDS = ['supply_point', 'month', 'interval_minutes', 'kwh_json']
+export const TARIFF_FIELDS = ['szikra_id', 'customer', 'tariff_name', 'kind', 'params_json']
 export const OUTAGE_FIELDS = ['szikra_id', 'customer', 'supply_point', 'kind', 'date_from', 'date_to', 'purpose', 'proposed_by_id', 'proposed_by_name', 'status', 'approvals_json']
 export const SCHEDULE_FIELDS = ['szikra_id', 'customer', 'date', 'commodity', 'values_json', 'status', 'submitted_by']
 export const READING_FIELDS = ['supply_point', 'date', 'value']
@@ -180,4 +182,16 @@ export function mapOutage(o: any, partnerIdByCustomer: Map<string, string>): Out
 
 export function mapAuditEvent(e: any, partnerIdByCustomer: Map<string, string>): AuditEntry {
   return { at: new Date(String(e.at).replace(' ', 'T') + 'Z').toISOString(), userId: e.user_id, partnerId: e.customer ? (partnerIdByCustomer.get(e.customer) ?? e.customer) : '-', action: e.text ?? '' }
+}
+
+export function mapInterval(i: any): IntervalData {
+  let kwh: number[] = []
+  try { kwh = JSON.parse(i.kwh_json || '[]') } catch { /* sérült JSON: üres idősor */ }
+  return { supplyPointId: i.supply_point, month: i.month, intervalMinutes: Number(i.interval_minutes), kwh }
+}
+
+export function mapTariff(t: any, partnerIdByCustomer: Map<string, string>): TariffDef {
+  let params: Partial<TariffDef> = {}
+  try { params = JSON.parse(t.params_json || '{}') } catch { /* sérült JSON: nincs paraméter */ }
+  return { id: t.szikra_id, partnerId: partnerIdByCustomer.get(t.customer) ?? t.customer, name: t.tariff_name, kind: t.kind, ...params }
 }

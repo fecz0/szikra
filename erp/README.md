@@ -59,6 +59,16 @@ A seed a pénzügyi évet (2025) és a sémát is pótolja meglévő ERPNext-en 
 | `DEMO-ATOMUZEM` | műszaki | Dunai Atomerőmű: leállást javasolhat, jóváhagyni nem tud |
 | `DEMO-OLVASO` | olvasó | Rendes Ipari Park |
 
+## Tarifa-motor és díjcsomag-szimulátor
+
+A `server/domain/pricing.ts` adatvezérelt tarifa-motor (a díjcsomagok paraméterei adatok, nem kód):
+
+- **Intervallumadat:** a lánc villany-telephelyeihez órás mérőadat (96 telephely-hónap), úgy előállítva, hogy a zónaösszegek (nappali 6–17, csúcs 17–22, völgy 22–6) pontosan a számlázott zónák (`Szikra Interval Data`).
+- **Díjcsomag-típusok:** fix, tőzsdei havi átlag + kereskedői díj, csúcs-völgy, dinamikus (óránkénti tőzsdei ár, D-tarifa jellegű). Újak a felületen, kód nélkül (`Szikra Tariff`).
+- **Próba:** a jelenlegi díjcsomaggal a motor mind a 96 telephely-hónapban *pontosan* a kiszámlázott energiadíjat adja (`tests/unit/pricing.test.ts`, és a portálon a „Motor-ellenőrzés” csempe: 0 Ft eltérés).
+- **Szimulátor** (`/partner/:id/dijcsomagok`): a 12 havi adatból minden díjcsomag éves energiadíja, megtakarítás a jelenlegihez képest, „Váltás kérése” előtöltött díjcsomag-váltási ügyre.
+- Az órás tőzsdei ár modell (éjjel olcsóbb, nyári délben a napelemek leviszik, este csúcs); a havi átlaga a HUPX-jellegű havi átlag. Demó-érték, nem piaci adat.
+
 ## Négy szem elve
 
 A leállás és az 1 Mrd Ft feletti havi átvételi elszámolás csak **két különböző** jóváhagyó elfogadása után lép életbe (`server/domain/approvals.ts`). Ugyanaz a személy kétszer nem hagyhat jóvá, a javaslattevő a saját javaslatát nem (409). A jóváhagyók: admin, megfelelőségi felelős (leállás); pénzügyi, admin, megfelelőségi felelős (elszámolás). Minden lépés az auditnaplóba kerül (`Szikra Event`, `kind = audit`).
