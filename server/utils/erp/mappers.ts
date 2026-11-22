@@ -13,6 +13,22 @@ export const issueStatusToCase: Record<string, CaseStatus> = {
   'Open': 'uj', 'Replied': 'folyamatban', 'On Hold': 'visszajelzesre-var', 'Resolved': 'lezart', 'Closed': 'lezart',
 }
 
+/**
+ * Az ERPNext a megjegyzéseket HTML-ként tárolja (a felületen írt válasz `<div><p>…</p></div>`).
+ * Szándékosan nem regex: karakterenként dobjuk el a `<`…`>` közötti részt, és soha nem adunk ki `<` jelet,
+ * így egymásba ágyazott vagy csonka címkékből sem állhat össze új címke. A kimenetet a Vue úgyis escape-eli.
+ */
+export function htmlToText(html: string): string {
+  let out = ''
+  let inTag = false
+  for (const ch of html) {
+    if (ch === '<') inTag = true
+    else if (ch === '>') inTag = false
+    else if (!inTag) out += ch
+  }
+  return out.replaceAll('&nbsp;', ' ').replaceAll('&amp;', '&').trim()
+}
+
 export function mapPartner(c: any): Partner {
   return {
     id: c.szikra_id || c.name,
@@ -74,7 +90,7 @@ export function mapCase(i: any, partnerIdByCustomer: Map<string, string>, commen
     messages: comments.map(c => ({
       at: new Date(String(c.creation).replace(' ', 'T') + 'Z').toISOString(),
       by: c.comment_by ?? '',
-      text: String(c.content ?? '').replace(/<[^>]+>/g, ''),
+      text: htmlToText(String(c.content ?? '')),
     })),
   }
 }

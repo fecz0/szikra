@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (!cfg.testSeed || !b.load) throw createError({ statusCode: 404, statusMessage: 'Not Found' })
   const { scenario, role = 'admin' } = await readBody<{ scenario?: string, role?: 'admin' | 'penzugy' | 'muszaki' | 'olvaso' }>(event)
   if (!scenario || !(scenario in scenarios)) throw createError({ statusCode: 400, message: 'Ismeretlen forgatókönyv' })
-  const uid = Math.random().toString(36).slice(2, 10).toUpperCase()
+  const uid = crypto.randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()
   const { dataset, userId, partnerId } = seedDataset(scenario as ScenarioName, role, uid)
   b.load(dataset)
   return { userId, partnerId }

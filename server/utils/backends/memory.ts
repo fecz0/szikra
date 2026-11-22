@@ -94,7 +94,7 @@ export class MemoryBackend implements Backend {
 
   async createCase(input: Parameters<Backend['createCase']>[0]) {
     const rec: CaseRecord = {
-      id: `ÜGY-${String(this.seq++).padStart(5, '0')}-${Math.random().toString(36).slice(2, 6)}`,
+      id: `ÜGY-${String(this.seq++).padStart(5, '0')}-${crypto.randomUUID().slice(0, 4)}`,
       partnerId: input.partnerId,
       type: input.type,
       subject: input.subject,

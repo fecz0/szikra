@@ -32,3 +32,14 @@ describe('fix demó-adatkészlet és snapshot', () => {
     expect(snapshot.users.map(u => u.id).sort()).toEqual(ds.users.map(u => u.id).sort())
   })
 })
+
+import { htmlToText } from '../../server/utils/erp/mappers'
+
+describe('htmlToText', () => {
+  it('az ERPNext HTML-jét sima szöveggé alakítja', () => {
+    expect(htmlToText('<div class="ql-editor"><p>Szia&nbsp;világ &amp; mások</p></div>')).toBe('Szia világ & mások')
+  })
+  it('egymásba ágyazott címkéből sem állhat össze új címke', () => {
+    expect(htmlToText('<scr<script>ipt>alert(1)</scr</script>ipt>')).not.toContain('<')
+  })
+})
