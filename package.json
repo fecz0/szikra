@@ -22,15 +22,15 @@
     "dev:erp": "set -a; . erp/.env.local; set +a; nuxt dev"
   },
   "dependencies": {
-    "nuxt": "^4.6.3",
+    "nuxt": "^4.6.4",
     "vue": "latest",
     "vue-router": "latest"
   },
   "devDependencies": {
-    "@playwright/test": "^1.65.0",
+    "@playwright/test": "^1.65.1",
     "@types/node": "^26.6.6",
     "typescript": "^6.0.3",
-    "vitest": "^5.1.0",
+    "vitest": "^5.1.1",
     "vue-tsc": "^3.3.14"
   },
   "packageManager": "pnpm@11.16.0"
