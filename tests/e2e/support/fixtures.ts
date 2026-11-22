@@ -1,10 +1,10 @@
 import type { Page } from '@playwright/test'
 import { test as base, expect } from '@playwright/test'
 
-export type Scenario = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak' | 'kereskedelmi-lanc' | 'napelempark' | 'nagykereskedelem'
-export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo'
+export type Scenario = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak' | 'kereskedelmi-lanc' | 'napelempark' | 'nagykereskedelem' | 'atomeromu'
+export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo' | 'megfelelo'
 
-export interface Seeded { userId: string, partnerId: string }
+export interface Seeded { userId: string, partnerId: string, extra: Record<string, string> }
 
 /**
  * `erp.seed(forgatókönyv, szerepkör)` -> új partner + egyedi felhasználó a háttérben.
@@ -13,14 +13,14 @@ export interface Seeded { userId: string, partnerId: string }
  */
 export const test = base.extend<{
   erp: {
-    seed: (scenario: Scenario, role?: Role) => Promise<Seeded>
+    seed: (scenario: Scenario, role?: Role, extraRoles?: Role[]) => Promise<Seeded>
     login: (page: Page, s: Seeded) => Promise<void>
   }
 }>({
   erp: async ({ request }, use) => {
     await use({
-      async seed(scenario, role = 'admin') {
-        const res = await request.post('/__test/seed', { data: { scenario, role } })
+      async seed(scenario, role = 'admin', extraRoles = []) {
+        const res = await request.post('/__test/seed', { data: { scenario, role, extraRoles } })
         expect(res.ok(), `seed sikertelen: ${await res.text()}`).toBeTruthy()
         return await res.json() as Seeded
       },

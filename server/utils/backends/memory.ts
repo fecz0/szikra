@@ -4,6 +4,7 @@ import { PaymentDeclined } from '../../domain/backend-types'
 import { caseTypes } from '../../domain/case-types'
 import type { AuditEntry, CaseRecord, Dataset } from '../../domain/types'
 import { emptyDataset } from '../../domain/types'
+import { REQUIRED_APPROVALS, approvalMessage, checkApproval, needsFourEyes } from '../../domain/approvals'
 
 // Nyilvános demón a seed végpont bárkinek elérhető: a memóriát korlátozzuk.
 const MAX_PARTNERS = 500
@@ -25,7 +26,7 @@ export class MemoryBackend implements Backend {
 
   reset() {
     this.ds = { ...emptyDataset(), ...structuredClone(snapshot) } as unknown as Dataset
-    this.audit = []
+    this.audit = [...(this.ds.audit ?? [])]
     this.pinned = new Set(this.ds.partners.map(p => p.id))
   }
 
@@ -39,6 +40,9 @@ export class MemoryBackend implements Backend {
     this.ds.production.push(...c.production)
     this.ds.deals.push(...c.deals)
     this.ds.schedule.push(...c.schedule)
+    this.ds.outages.push(...c.outages)
+    this.ds.audit.push(...c.audit)
+    this.audit.push(...c.audit)
     this.ds.invoices.push(...c.invoices)
     this.ds.cases.push(...c.cases)
     this.ds.notifications.push(...c.notifications)
@@ -52,6 +56,7 @@ export class MemoryBackend implements Backend {
       this.ds.production = this.ds.production.filter(p => !gone.has(p.partnerId))
       this.ds.deals = this.ds.deals.filter(p => !gone.has(p.partnerId))
       this.ds.schedule = this.ds.schedule.filter(p => !gone.has(p.partnerId))
+      this.ds.outages = this.ds.outages.filter(p => !gone.has(p.partnerId))
       const keepSp = new Set(this.ds.supplyPoints.map(s => s.id))
       this.ds.readings = this.ds.readings.filter(r => keepSp.has(r.supplyPointId))
       this.ds.invoices = this.ds.invoices.filter(i => !gone.has(i.partnerId))
@@ -131,6 +136,46 @@ export class MemoryBackend implements Backend {
     return rec
   }
 
+  async listOutages(partnerId: string) {
+    return this.ds.outages.filter(o => o.partnerId === partnerId).sort((a, b) => a.from.localeCompare(b.from))
+  }
+
+  async proposeOutage(partnerId: string, input: { supplyPointId: string, kind: 'tervezett' | 'rendkivuli', from: string, to: string, purpose: string, by: { userId: string, name: string } }) {
+    const n = this.ds.outages.filter(o => o.partnerId === partnerId).length + 1
+    const rec = { id: `${partnerId}-OUT-${String(n).padStart(2, '0')}`, partnerId, supplyPointId: input.supplyPointId, kind: input.kind, from: input.from, to: input.to, purpose: input.purpose, proposedBy: input.by, status: 'jovahagyasra-var' as const, approvals: [] }
+    this.ds.outages.push(rec)
+    this.note(partnerId, `Új leállás-javaslat: ${input.from} – ${input.to} (${input.by.name})`)
+    return rec
+  }
+
+  async approveOutage(partnerId: string, outageId: string, by: { userId: string, name: string }) {
+    const o = this.ds.outages.find(x => x.id === outageId && x.partnerId === partnerId)
+    if (!o) throw createError({ statusCode: 404, message: 'A leállás nem található' })
+    if (o.status === 'jovahagyva') throw createError({ statusCode: 409, message: 'A leállás már jóvá van hagyva' })
+    const check = checkApproval(o.approvals, by.userId, o.proposedBy.userId)
+    if (check !== 'ok') throw createError({ statusCode: 409, message: approvalMessage[check] })
+    o.approvals.push({ ...by, at: new Date().toISOString() })
+    if (o.approvals.length >= REQUIRED_APPROVALS) o.status = 'jovahagyva'
+    this.note(partnerId, `Leállás jóváhagyva (${o.approvals.length}/${REQUIRED_APPROVALS}): ${o.from} – ${o.to}`)
+    return o
+  }
+
+  async approveSettlements(partnerId: string, month: string, by: { userId: string, name: string }) {
+    const recs = this.ds.production.filter(p => p.partnerId === partnerId && p.month === month && p.status === 'tervezet' && needsFourEyes(p.settlementHuf))
+    if (!recs.length) throw createError({ statusCode: 404, message: 'Nincs jóváhagyásra váró elszámolás ebben a hónapban' })
+    let done = 0
+    for (const p of recs) {
+      p.approvals ??= []
+      if (checkApproval(p.approvals, by.userId) !== 'ok') continue
+      p.approvals.push({ ...by, at: new Date().toISOString() })
+      if (p.approvals.length >= REQUIRED_APPROVALS) p.status = 'jovahagyva'
+      done++
+    }
+    if (!done) throw createError({ statusCode: 409, message: approvalMessage['mar-jovahagyta'] })
+    this.note(partnerId, `Átvételi elszámolás jóváhagyva: ${month} (${by.name})`)
+    return done
+  }
+
   async listCases(partnerId: string) {
     return this.ds.cases.filter(c => c.partnerId === partnerId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   }
@@ -171,7 +216,7 @@ export class MemoryBackend implements Backend {
   }
 
   async listAudit(partnerId: string) {
-    return this.audit.filter(a => a.partnerId === partnerId).reverse()
+    return this.audit.filter(a => a.partnerId === partnerId).sort((a, b) => b.at.localeCompare(a.at))
   }
 
   private note(partnerId: string, text: string) {

@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   const { user, membership } = await requireCapability(event, pid, 'cases.view')
   const b = useBackend()
   const caps = (await import('../../../domain/permissions')).matrix[membership.role]
+  const { needsFourEyes } = await import('../../../domain/approvals')
   const has = (c: string) => (caps as readonly string[]).includes(c)
 
   const producer = membership.partner.kind === 'termelo'
@@ -34,6 +35,16 @@ export default defineEventHandler(async (event) => {
       const m = production.filter(p => p.month === last)
       return { month: last ?? null, mwh: Math.round(m.reduce((s, p) => s + p.mwh, 0) * 10) / 10, settlementHuf: m.reduce((s, p) => s + p.settlementHuf, 0), openSettlements: production.filter(p => p.status !== 'kifizetve').length }
     })(),
+    approvals: producer && production ? (() => {
+      const months = [...new Set(production.filter(x => x.status === 'tervezet' && needsFourEyes(x.settlementHuf)).map(x => x.month))]
+      return { settlementMonthsAwaiting: months.length }
+    })() : null,
+    outages: producer && has('outages.view') ? await (async () => {
+      const list = await b.listOutages(pid)
+      const today = new Date().toISOString().slice(0, 10)
+      const upcoming = list.filter(o => o.status === 'jovahagyva' && o.to >= today).sort((a, c) => a.from.localeCompare(c.from))[0]
+      return { pendingApproval: list.filter(o => o.status === 'jovahagyasra-var').length, next: upcoming ? { from: upcoming.from, to: upcoming.to, supplyPointId: upcoming.supplyPointId } : null }
+    })() : null,
     trading: trader && {
       pendingDeals: deals?.filter(d => d.status === 'visszaigazolasra-var').length ?? null,
       disputedDeals: deals?.filter(d => d.status === 'vitatott').length ?? null,

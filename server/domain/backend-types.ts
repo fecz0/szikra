@@ -1,4 +1,4 @@
-import type { Deal, ScheduleDay, ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
+import type { Outage, Deal, ScheduleDay, ProductionRecord, Reading, AuditEntry, CaseMessage, CaseRecord, CaseTypeId, Dataset, Invoice, Membership, NotificationItem, Partner, PortalUser, SupplyPoint } from './types.ts'
 
 export interface UserWithMemberships {
   user: PortalUser
@@ -28,6 +28,12 @@ export interface Backend {
   confirmDeal: (partnerId: string, dealId: string, by: string) => Promise<void>
   listSchedule: (partnerId: string) => Promise<ScheduleDay[]>
   submitSchedule: (partnerId: string, day: { date: string, commodity: Deal['commodity'], values: number[], by: string }) => Promise<ScheduleDay>
+  listOutages: (partnerId: string) => Promise<Outage[]>
+  proposeOutage: (partnerId: string, input: { supplyPointId: string, kind: Outage['kind'], from: string, to: string, purpose: string, by: { userId: string, name: string } }) => Promise<Outage>
+  /** Négy szem: jóváhagyás; a második, különböző jóváhagyó véglegesíti. Visszaadja a frissített leállást. */
+  approveOutage: (partnerId: string, outageId: string, by: { userId: string, name: string }) => Promise<Outage>
+  /** Egy hónap nagy összegű elszámolásainak jóváhagyása; a jóváhagyott rekordok számát adja. */
+  approveSettlements: (partnerId: string, month: string, by: { userId: string, name: string }) => Promise<number>
   listCases: (partnerId: string) => Promise<CaseRecord[]>
   getCase: (partnerId: string, caseId: string) => Promise<CaseRecord | null>
   createCase: (input: { partnerId: string, type: CaseTypeId, subject: string, by: string, fields: Record<string, string> }) => Promise<CaseRecord>

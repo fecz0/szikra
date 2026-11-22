@@ -1,5 +1,5 @@
 import { caseTypes } from '../../domain/case-types.ts'
-import type { Deal, ScheduleDay, CaseRecord, CaseStatus, CaseTypeId, Invoice, InvoiceLine, InvoiceUsage, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
+import type { Approval, AuditEntry, Outage, Deal, ScheduleDay, CaseRecord, CaseStatus, CaseTypeId, Invoice, InvoiceLine, InvoiceUsage, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
 
 /** ERPNext-mezők -> portál domain-típusok. A seed, az export és az élő adapter ugyanezt használja. */
 
@@ -9,9 +9,10 @@ export const SUPPLY_FIELDS = ['name', 'szikra_id', 'customer', 'energy', 'pod', 
 export const ISSUE_FIELDS = ['name', 'subject', 'status', 'creation', 'customer', 'szikra_case_type', 'szikra_fields', 'szikra_created_by']
 export const ITEM_FIELDS = ['parent', 'item_code', 'item_name', 'qty', 'uom', 'rate', 'amount', 'szikra_category', 'idx']
 export const DEAL_FIELDS = ['szikra_id', 'customer', 'commodity', 'product', 'side', 'volume', 'volume_unit', 'price_eur_mwh', 'fx_huf_per_eur', 'delivery_from', 'delivery_to', 'total_mwh', 'trade_date', 'status']
+export const OUTAGE_FIELDS = ['szikra_id', 'customer', 'supply_point', 'kind', 'date_from', 'date_to', 'purpose', 'proposed_by_id', 'proposed_by_name', 'status', 'approvals_json']
 export const SCHEDULE_FIELDS = ['szikra_id', 'customer', 'date', 'commodity', 'values_json', 'status', 'submitted_by']
 export const READING_FIELDS = ['supply_point', 'date', 'value']
-export const PRODUCTION_FIELDS = ['szikra_id', 'customer', 'supply_point', 'month', 'mwh', 'price_huf_per_mwh', 'premium_huf', 'imbalance_huf', 'settlement_huf', 'status']
+export const PRODUCTION_FIELDS = ['szikra_id', 'customer', 'supply_point', 'month', 'mwh', 'price_huf_per_mwh', 'premium_huf', 'imbalance_huf', 'settlement_huf', 'status', 'approvals_json']
 export const ACCESS_FIELDS = ['name', 'user_id', 'full_name', 'email', 'note', 'customer', 'role']
 
 export const issueStatusToCase: Record<string, CaseStatus> = {
@@ -116,6 +117,7 @@ export function mapProduction(p: any, partnerIdByCustomer: Map<string, string>):
     imbalanceHuf: Math.round(Number(p.imbalance_huf ?? 0)),
     settlementHuf: Math.round(Number(p.settlement_huf)),
     status: p.status,
+    ...(parseApprovals(p.approvals_json).length ? { approvals: parseApprovals(p.approvals_json) } : {}),
   }
 }
 
@@ -163,4 +165,19 @@ export function mapSchedule(s: any, partnerIdByCustomer: Map<string, string>): S
   let values: number[] = []
   try { values = JSON.parse(s.values_json || '[]') } catch { /* sérült JSON: üres menetrend */ }
   return { id: s.szikra_id, partnerId: partnerIdByCustomer.get(s.customer) ?? s.customer, date: s.date, commodity: s.commodity, values, status: s.status, submittedBy: s.submitted_by ?? '' }
+}
+
+export function parseApprovals(json: unknown): Approval[] {
+  try { const v = JSON.parse(String(json || '[]')); return Array.isArray(v) ? v : [] } catch { return [] }
+}
+
+export function mapOutage(o: any, partnerIdByCustomer: Map<string, string>): Outage {
+  return {
+    id: o.szikra_id, partnerId: partnerIdByCustomer.get(o.customer) ?? o.customer, supplyPointId: o.supply_point, kind: o.kind, from: o.date_from, to: o.date_to,
+    purpose: o.purpose ?? '', proposedBy: { userId: o.proposed_by_id, name: o.proposed_by_name }, status: o.status, approvals: parseApprovals(o.approvals_json),
+  }
+}
+
+export function mapAuditEvent(e: any, partnerIdByCustomer: Map<string, string>): AuditEntry {
+  return { at: new Date(String(e.at).replace(' ', 'T') + 'Z').toISOString(), userId: e.user_id, partnerId: e.customer ? (partnerIdByCustomer.get(e.customer) ?? e.customer) : '-', action: e.text ?? '' }
 }

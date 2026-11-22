@@ -37,6 +37,7 @@ A `server/domain/demo-data.ts` determinista generátora 12 hónapot (2025-11 …
 | Tisza Kereskedelmi Lánc Zrt. (`DEMO-LANC`) | fogyasztó | 8 telephely, villany + gáz (12 hely), 144 számla, mérőállás-idősor, egy lejárt tartozás |
 | Alföldi Napenergia Kft. (`DEMO-NAPELEM`) | termelő | 20 MW napelempark (12 + 8 MW), kb. 24 GWh éves termelés, havi átvételi elszámolás |
 | Duna Trade Kft. (`DEMO-NAGYKER`) | nagykereskedő | 12 határidős ügylet (villany bázis/csúcs, gáz; vétel és eladás; EUR/MWh, árfolyammal), napi menetrend (24 órás villany, napi gáz), hitelkeret 3 Mrd Ft + 1,5 Mrd Ft bankgarancia (lejárat 2027-02-28), havi elszámoló számlák (~1,1 Mrd Ft) |
+| Dunai Atomerőmű Zrt. (`DEMO-ATOM`) | termelő | 4 blokk × 500 MW, ~15,5 TWh/év, váltakozó éves leállások (üzemanyagcsere), hosszú távú PPA (fix ár), ~40 Mrd Ft/hó elszámolás; leállási terv és nagy összegű elszámolás négy szem jóváhagyással, auditnapló |
 | Napfény, Késő, Pech, Rendes (régi 4) | fogyasztó | a korábbi forgatókönyvek |
 
 A seed a pénzügyi évet (2025) és a sémát is pótolja meglévő ERPNext-en (`ensureFiscalYear`, DocType-migráció).
@@ -50,10 +51,17 @@ A seed a pénzügyi évet (2025) és a sémát is pótolja meglévő ERPNext-en 
 | `DEMO-MUSZAKI` | műszaki | Napfény |
 | `DEMO-TERMELO` | admin | Alföldi Napenergia |
 | `DEMO-KERESKEDO` | kereskedő | Duna Trade |
-| `DEMO-ELSZAMOLAS` | pénzügyi | Duna Trade, Alföldi Napenergia |
+| `DEMO-ELSZAMOLAS` | pénzügyi | Duna Trade, Alföldi Napenergia, Dunai Atomerőmű (elszámolás jóváhagyás) |
 | `DEMO-UZEMVEZETO` | műszaki | Alföldi Napenergia |
-| `DEMO-VEZETO` | admin / olvasó | Duna Trade (admin), Tisza lánc és Alföldi Napenergia (olvasó) |
+| `DEMO-VEZETO` | admin / olvasó | Duna Trade (admin), Tisza lánc, Alföldi Napenergia és Dunai Atomerőmű (olvasó) |
+| `DEMO-ATOMVEZETO` | admin | Dunai Atomerőmű |
+| `DEMO-MEGFELELO` | megfelelőségi felelős | Dunai Atomerőmű: napló, leállás- és elszámolás-jóváhagyás, mást nem módosíthat |
+| `DEMO-ATOMUZEM` | műszaki | Dunai Atomerőmű: leállást javasolhat, jóváhagyni nem tud |
 | `DEMO-OLVASO` | olvasó | Rendes Ipari Park |
+
+## Négy szem elve
+
+A leállás és az 1 Mrd Ft feletti havi átvételi elszámolás csak **két különböző** jóváhagyó elfogadása után lép életbe (`server/domain/approvals.ts`). Ugyanaz a személy kétszer nem hagyhat jóvá, a javaslattevő a saját javaslatát nem (409). A jóváhagyók: admin, megfelelőségi felelős (leállás); pénzügyi, admin, megfelelőségi felelős (elszámolás). Minden lépés az auditnaplóba kerül (`Szikra Event`, `kind = audit`).
 
 ## Tételes számlakép és díjszerkezet
 

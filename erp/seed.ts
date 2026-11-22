@@ -144,6 +144,20 @@ async function ensureSchema() {
     t('Currency', { fieldname: 'imbalance_huf', label: 'Kiegyenlítő energia költsége', precision: '0' }),
     t('Currency', { fieldname: 'settlement_huf', label: 'Elszámolás', precision: '0', in_list_view: 1 }),
     t('Select', { fieldname: 'status', label: 'Állapot', options: 'tervezet\njovahagyva\nkifizetve', in_list_view: 1 }),
+    t('Long Text', { fieldname: 'approvals_json', label: 'Jóváhagyások (JSON)' }),
+  ])
+  await ensureDoctype('Szikra Outage', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Data', { fieldname: 'supply_point', label: 'Blokk azonosító', reqd: 1 }),
+    t('Select', { fieldname: 'kind', label: 'Típus', options: 'tervezett\nrendkivuli' }),
+    t('Date', { fieldname: 'date_from', label: 'Kezdete', in_list_view: 1 }),
+    t('Date', { fieldname: 'date_to', label: 'Vége' }),
+    t('Small Text', { fieldname: 'purpose', label: 'Cél' }),
+    t('Data', { fieldname: 'proposed_by_id', label: 'Javasoló azonosító' }),
+    t('Data', { fieldname: 'proposed_by_name', label: 'Javasoló neve' }),
+    t('Select', { fieldname: 'status', label: 'Állapot', options: 'jovahagyasra-var\njovahagyva', in_list_view: 1 }),
+    t('Long Text', { fieldname: 'approvals_json', label: 'Jóváhagyások (JSON)' }),
   ])
   await ensureDoctype('Szikra Deal', 'field:szikra_id', [
     t('Data', { fieldname: 'szikra_id', label: 'Ügylet azonosító', reqd: 1, unique: 1 }),
@@ -176,7 +190,7 @@ async function ensureSchema() {
     t('Data', { fieldname: 'email', label: 'E-mail' }),
     t('Small Text', { fieldname: 'note', label: 'Megjegyzés' }),
     t('Link', { fieldname: 'customer', label: 'Cég', options: 'Customer', reqd: 1, in_list_view: 1 }),
-    t('Select', { fieldname: 'role', label: 'Szerepkör', options: 'admin\npenzugy\nmuszaki\nolvaso\nkereskedo', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'role', label: 'Szerepkör', options: 'admin\npenzugy\nmuszaki\nolvaso\nkereskedo\nmegfelelo', reqd: 1, in_list_view: 1 }),
   ])
   await ensureDoctype('Szikra Event', 'hash', [
     t('Link', { fieldname: 'customer', label: 'Cég', options: 'Customer' }),
@@ -250,7 +264,7 @@ async function seedData() {
   let np = 0
   for (const p of ds.production) {
     if (haveProd.has(p.id)) continue
-    await c.create('Szikra Production', { szikra_id: p.id, customer: customerByPartner.get(p.partnerId), supply_point: p.supplyPointId, month: p.month, mwh: p.mwh, price_huf_per_mwh: p.priceHufPerMwh, premium_huf: p.premiumHuf, imbalance_huf: p.imbalanceHuf, settlement_huf: p.settlementHuf, status: p.status }); np++
+    await c.create('Szikra Production', { szikra_id: p.id, customer: customerByPartner.get(p.partnerId), supply_point: p.supplyPointId, month: p.month, mwh: p.mwh, price_huf_per_mwh: p.priceHufPerMwh, premium_huf: p.premiumHuf, imbalance_huf: p.imbalanceHuf, settlement_huf: p.settlementHuf, status: p.status, approvals_json: JSON.stringify(p.approvals ?? []) }); np++
   }
   if (np) log('termelési rekord:', np)
 
@@ -271,6 +285,24 @@ async function seedData() {
   // ÁFA: fix összegű adósor (a számlakép végösszege forintra egyezik)
   const vatAccount = await ensureVatAccount(company)
   let ni = 0
+  const haveOut = new Set((await c.list('Szikra Outage', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const o of ds.outages) {
+    if (haveOut.has(o.id)) continue
+    await c.create('Szikra Outage', { szikra_id: o.id, customer: customerByPartner.get(o.partnerId), supply_point: o.supplyPointId, kind: o.kind, date_from: o.from, date_to: o.to, purpose: o.purpose, proposed_by_id: o.proposedBy.userId, proposed_by_name: o.proposedBy.name, status: o.status, approvals_json: JSON.stringify(o.approvals) })
+  }
+  if (ds.outages.length) log('leállások:', ds.outages.length)
+  // auditnapló-előzmény (a kulcs: cég|felhasználó|időpont|szöveg alapján idempotens)
+  const auditKey = (customer: string, user: string, at: string, text: string) => `${customer}|${user}|${at}|${text}`
+  const haveAudit = new Set((await c.list('Szikra Event', { fields: ['customer', 'user_id', 'at', 'text'], filters: [['kind', '=', 'audit']] })).map(r => auditKey(r.customer, r.user_id, String(r.at).slice(0, 19), r.text)))
+  let na = 0
+  for (const a of ds.audit) {
+    const at = a.at.replace('T', ' ').slice(0, 19)
+    const cust = customerByPartner.get(a.partnerId)!
+    if (haveAudit.has(auditKey(cust, a.userId, at, a.action))) continue
+    await c.create('Szikra Event', { kind: 'audit', customer: cust, user_id: a.userId, at, text: a.action }); na++
+  }
+  if (na) log('audit-bejegyzés:', na)
+
   const haveDeals = new Set((await c.list('Szikra Deal', { fields: ['szikra_id'] })).map(r => r.szikra_id))
   for (const d of ds.deals) {
     if (haveDeals.has(d.id)) continue

@@ -1,6 +1,6 @@
 import { electricityLines, gasLines, totals } from './tariffs.ts'
 import type { NetworkCategory, Zones } from './tariffs.ts'
-import type { Deal, Invoice, InvoiceLine, Partner, ProductionRecord, Reading, ScheduleDay, SupplyPoint } from './types.ts'
+import type { AuditEntry, Outage, Deal, Invoice, InvoiceLine, Partner, ProductionRecord, Reading, ScheduleDay, SupplyPoint } from './types.ts'
 
 /**
  * Determinista demó-adatgenerátor: 12 hónap számla, mérőállás és termelés valós nagyságrendű árakkal.
@@ -53,6 +53,8 @@ export interface Bundle {
   production: ProductionRecord[]
   deals: Deal[]
   schedule: ScheduleDay[]
+  outages?: Outage[]
+  audit?: AuditEntry[]
 }
 
 /** Kereskedelmi lánc: több telephely, villany + (egy részén) gáz, 12 havi tételes számla (valós díjszerkezet, lásd tariffs.ts). */
@@ -225,4 +227,86 @@ export function buildWholesale(id: string, name: string): Bundle {
     schedule.push({ id: `${id}-SCH-G-${date.replaceAll('-', '')}`, partnerId: id, date, commodity: 'gaz', values: [160], status: 'elfogadva', submittedBy: 'Varga Dávid' })
   }
   return { partner, supplyPoints: [], readings: [], invoices, production: [], deals, schedule }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Paks-jellegű bázistermelő: 4 blokk × 500 MW, váltakozó éves leállások, hosszú távú vételi szerződés,
+// nagy összegű havi elszámolás kétszemélyes (négy szem) jóváhagyással
+// ---------------------------------------------------------------------------------------------
+
+export const ATOM_USERS = {
+  vezeto: { userId: 'DEMO-ATOMVEZETO', name: 'Dr. Horváth Péter' },
+  megfelelo: { userId: 'DEMO-MEGFELELO', name: 'Kovács Judit' },
+  uzem: { userId: 'DEMO-ATOMUZEM', name: 'Gál Tibor' },
+  penz: { userId: 'DEMO-ELSZAMOLAS', name: 'Szűcs Réka' },
+} as const
+
+const PPA_PRICE_HUF_MWH = 33_500 // hosszú távú vételi szerződés, fix ár (demó-érték)
+const BLOCK_MW = 500
+
+const approvedAt = (iso: string, plusDays = 0) => `${addDays(iso, plusDays)}T09:30:00.000Z`
+
+export function buildNuclear(id: string, name: string): Bundle {
+  const r = rng(id)
+  const partner: Partner = { id, name, taxNumber: '10456789-2-17', address: '7030 Paks, Dunai út 4.', segment: 'ipari', kind: 'termelo', contractNo: `SZ-${id}-08` }
+  const blocks = [1, 2, 3, 4].map(i => ({ i, spId: `${id}-T${i}` }))
+  const O = (n: number, block: number, kind: Outage['kind'], from: string, to: string, purpose: string, status: Outage['status'], approvals: Array<keyof typeof ATOM_USERS>, proposedAt: string): Outage => ({
+    id: `${id}-OUT-${String(n).padStart(2, '0')}`, partnerId: id, supplyPointId: `${id}-T${block}`, kind, from, to, purpose, proposedBy: ATOM_USERS.uzem, status,
+    approvals: approvals.map((k, j) => ({ ...ATOM_USERS[k], at: approvedAt(proposedAt, j + 1) })),
+  })
+  const FUEL = 'Üzemanyagcsere és időszakos karbantartás'
+  const outages: Outage[] = [
+    O(1, 1, 'tervezett', '2026-03-14', '2026-04-22', FUEL, 'jovahagyva', ['vezeto', 'megfelelo'], '2025-12-10'),
+    O(2, 2, 'tervezett', '2026-05-09', '2026-06-23', FUEL, 'jovahagyva', ['vezeto', 'megfelelo'], '2026-01-12'),
+    O(3, 3, 'tervezett', '2026-08-15', '2026-09-28', FUEL, 'jovahagyva', ['vezeto', 'megfelelo'], '2026-03-16'),
+    O(4, 4, 'tervezett', '2026-10-10', '2026-11-20', FUEL, 'jovahagyva', ['megfelelo', 'vezeto'], '2026-05-18'),
+    O(5, 1, 'tervezett', '2027-03-20', '2027-04-28', FUEL, 'jovahagyasra-var', ['vezeto'], '2026-11-16'),
+    O(6, 2, 'tervezett', '2027-05-15', '2027-06-30', FUEL, 'jovahagyasra-var', [], '2026-11-20'),
+    O(7, 3, 'tervezett', '2027-08-10', '2027-09-25', FUEL, 'jovahagyva', ['vezeto', 'megfelelo'], '2026-10-05'),
+    O(8, 2, 'rendkivuli', '2026-12-02', '2026-12-04', 'Hűtővíz-szivattyú javítása', 'jovahagyasra-var', [], '2026-11-21'),
+  ]
+  const outageDays = (spId: string, ym: string) => outages.filter(o => o.supplyPointId === spId && o.status === 'jovahagyva').reduce((s, o) => s + overlap(o.from, o.to, `${ym}-01`, lastDay(ym)).length, 0)
+
+  const supplyPoints: SupplyPoint[] = []; const readings: Reading[] = []; const production: ProductionRecord[] = []
+  for (const b of blocks) {
+    let cum = 18_000_000_000 + Math.floor(r() * 2_000_000_000)
+    readings.push({ supplyPointId: b.spId, date: '2025-10-31', value: cum })
+    let lastDate = ''
+    for (const ym of MONTHS) {
+      const days = eachDay(`${ym}-01`, lastDay(ym)).length
+      const avail = 1 - outageDays(b.spId, ym) / days
+      const mwh = Math.round(BLOCK_MW * days * 24 * avail * (0.984 + r() * 0.012))
+      const energyValue = mwh * PPA_PRICE_HUF_MWH
+      const imbalance = Math.round(energyValue * 0.004)
+      cum += mwh * 1000; lastDate = lastDay(ym)
+      readings.push({ supplyPointId: b.spId, date: lastDate, value: cum })
+      const base = nextMonth5th(ym)
+      const both = [{ ...ATOM_USERS.penz, at: approvedAt(base, 1) }, { ...ATOM_USERS.vezeto, at: approvedAt(base, 2) }]
+      const status: ProductionRecord['status'] = ym <= '2026-08' ? 'kifizetve' : ym === '2026-09' ? 'jovahagyva' : 'tervezet'
+      production.push({
+        id: `${b.spId}-${ym.replace('-', '')}`, partnerId: id, supplyPointId: b.spId, month: ym, mwh, priceHufPerMwh: PPA_PRICE_HUF_MWH,
+        premiumHuf: 0, imbalanceHuf: imbalance, settlementHuf: energyValue - imbalance, status,
+        approvals: status === 'tervezet' ? [both[0]!] : both,
+      })
+    }
+    supplyPoints.push({
+      id: b.spId, partnerId: id, type: 'villany', pod: `HU-DEMO-T-${id.slice(-5)}-${b.i}`, address: partner.address, meterSerial: `T-${7000 + b.i * 13}`, smart: true,
+      lastReading: cum, lastReadingDate: lastDate, unit: 'kWh', label: `Blokk ${b.i} (${BLOCK_MW} MW)`, tariff: 'Hosszú távú PPA (fix ár)', capacityKw: BLOCK_MW * 1000, direction: 'termeles',
+    })
+  }
+
+  // auditnapló: az elmúlt napok eseményei (a valós működés szemléltetésére)
+  const ev = (daysAgo: number, hh: string, u: { userId: string, name?: string }, action: string): AuditEntry => ({ at: `${addDays(REF_DATE, -daysAgo)}T${hh}:00.000Z`, userId: u.userId, partnerId: id, action })
+  const audit: AuditEntry[] = [
+    ev(7, '07:58', ATOM_USERS.uzem, 'belépés'),
+    ev(6, '08:12', ATOM_USERS.penz, 'átvételi elszámolás jóváhagyva (1/2): 2026-09'),
+    ev(5, '09:03', ATOM_USERS.vezeto, 'átvételi elszámolás jóváhagyva (2/2): 2026-09'),
+    ev(5, '13:40', ATOM_USERS.uzem, `leállás javasolva: ${id}-OUT-05`),
+    ev(4, '10:22', ATOM_USERS.vezeto, `leállás jóváhagyva (1/2): ${id}-OUT-05`),
+    ev(3, '08:47', ATOM_USERS.penz, 'átvételi elszámolás jóváhagyva (1/2): 2026-10'),
+    ev(2, '11:05', ATOM_USERS.uzem, `leállás javasolva: ${id}-OUT-06`),
+    ev(1, '14:31', ATOM_USERS.uzem, `leállás javasolva: ${id}-OUT-08`),
+    ev(1, '15:02', ATOM_USERS.megfelelo, 'belépés'),
+  ]
+  return { partner, supplyPoints, readings, invoices: [], production, deals: [], schedule: [], outages, audit }
 }

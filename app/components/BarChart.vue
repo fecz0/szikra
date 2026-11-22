@@ -18,6 +18,7 @@ const niceMax = computed(() => {
 })
 const bw = computed(() => (W - pad.l - pad.r) / Math.max(1, props.items.length))
 const fmt = (n: number) => new Intl.NumberFormat('hu-HU', { maximumFractionDigits: 1 }).format(n)
+const axis = (n: number) => (n >= 10_000 ? new Intl.NumberFormat('hu-HU', { notation: 'compact', maximumFractionDigits: 1 }).format(n) : fmt(n))
 const y = (v: number) => H - pad.b - (v / niceMax.value) * (H - pad.t - pad.b)
 </script>
 
@@ -28,7 +29,7 @@ const y = (v: number) => H - pad.b - (v / niceMax.value) * (H - pad.t - pad.b)
       <g class="grid">
         <template v-for="t in [0, 0.5, 1]" :key="t">
           <line :x1="pad.l" :x2="W - pad.r" :y1="y(niceMax * t)" :y2="y(niceMax * t)" />
-          <text :x="pad.l - 6" :y="y(niceMax * t) + 4" text-anchor="end">{{ fmt(niceMax * t) }}</text>
+          <text :x="pad.l - 6" :y="y(niceMax * t) + 4" text-anchor="end">{{ axis(niceMax * t) }}</text>
         </template>
       </g>
       <g v-for="(it, i) in items" :key="it.label">

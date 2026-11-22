@@ -1,10 +1,10 @@
 import type { Bundle } from './demo-data.ts'
-import { buildChain, buildSolarPark, buildWholesale } from './demo-data.ts'
+import { buildChain, buildNuclear, buildSolarPark, buildWholesale } from './demo-data.ts'
 import type { Dataset, Membership, PortalUser } from './types.ts'
 import { emptyDataset } from './types.ts'
 
 type LegacyName = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
-export type ScenarioName = LegacyName | 'kereskedelmi-lanc' | 'napelempark' | 'nagykereskedelem'
+export type ScenarioName = LegacyName | 'kereskedelmi-lanc' | 'napelempark' | 'nagykereskedelem' | 'atomeromu'
 
 type Fragment = Bundle
 
@@ -64,6 +64,7 @@ export const scenarios: Record<ScenarioName, (id: string) => Fragment> = {
   'kereskedelmi-lanc': id => buildChain(id, `Tisza Kereskedelmi Lánc Zrt. (${id})`, 3),
   'napelempark': id => buildSolarPark(id, `Alföldi Napenergia Kft. (${id})`),
   'nagykereskedelem': id => buildWholesale(id, `Duna Trade Kft. (${id})`),
+  'atomeromu': id => buildNuclear(id, `Dunai Atomerőmű Zrt. (${id})`),
 }
 
 /** Fix demó partnerek (azonosítók a snapshotban is stabilak). */
@@ -75,6 +76,7 @@ export const demoPartnerIds: Record<ScenarioName, string> = {
   'kereskedelmi-lanc': 'DEMO-LANC',
   'napelempark': 'DEMO-NAPELEM',
   'nagykereskedelem': 'DEMO-NAGYKER',
+  'atomeromu': 'DEMO-ATOM',
 }
 
 export const demoUsers: PortalUser[] = [
@@ -86,6 +88,9 @@ export const demoUsers: PortalUser[] = [
   { id: 'DEMO-ELSZAMOLAS', name: 'Szűcs Réka', email: 'reka@demo.szikra.test', note: 'Elszámolás (pénzügy): a nagykereskedő számlái és limitje, és a napelempark átvételi elszámolása' },
   { id: 'DEMO-UZEMVEZETO', name: 'Farkas Imre', email: 'imre@demo.szikra.test', note: 'Napelempark üzemvezető (műszaki): termelés, leállás-bejelentés; ügyletet és számlát nem lát' },
   { id: 'DEMO-VEZETO', name: 'Dr. Balogh Katalin', email: 'katalin@demo.szikra.test', note: 'Cégcsoport-vezető: adminisztrátor a nagykereskedőnél, olvasó a láncnál és a napelemparknál' },
+  { id: 'DEMO-ATOMVEZETO', name: 'Dr. Horváth Péter', email: 'peter.h@demo.szikra.test', note: 'Atomerőmű vezérigazgató (admin): leállások és nagy összegű elszámolások jóváhagyása (négy szem: az egyik jóváhagyó)' },
+  { id: 'DEMO-MEGFELELO', name: 'Kovács Judit', email: 'judit@demo.szikra.test', note: 'Megfelelőségi felelős: auditnapló, leállások és elszámolások második jóváhagyója; mást nem módosíthat' },
+  { id: 'DEMO-ATOMUZEM', name: 'Gál Tibor', email: 'tibor@demo.szikra.test', note: 'Atomerőmű üzemvezető (műszaki): leállás javaslata; jóváhagyni nem tud' },
   { id: 'DEMO-OLVASO', name: 'Tóth Gábor', email: 'gabor@demo.szikra.test', note: 'Csak olvasó: minden megtekinthető, semmi nem indítható' },
 ]
 
@@ -99,6 +104,11 @@ export const demoMemberships: Membership[] = [
   { userId: 'DEMO-ELSZAMOLAS', partnerId: 'DEMO-NAGYKER', role: 'penzugy' },
   { userId: 'DEMO-ELSZAMOLAS', partnerId: 'DEMO-NAPELEM', role: 'penzugy' },
   { userId: 'DEMO-UZEMVEZETO', partnerId: 'DEMO-NAPELEM', role: 'muszaki' },
+  { userId: 'DEMO-ATOMVEZETO', partnerId: 'DEMO-ATOM', role: 'admin' },
+  { userId: 'DEMO-MEGFELELO', partnerId: 'DEMO-ATOM', role: 'megfelelo' },
+  { userId: 'DEMO-ATOMUZEM', partnerId: 'DEMO-ATOM', role: 'muszaki' },
+  { userId: 'DEMO-ELSZAMOLAS', partnerId: 'DEMO-ATOM', role: 'penzugy' },
+  { userId: 'DEMO-VEZETO', partnerId: 'DEMO-ATOM', role: 'olvaso' },
   { userId: 'DEMO-VEZETO', partnerId: 'DEMO-NAGYKER', role: 'admin' },
   { userId: 'DEMO-VEZETO', partnerId: 'DEMO-LANC', role: 'olvaso' },
   { userId: 'DEMO-VEZETO', partnerId: 'DEMO-NAPELEM', role: 'olvaso' },
@@ -121,6 +131,8 @@ export function fixedDemoDataset(): Dataset {
     ds.production.push(...f.production)
     ds.deals.push(...f.deals)
     ds.schedule.push(...f.schedule)
+    ds.outages.push(...(f.outages ?? []))
+    ds.audit.push(...(f.audit ?? []))
     ds.invoices.push(...f.invoices)
   }
   ds.users.push(...demoUsers)
@@ -139,6 +151,8 @@ export function seedDataset(scenario: ScenarioName, role: Membership['role'], ui
   ds.production.push(...f.production)
   ds.deals.push(...f.deals)
   ds.schedule.push(...f.schedule)
+  ds.outages.push(...(f.outages ?? []))
+  ds.audit.push(...(f.audit ?? []))
   ds.invoices.push(...f.invoices)
   ds.users.push({ id: userId, name: 'Teszt Elek', email: `${uid}@teszt.szikra.test`, note: 'teszt' })
   ds.memberships.push({ userId, partnerId: f.partner.id, role })

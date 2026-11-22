@@ -124,3 +124,9 @@ progress { width:100%; height:12px; accent-color:var(--navy-2) } progress.warn {
 @media (prefers-color-scheme: dark) { .warnbox { background:#2a230d; color:#f3dfa0 } }
 
 table.wrap th, table.wrap td { white-space:normal }
+
+/* leállási idővonal */
+.chart .obar { fill:var(--navy-2) } .chart .obar.jovahagyasra-var { fill:#d69e2e } .chart .obar.rendkivuli { stroke:var(--err); stroke-width:2 }
+.chart .rowline { stroke:var(--line); stroke-width:1 } .chart .today { stroke:var(--err); stroke-width:1.5; stroke-dasharray:4 3 }
+.approvals { display:flex; flex-wrap:wrap; gap:4px }
+.status.jovahagyasra-var { color:#b7791f } .status.jovahagyva { color:var(--ok) }
