@@ -1,30 +1,95 @@
-:root { --bg:#f6f7f9; --fg:#1b1f24; --muted:#5d6672; --card:#fff; --line:#e1e5ea; --brand:#e8590c; --ok:#2b8a3e; --err:#c92a2a; }
+:root {
+  --bg:#f3f4f6; --fg:#111a23; --muted:#6b7280; --card:#fff; --line:#e5e7eb; --band:#fff;
+  --navy:#1c2b39; --navy-2:#00567e; --accent:#f0b323;
+  --btn:#1c2b39; --btn-fg:#fff; --link:#00567e;
+  --ok:#2b8a3e; --err:#c92a2a;
+}
 @media (prefers-color-scheme: dark) {
-  :root { --bg:#14171a; --fg:#e8eaed; --muted:#9aa3ad; --card:#1d2227; --line:#2d343b; --brand:#ff8a4c; --ok:#69db7c; --err:#ff8787; }
+  :root {
+    --bg:#0f151b; --fg:#e8eaed; --muted:#9aa3ad; --card:#17202a; --line:#2a343e; --band:#131b22;
+    --btn:#2a7aa6; --link:#6cc4ee;
+    --ok:#69db7c; --err:#ff8787;
+  }
 }
 * { box-sizing: border-box }
-body { margin:0; font:16px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--fg) }
-a { color:var(--brand); text-decoration:none }
+body { margin:0; font:16px/1.55 "Avenir Next","Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--fg) }
+a { color:var(--link); text-decoration:none }
 a:hover { text-decoration:underline }
-.shell { max-width:860px; margin:0 auto; padding:0 16px 32px }
-.top { display:flex; gap:12px; align-items:center; padding:16px 0 }
-.logo { display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:1.25rem; color:var(--brand); text-decoration:none }
-.logo svg { width:1.35em; height:1.35em; flex:none }
-.tag { font-size:.75rem; border:1px solid var(--line); border-radius:99px; padding:2px 10px; color:var(--muted) }
-.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:16px }
-.narrow { max-width:420px; margin-inline:auto }
+main { display:block }
+
+/* fejléc */
+.top { background:linear-gradient(180deg,#111a23 0%,var(--navy) 45%,var(--navy-2) 100%); color:#fff; box-shadow:0 2px 10px rgba(0,0,0,.25) }
+.top-in { max-width:1120px; margin:0 auto; padding:12px 20px; display:flex; flex-wrap:wrap; gap:8px 24px; align-items:center; justify-content:space-between }
+.logo { display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:1.35rem; letter-spacing:.14em; text-transform:uppercase; color:#fff; text-decoration:none }
+.logo:hover { text-decoration:none }
+.logo svg { width:1.2em; height:1.2em; flex:none; color:var(--accent) }
+.logo span { color:#fff }
+.page-title { margin:2px 0 0; font-size:1.3rem; font-weight:800; letter-spacing:.01em }
+.menu { display:flex; flex-wrap:wrap; gap:6px 26px }
+.menu a { color:rgba(255,255,255,.82); font-weight:700; font-size:.95rem }
+.menu a:hover { color:#fff }
+
+/* főoldal */
+.hero { background:var(--bg); border-bottom:6px solid var(--accent) }
+.hero-in { max-width:1120px; margin:0 auto; padding:36px 20px 44px; display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr); gap:32px; align-items:center }
+.hero h1 { margin:20px 0 12px; font-size:clamp(1.8rem,4.5vw,2.6rem); line-height:1.15; font-weight:800 }
+.lead { margin:0 0 20px; max-width:34em; color:var(--muted) }
+.hero-art svg { display:block; width:100%; max-width:380px; margin-inline:auto; height:auto }
+.notice { display:flex; gap:14px; align-items:flex-start; background:#fff7e0; border:2px solid var(--accent); border-radius:12px; padding:14px 16px; color:#4a3b0a }
+.notice svg { width:34px; height:34px; flex:none; color:var(--accent) }
+.notice p { margin:2px 0 0; font-size:.92rem }
+@media (prefers-color-scheme: dark) { .notice { background:#2a230d; color:#f3dfa0 } }
+
+.login { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px 20px; max-width:440px; box-shadow:0 4px 16px rgba(17,26,35,.08) }
+
+/* sávok */
+.band { background:var(--band) }
+.band.alt { background:var(--bg) }
+.band-in { max-width:1120px; margin:0 auto; padding:36px 20px }
+.band h2 { margin:0 0 6px; font-size:1.5rem; font-weight:800 }
+.demo, .features { list-style:none; margin:20px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; display:grid; gap:4px; align-content:start; box-shadow:0 2px 8px rgba(17,26,35,.05) }
+.tile h3 { margin:0; font-size:1.05rem }
+.tile p { margin:0; color:var(--muted); font-size:.95rem }
+
+/* általános elemek */
+.page { max-width:1120px; margin:0 auto; padding:28px 20px 40px }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:22px; margin-bottom:18px; box-shadow:0 2px 8px rgba(17,26,35,.05); overflow-x:auto }
+.narrow { max-width:460px; margin-inline:auto }
 h1 { margin:0 0 8px; font-size:1.5rem } h2 { margin:0 0 12px; font-size:1.15rem }
-label { display:block; margin:12px 0 4px; color:var(--muted) }
-input { width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); font:inherit }
-button { margin-top:12px; padding:9px 16px; border:0; border-radius:8px; background:var(--brand); color:#fff; font:inherit; font-weight:600; cursor:pointer }
-td button { margin:0; padding:6px 12px } button:disabled { opacity:.5; cursor:wait }
-table { width:100%; border-collapse:collapse } th,td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line) }
+label { display:block; margin:12px 0 4px; color:var(--muted); font-weight:600 }
+input { width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:10px; background:var(--bg); color:var(--fg); font:inherit }
+input:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 60%,transparent); border-color:var(--navy-2) }
+button { margin-top:14px; padding:10px 22px; border:2px solid var(--btn); border-radius:12px; background:var(--btn); color:var(--btn-fg); font:inherit; font-weight:600; cursor:pointer }
+button:hover:not(:disabled) { filter:brightness(1.15) }
+td button { margin:0; padding:6px 14px } button:disabled { opacity:.5; cursor:wait }
+table { width:100%; border-collapse:collapse } th,td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); white-space:nowrap } th { color:var(--muted); font-size:.85rem; text-transform:uppercase; letter-spacing:.04em }
 .meters { list-style:none; margin:0; padding:0; display:grid; gap:8px } .meters li { display:flex; flex-wrap:wrap; gap:12px; align-items:center }
 .chip { font-size:.75rem; background:var(--bg); border:1px solid var(--line); border-radius:99px; padding:1px 10px }
 .status.paid { color:var(--ok) } .status.overdue { color:var(--err) } .status.open { color:var(--muted) }
 .msg { padding:8px 12px; border-radius:8px } .msg.ok { background:color-mix(in srgb,var(--ok) 15%,transparent); color:var(--ok) } .msg.err { background:color-mix(in srgb,var(--err) 15%,transparent); color:var(--err) }
-footer { color:var(--muted); font-size:.8rem; text-align:center; margin-top:24px }
+.foot { background:var(--navy); color:rgba(255,255,255,.75); font-size:.85rem }
+.foot-in { max-width:1120px; margin:0 auto; padding:20px; text-align:center }
 code { background:var(--bg); padding:1px 6px; border-radius:4px }
 .hint { color:var(--muted); font-size:.9rem; margin:0 }
-.demo { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:10px }
-.demo li { display:grid; gap:2px }
+
+@media (max-width:800px) {
+  .hero-in { grid-template-columns:1fr; padding-top:24px }
+  .hero-art { display:none }
+}
+
+/* partnerportál */
+.company-bar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap }
+.company-bar h1 { margin:0 }
+button.ghost { background:transparent; color:var(--link); border-color:var(--line); margin:0 }
+.subnav { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 18px }
+.subnav a { padding:8px 16px; border-radius:99px; background:var(--card); border:1px solid var(--line); font-weight:700; color:var(--fg) }
+.subnav a.on { background:var(--navy); color:#fff; border-color:var(--navy) }
+.subnav a:hover { text-decoration:none }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:18px }
+.tiles .tile strong { font-size:1.6rem }
+.demo .tile button { margin-top:8px }
+select, textarea { width:100%; padding:11px 12px; border:2px solid var(--line); border-radius:10px; background:var(--bg); color:var(--fg); font:inherit }
+.list { list-style:none; margin:0; padding:0; display:grid; gap:8px }
+.msgs { display:grid; gap:10px; margin:12px 0 }
+.msgs li { background:var(--bg); border-radius:10px; padding:10px 12px }
