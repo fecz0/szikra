@@ -5,9 +5,9 @@
 | Field | Value |
 |---|---|
 | Document | `01-system-overview.md` |
-| Assessment date | 2026-11-17 |
-| Assessment target | `szikra` repository at commit `94ce09cc539fef0d1f94eb32a1563b00efd89a96` |
-| Application | Szikra demo customer portal |
+| Assessment date | 2026-11-22 (updated; first issued 2026-11-17) |
+| Assessment target | `szikra` repository, `main` at commit `17d547b` (PR #36, B2B partner portal) plus the update in this change |
+| Application | Szikra demo B2B partner portal |
 | Assessment type | Static repository review (PoC) |
 | Classification | Internal demo — fictional data |
 | Prepared by | Automated agent (PoC) |
@@ -17,9 +17,9 @@
 
 This document describes the application that is the subject of the NIS2 PoC assessment. It contains only facts that can be evidenced from the repository, supplemented by clearly labelled technical observations and assumptions.
 
-**In scope:** application source code, Nuxt/Nitro configuration, SAP adapter and mock SAP, container definition, CI/CD workflows, dependency manifests, test suite, and repository documentation.
+**In scope:** application source code, Nuxt/Nitro configuration, the backend interface with its JSON-snapshot store and ERPNext adapter, the local ERPNext stack definition and seed/export scripts (`erp/`), container definition, CI/CD workflows, dependency manifests, test suite, and repository documentation.
 
-**Out of scope / not evidenced in the repository:** the actual SAP system, the production host configuration (nginx, systemd units, firewall), Cloudflare account configuration, GitHub organisation settings (branch protection, environment protection), and any business or organisational processes.
+**Out of scope / not evidenced in the repository:** a running ERPNext instance and its data (it runs on the developer machine and is not part of the deployment), any real Salesforce, SAP or document-management system the demo stands in for, the production host configuration (nginx, systemd units, firewall), Cloudflare account configuration, GitHub organisation settings (branch protection, environment protection), and any business or organisational processes.
 
 ## 2. Assessment conventions
 
@@ -34,49 +34,52 @@ This document describes the application that is the subject of the NIS2 PoC asse
 
 ## 3. Application purpose
 
-Szikra is a **demo customer portal for a fictional energy provider**. A visitor enters a customer identifier on the landing page and is taken to an account page that shows:
+Szikra is a **demo B2B partner portal for a fictional energy provider**. A user signs in (mock single sign-on), chooses one of the companies they have access to, and then works with that company's data according to a role:
 
-- customer name and address,
-- contract account,
-- electricity and gas meters, including whether the meter is smart,
-- bills with period, amount, due date and status,
-- the payment method label,
-- a "Fizetés" (pay) action for bills that are not paid.
+- an overview with open invoices, outstanding amount, supply points and open cases,
+- invoices with period, amount, due date and status, and a "Fizetés" (pay) action for unpaid invoices,
+- supply points (electricity and gas, smart-meter flag, POD/EIC-like identifier, last reading),
+- cases created through one shared framework (invoice complaint, debt certificate, meter reading, quote request) with a status and a message thread,
+- notifications generated from business events.
 
-The repository states explicitly that the data is fictional and that the application is not a real provider (`README.md`; `app/app.vue:13`). The primary purpose of the repository is to demonstrate an automated CI/CD, DevSecOps and Playwright e2e process against a simulated SAP backend, not to operate a customer-facing production service (`README.md`).
+The repository states explicitly that the data is fictional and that the application is not a real provider (`README.md`; `app/app.vue`). The primary purpose of the repository is to demonstrate an automated CI/CD, DevSecOps and Playwright e2e process against a replaceable CRM/ERP backend, not to operate a production service (`README.md`).
 
 ### Users and actors
 
 | Actor | Interaction | Evidence |
 |---|---|---|
-| Customer / demo visitor | Enters a customer ID, views account data, initiates a mock payment | `app/pages/index.vue`; `app/pages/fiok/[id].vue` |
-| Demo operator | Uses fixed demo IDs (`DEMO-OKOS`, `DEMO-ELMARADT`, `DEMO-KARTYA`, `DEMO-RENDEZETT`) | `app/pages/index.vue:4-9`; `server/mock-sap/demo-users.ts` |
+| Partner user (demo visitor) | Signs in with a user identifier, selects a company, views data and starts cases or payments according to the role | `app/pages/index.vue`; `app/pages/valasztas.vue`; `app/pages/partner/[pid]/` |
+| Demo operator | Uses fixed demo users (`DEMO-ADMIN`, `DEMO-PENZUGY`, `DEMO-MUSZAKI`, `DEMO-OLVASO`) | `server/domain/scenarios.ts`; `server/api/auth/demo-users.get.ts` |
+| Developer / operator of the local ERP | Runs ERPNext locally, seeds it and exports the JSON snapshot | `erp/README.md`; `erp/seed.ts`; `erp/export.ts` |
 | CI/CD pipeline | Builds, tests, scans and deploys the application | `.github/workflows/ci.yml`; `.github/workflows/security.yml` |
 | AI agent | Implements labelled issues and opens pull requests | `.github/workflows/agent.yml` |
-| SAP system | Provides customer, meter, bill and payment data through the adapter | `server/utils/sap.ts` |
+| Backend (ERPNext or snapshot store) | Provides partner, invoice, supply-point, case and event data | `server/utils/backend.ts` |
 
 ## 4. Major components
 
 | Component | Technology / role | Evidence | Security relevance |
 |---|---|---|---|
-| Frontend / SSR application | Nuxt 4 + Vue 3; server-side rendered pages and client hydration | `package.json`; `nuxt.config.ts`; `app/app.vue`; `app/pages/` | Renders personal and billing data; no authentication layer. |
-| Server API | Nitro route handlers under `/api` | `server/api/account/[id].get.ts`; `server/api/account/[id]/pay.post.ts`; `server/api/health.get.ts` | Exposes account and payment operations; accepts caller-supplied IDs. |
-| SAP adapter | Single integration boundary for all SAP calls | `server/utils/sap.ts` | Centralises outbound SAP traffic; no timeout/retry/circuit breaker. |
-| Mock SAP | In-memory implementation of the SAP contract, enabled only with `NUXT_MOCK_SAP=true` | `server/routes/mock-sap/`; `server/mock-sap/`; `server/utils/mock-guard.ts` | Public when enabled; ephemeral state; seed endpoint creates customers. |
-| Demo seeding | Startup plugin that creates fixed demo customers and resets them every 30 minutes | `server/plugins/demo-users.ts` | Fixed public identifiers; state resets; no real data. |
+| Frontend / SSR application | Nuxt 4 + Vue 3; server-side rendered pages and client hydration | `package.json`; `nuxt.config.ts`; `app/app.vue`; `app/pages/`; `app/layouts/partner.vue`; `app/middleware/auth.ts` | Renders company and billing data; a route middleware redirects unauthenticated visitors, the server enforces access. |
+| Server API | Nitro route handlers under `/api` | `server/api/auth/`; `server/api/partner/[pid]/`; `server/api/health.get.ts` | Session-based; every `/api/partner/[pid]/…` handler calls `requireCapability()` before touching data. |
+| Backend interface | Single boundary for all CRM/ERP access (`Backend`), selected by `NUXT_BACKEND` | `server/utils/backend.ts`; `server/domain/backend-types.ts` | Centralises data access; two implementations. |
+| Snapshot store | In-memory implementation loaded from the committed JSON export (`server/data/snapshot.json`); default backend for deploy, CI and tests | `server/utils/backends/memory.ts`; `server/data/snapshot.json` | Ephemeral state; fictional data only; capped and reset. |
+| ERPNext adapter | Live REST access to a local ERPNext (v16) with a token; maps ERPNext documents to the domain model | `server/utils/backends/erpnext.ts`; `server/utils/erp/client.ts`; `server/utils/erp/mappers.ts` | Not used by the deployment; no request timeout, retry or circuit breaker. |
+| Authorization model | Role-to-capability matrix and per-request check | `server/domain/permissions.ts`; `server/utils/auth.ts`; `server/domain/case-types.ts` | Server-side enforcement; roles come from the backend. |
+| Demo reset and test seeding | Plugin resets the snapshot store every 30 minutes; a test-only seed route creates isolated partners and users | `server/plugins/demo-reset.ts`; `server/routes/__test/seed.post.ts` | Seed route exists only when `NUXT_TEST_SEED=true`; state resets; no real data. |
 | Container image | Multi-stage Node 26 Alpine image, non-root runtime | `Dockerfile` | Reduced runtime surface (npm/corepack removed); base image not digest-pinned. |
 | CI pipeline | GitHub Actions: typecheck, unit, e2e, Docker build, Trivy image scan, deploy | `.github/workflows/ci.yml` | Builds and promotes exactly the tested artifact; uses repository secrets for deployment. |
 | Security pipeline | CodeQL, Semgrep, gitleaks, OSV-Scanner, Trivy filesystem/config scan | `.github/workflows/security.yml` | Automated SAST, secret scanning, SCA and misconfiguration scanning. |
 | Dependency automation | Dependabot for npm, GitHub Actions and Docker | `.github/dependabot.yml` | Weekly updates with a 7-day cooldown. |
 | Deployment tooling | Forced-command SSH script, systemd user services, nginx, Cloudflare Tunnel (documented) | `deploy/deploy.sh`; `deploy/README.md` | Artifact upload, restart, rollback copy; host configuration itself is not in the repository. |
-| Test suite | Vitest unit tests and Playwright e2e tests | `tests/unit/`; `tests/e2e/`; `playwright.config.ts` | Verifies behaviour against mock SAP with isolated seeded customers. |
+| Test suite | Vitest unit tests and Playwright e2e tests; an ERPNext smoke script | `tests/unit/`; `tests/e2e/`; `playwright.config.ts`; `erp/live-smoke.ts` | Verifies behaviour against the snapshot store with isolated seeded partners; the smoke script exercises the live ERPNext path manually. |
+| Local ERPNext stack | Docker Compose definition, seed and export scripts | `erp/compose.yml`; `erp/seed.ts`; `erp/export.ts` | Developer-machine only; default `admin` credentials; port bound to `127.0.0.1`. |
 
 ## 5. Architecture
 
 ### 5.1 Logical architecture
 
 ```text
-Customer browser
+Partner user's browser
       |
       | HTTPS (termination documented as Cloudflare Tunnel; configuration not in repo)
       v
@@ -86,35 +89,39 @@ Cloudflare Tunnel -> nginx reverse proxy  [documented in deploy/README.md, not i
 Nuxt 4 / Nitro server (Node 26, container, non-root user)
       |
       +-- Vue SSR pages (app/)
-      |     +-- /                     landing page, customer-ID lookup
-      |     `-- /fiok/:id             account, meters, bills, payment
+      |     +-- /                         landing page, mock sign-in
+      |     +-- /valasztas                company selection
+      |     `-- /partner/:pid/...         overview, invoices, supply points, cases
       |
       +-- Nitro API routes (server/api/)
-      |     +-- GET  /api/account/:id
-      |     +-- POST /api/account/:id/pay
-      |     `-- GET  /api/health
+      |     +-- /api/auth/{login,logout,me,demo-users}
+      |     +-- /api/partner/:pid/...     guarded by requireCapability()
+      |     `-- GET /api/health
       |
-      +-- SAP adapter (server/utils/sap.ts)  <- the only SAP boundary
+      +-- Backend interface (server/utils/backend.ts)  <- the only data boundary
             |
-            +-- NUXT_SAP_BASE_URL (external SAP interface; URL not configured in repo)
-            `-- /mock-sap/* (in-memory) when NUXT_MOCK_SAP=true
+            +-- snapshot store (default): server/data/snapshot.json, in memory
+            `-- ERPNext adapter (NUXT_BACKEND=erpnext): REST + API token, local ERPNext
 ```
 
 ### 5.2 Component interactions
 
-- The browser calls the Nitro API. The account page is rendered by `app/pages/fiok/[id].vue`, which calls `useFetch('/api/account/:id')`; the pay button calls `$fetch('/api/account/:id/pay', { method: 'POST' })`.
-- `server/api/account/[id].get.ts` delegates to `sapGetCustomer()`; `server/api/account/[id]/pay.post.ts` delegates to `sapPayBill()`.
-- `server/utils/sap.ts` is the only module that constructs SAP URLs. It chooses `NUXT_SAP_BASE_URL` if set, otherwise the internal `/mock-sap` base when `NUXT_MOCK_SAP=true`, otherwise it fails with HTTP 500.
-- The mock SAP routes are guarded by `requireMockSap()`, which returns 404 when the mock flag is off (`server/utils/mock-guard.ts`).
-- The Nitro plugin `server/plugins/demo-users.ts` seeds four fixed demo customers at startup and every 30 minutes when both `NUXT_MOCK_SAP` and `NUXT_PUBLIC_DEMO_USERS` are enabled.
+- The browser calls the Nitro API. Pages under `app/pages/partner/[pid]/` use `useFetch('/api/partner/:pid/…')`; the pay button posts to `/api/partner/:pid/invoices/:iid/pay`.
+- `POST /api/auth/login` looks the submitted user identifier up in the backend and, if it exists, stores the user id in a sealed session cookie (`server/utils/auth.ts`, h3 `useSession`, 8-hour lifetime).
+- Every partner route calls `requireCapability(event, pid, capability)`: it loads the session user, finds that user's membership for the requested company, and checks the role against the capability matrix (`server/domain/permissions.ts`). The company id supplied by the browser is never trusted on its own.
+- Case creation additionally checks the capability required by the case type and that referenced invoices and supply points belong to the same company (`server/api/partner/[pid]/cases.post.ts`).
+- Sign-in, overview access, payments (success and decline) and case creation are recorded through `Backend.addAudit()`.
+- `server/utils/backend.ts` selects the implementation: the snapshot store unless `NUXT_BACKEND=erpnext`.
+- The Nitro plugin `server/plugins/demo-reset.ts` resets the snapshot store every 30 minutes. The test seed route `server/routes/__test/seed.post.ts` answers 404 unless `NUXT_TEST_SEED=true` and the snapshot backend is active.
 
 ### 5.3 Trust boundaries
 
 | Boundary | Crossing | Observation |
 |---|---|---|
-| Browser → Nuxt server | Public HTTP requests, customer ID in URL/body | No authentication or session is established. |
-| Nuxt server → SAP | Outbound HTTP through `server/utils/sap.ts` | The SAP interface is external and its authentication is not visible in the repository. **Requires validation.** |
-| Nuxt server → mock SAP | Internal HTTP to `/mock-sap` | Publicly reachable when the mock flag is enabled; protected only by a configuration flag. |
+| Browser → Nuxt server | HTTP requests with a sealed session cookie; company id in the URL | Identity comes from the session; company access is checked per request against the user's memberships. The sign-in itself asserts identity by user identifier only (mock SSO). |
+| Nuxt server → ERPNext | Outbound HTTP with `Authorization: token key:secret` | Used only in `erpnext` mode. The token in `erp/.env.local` belongs to the ERPNext `Administrator` user (over-privileged); no timeout or retry. **Requires validation** for any non-local use. |
+| Nuxt server → snapshot store | In-process | No network boundary; data is the committed fictional export. |
+| Developer machine → ERPNext container | HTTP on `127.0.0.1:8088` | Local only; default credentials. |
 | CI → deployment host | SSH with a repository secret and forced command | Host key checking and a restricted command are used; server-side configuration is not in the repository. |
 | GitHub Actions → third-party actions | Workflow dependencies | Most actions are pinned by commit SHA; the Semgrep container image is referenced by tag only. |
 
@@ -141,7 +148,7 @@ Nuxt 4 / Nitro server (Node 26, container, non-root user)
 | Node.js 26 | Runtime and build runtime | `Dockerfile`; `.github/workflows/ci.yml:27-28` | Base image `node:26-alpine` is tag-pinned, not digest-pinned. |
 | Nuxt 4 / Nitro / Vue | Application framework and server runtime | `package.json` (`nuxt ^4.6.3`, `vue`, `vue-router`) | Versions resolved in `pnpm-lock.yaml`. |
 | pnpm 11.16.0 | Package manager | `package.json` (`packageManager`); `Dockerfile` | `--frozen-lockfile` used in CI and Docker build. |
-| SAP interface | Source of customer, meter, bill and payment data | `server/utils/sap.ts`; `.env.example` | Actual endpoint and credentials are not in the repository. |
+| ERPNext (Frappe) v16 | Live CRM/ERP backend for development; source of the exported snapshot | `erp/compose.yml` (image `frappe/erpnext:v16.60.0`, `mariadb:11.8`, `redis:6.2-alpine`); `server/utils/erp/client.ts` | Runs only on the developer machine; not part of the deployed artifact. Images are tag-pinned. |
 | GitHub Actions | CI/CD execution platform | `.github/workflows/` | GitHub-hosted `ubuntu-latest` runners. |
 | GitHub Container Registry | Documented image registry | `README.md` | No publish/push step found in `ci.yml`. **Not evidenced.** |
 | Cloudflare Tunnel | Documented ingress and TLS termination | `deploy/README.md:6,13-19` | Account and tunnel configuration not in the repository. |
@@ -154,20 +161,22 @@ Nuxt 4 / Nitro server (Node 26, container, non-root user)
 
 | ID | Flow | Data | Evidence | Security observation |
 |---|---|---|---|---|
-| DF-01 | Browser → landing page | Customer identifier typed by the visitor | `app/pages/index.vue:1-24` | The identifier is the only access token; no credential is requested. |
-| DF-02 | Browser → Nuxt → SAP → browser | Name, address, contract account, meters (type, smart flag, POD/EIC-like ID, last reading), bills (period, amount, due date, status), payment-method label | `app/pages/fiok/[id].vue`; `server/api/account/[id].get.ts`; `server/utils/sap.ts`; `server/mock-sap/types.ts` | Personal and billing data is returned to anyone who supplies an existing customer ID. |
-| DF-03 | Browser → Nuxt → SAP | `billId` of the bill to pay; response status | `server/api/account/[id]/pay.post.ts`; `server/utils/sap.ts` | No confirmation, idempotency key or audit record. |
+| DF-01 | Browser → sign-in | User identifier typed or selected | `app/pages/index.vue`; `server/api/auth/login.post.ts` | The identifier is the only factor; no credential is requested. A sealed session cookie is issued. |
+| DF-02 | Browser → Nuxt → backend → browser | Company, invoices (period, amount, due date, status), supply points (type, smart flag, POD/EIC-like id, last reading), cases and messages, notifications | `app/pages/partner/[pid]/`; `server/api/partner/[pid]/`; `server/domain/types.ts` | Returned only if the session user has a membership with a role that grants the capability. |
+| DF-03 | Browser → Nuxt → backend | Invoice id of the invoice to pay; result status | `server/api/partner/[pid]/invoices/[iid]/pay.post.ts`; `server/utils/backends/memory.ts`; `server/utils/backends/erpnext.ts` | Requires `invoices.pay`; refuses an already paid invoice (409); a demo flag simulates a bank decline (402); no confirmation step or idempotency key; an audit event with the user id is written. |
 | DF-04 | Browser → Nuxt | Health status and deployed commit SHA | `server/api/health.get.ts` | Public, unauthenticated operational metadata. |
-| DF-05 | Test/client → mock SAP | Scenario name, generated customer ID | `server/routes/mock-sap/__seed.post.ts` | Public when the mock is enabled; creates fictional records. |
+| DF-05 | Test client → seed route | Scenario name, role; generated partner and user ids | `server/routes/__test/seed.post.ts` | Available only with `NUXT_TEST_SEED=true`; creates fictional records; ids from `crypto.randomUUID()`. |
 | DF-06 | CI → deployment host | Build archive, target environment, commit SHA, Playwright report | `.github/workflows/ci.yml:120-125,166-171`; `deploy/deploy.sh` | Transport is SSH; the deploy key is a repository secret. |
-| DF-07 | Application → external SAP | Customer ID, bill ID | `server/utils/sap.ts` | SAP-side authentication, authorisation and encryption are not evidenced in this repository. **Requires validation.** |
+| DF-07 | Nuxt → ERPNext | Customer, invoice, payment entry, issue, comment and event documents | `server/utils/erp/client.ts`; `server/utils/backends/erpnext.ts` | Authenticated with an API token; transport is plain HTTP on localhost in the documented setup; no timeout or retry. |
+| DF-08 | Developer → ERPNext → repository | Seeded demo data; exported `snapshot.json` | `erp/seed.ts`; `erp/export.ts`; `server/data/snapshot.json` | The export is committed, so the deployed data is exactly what was reviewed in the pull request. |
 
 ### Data categories observed
 
-- **Personal data (fictional in the demo):** name, address.
-- **Contract and billing data:** contract account, meter identifiers, consumption readings, bill amounts, due dates, payment status.
-- **Payment metadata:** payment-method type and a masked card label (for example `Bankkártya **** 4242`). No full card number, CVV or bank credentials are present in the repository.
-- **Operational metadata:** deployed commit SHA, health status, CI/e2e reports.
+- **Personal data (fictional in the demo):** user names and e-mail addresses (`@demo.szikra.test`), company names, addresses and tax numbers.
+- **Contract and billing data:** contract numbers, supply-point identifiers, meter readings, invoice amounts, due dates, payment status.
+- **Case data:** case type, free-text fields and messages entered by users.
+- **Payment metadata:** only a status; no card or bank data is processed or stored (the bank decline is a flag on the demo partner).
+- **Operational metadata:** deployed commit SHA, health status, audit and notification events, CI/e2e reports.
 
 The repository does not contain a data classification, retention or privacy policy. The demo data is invented, but a real deployment of the same code would process personal and financial data.
 
@@ -175,24 +184,23 @@ The repository does not contain a data classification, retention or privacy poli
 
 ### Authentication
 
-**Not evidenced.** No authentication mechanism is implemented in the repository:
+**Partially evidenced.** Session handling exists; credential verification does not:
 
-- The landing page collects only a customer identifier and navigates to `/fiok/:id`; it does not collect a password, one-time code or any other credential (`app/pages/index.vue:10-13`).
-- No session, cookie, bearer token, OIDC/OAuth client, SAML integration or server middleware was found in `app/` or `server/`.
-- The API handlers trust the `id` path parameter and do not verify a caller identity (`server/api/account/[id].get.ts:1-9`; `server/api/account/[id]/pay.post.ts:1-10`).
-- The mock API is protected only by the `NUXT_MOCK_SAP` configuration flag, not by caller authentication (`server/utils/mock-guard.ts`).
+- Sign-in is a mock single sign-on: `POST /api/auth/login` accepts a user identifier and creates a session if that user exists (`server/api/auth/login.post.ts`). It requests no password, one-time code or MFA, and no external identity provider is integrated.
+- The session is a sealed cookie managed by h3 (`server/utils/auth.ts`), 8 hours maximum age. The sealing secret comes from `NUXT_SESSION_PASSWORD`; when unset, production uses a random per-process secret (sessions end on restart) and development uses a fixed, publicly visible secret. Cookie attributes beyond the h3 defaults are not configured in the repository (**Requires validation**).
+- Fixed demo user identifiers are published on the landing page when `NUXT_PUBLIC_DEMO_USERS=true` (`server/api/auth/demo-users.get.ts`), so in demo mode knowing the identifier is not a secret.
 - The health endpoint is intentionally public (`server/api/health.get.ts`).
-
-The customer identifier therefore acts as a **knowledge-based lookup key**, not as an authentication factor. Fixed demo identifiers are published in the UI when demo mode is enabled (`app/pages/index.vue:4-9`).
 
 ### Authorization
 
-**Not evidenced.** No role model, permission check, ownership check or tenant isolation is present:
+**Evidenced (implementation), residual gaps remain.**
 
-- Any caller who knows or guesses an identifier receives the corresponding customer record.
-- Any caller can attempt a payment for any bill ID of that customer.
-- There is no administrator interface, no role assignment and no RBAC configuration in the repository.
-- The only access restriction found is the global mock on/off switch.
+- Roles are `admin`, `penzugy` (finance), `muszaki` (technical) and `olvaso` (read-only); a user can hold different roles at different companies (`server/domain/permissions.ts`; `server/domain/scenarios.ts`).
+- Server-side enforcement: `requireCapability()` returns 401 without a session, 403 without a membership at the requested company or without the capability (`server/utils/auth.ts`).
+- Case types carry their own required capability (`server/domain/case-types.ts`); referenced invoices and supply points are validated against the company.
+- The overview omits tiles the role may not see.
+- e2e tests assert cross-company access, read-only and role-restricted requests are refused (`tests/e2e/partner.spec.ts`); unit tests cover the matrix (`tests/unit/permissions.test.ts`).
+- Not evidenced: an access-review process, an administrator interface for roles (memberships are data in the backend), and tests for every route/role combination.
 
 ## 10. Infrastructure dependencies
 
@@ -204,58 +212,60 @@ The customer identifier therefore acts as a **knowledge-based lookup key**, not 
 | Reverse proxy (nginx/Caddy) | Host routing and documented rate limiting | `deploy/README.md` | **No** — configuration is outside the repository. |
 | Cloudflare Tunnel | Ingress, DNS and documented TLS termination | `deploy/README.md` | **No** — account/tunnel configuration is outside the repository. |
 | systemd user services | Process supervision and restart | `deploy/README.md:15,19`; `deploy/deploy.sh:39` | **No** — unit files are outside the repository. |
-| External SAP interface | Master and transactional data | `server/utils/sap.ts`; `.env.example` | **No** — endpoint and credentials are external. |
+| ERPNext (local) | Live backend and snapshot source in development | `erp/compose.yml`; `server/utils/erp/client.ts` | **Partly** — the stack definition and seed are in the repository; volumes, API keys and the running instance are not. |
 | GitHub secrets/variables | Deployment key, known hosts, AI provider key | `.github/workflows/ci.yml:113-115,159-161`; `.github/workflows/agent.yml:54` | Names are visible; values are not (correctly). |
 
 ## 11. Operational characteristics relevant to security
 
 | Characteristic | Observation | Evidence |
 |---|---|---|
-| Statefulness | The application itself is stateless; mock SAP state is held in process memory and is lost on restart. | `server/mock-sap/store.ts:1-4` |
-| Mock capacity | The in-memory store is capped at 500 customers; the oldest unpinned entries are evicted. Fixed demo users are pinned. | `server/mock-sap/store.ts:5-19` |
-| Demo reset | Fixed demo users are re-seeded at startup and every 30 minutes, so demo payments do not persist. | `server/plugins/demo-users.ts:5-16` |
+| Statefulness | The deployed application is stateless apart from process memory: the snapshot store and the audit/notification lists are lost on restart. In `erpnext` mode state lives in the ERPNext database (Docker volumes on the developer machine). | `server/utils/backends/memory.ts`; `erp/compose.yml` |
+| Snapshot capacity | The store is capped at 500 partners; the oldest unpinned entries are evicted. Fixed demo partners are pinned. | `server/utils/backends/memory.ts` |
+| Demo reset | The snapshot store is restored from `snapshot.json` every 30 minutes, so demo payments and new cases do not persist. | `server/plugins/demo-reset.ts` |
 | Health checking | `/api/health` returns `status: ok` and the deployed commit SHA when `NUXT_BUILD_SHA` is set. | `server/api/health.get.ts` |
 | Deployment verification | CI polls `/api/health` until the served SHA matches the deployed commit. | `.github/workflows/ci.yml:172-179` |
 | Availability design | One documented deployment host with two application environments (main and preview); no redundancy, failover, RTO/RPO or backup procedure is evidenced. | `deploy/README.md:11-20` |
 | Rollback | A previous build is retained as `.output.prev`; rollback is manual and not automated or tested in the repository. | `deploy/deploy.sh:34-39` |
-| Logging | No application-level access, security or audit logging configuration was found. CI logs and Playwright artifacts are retained by GitHub. | `server/`; `.github/workflows/ci.yml:54-70` |
+| Logging | Business and security events (sign-in, overview access, payment result, case creation) are recorded via `addAudit()`, but only in process memory (snapshot mode) or as ERPNext `Szikra Event` rows; no endpoint or UI reads them, and there is no central log, retention or alerting. CI logs and Playwright artifacts are retained by GitHub. | `server/utils/backend.ts`; `server/api/partner/[pid]/`; `.github/workflows/ci.yml:54-70` |
 | Monitoring/alerting | Only the health endpoint and the deploy smoke test are evidenced; no dashboards, alert routes or on-call process are in the repository. | `server/api/health.get.ts`; `.github/workflows/ci.yml:172-179` |
-| Rate limiting | The application implements none. `deploy/README.md` states nginx rate limiting exists, but the nginx configuration is not in the repository. | `server/`; `deploy/README.md:14` — **Requires validation** |
-| Secret handling | Runtime configuration is environment-based. `.env*` files are ignored except `.env.example`; the example contains placeholders only. | `nuxt.config.ts`; `.gitignore`; `.env.example` |
+| Rate limiting | The application implements none (including the sign-in). `deploy/README.md` states nginx rate limiting exists, but the nginx configuration is not in the repository. | `server/`; `deploy/README.md:14` — **Requires validation** |
+| Secret handling | Runtime configuration is environment-based. `.env*` files are ignored except `.env.example`; the example contains placeholders only. The generated ERPNext token is written to `erp/.env.local` (mode 600, git-ignored). | `nuxt.config.ts`; `.gitignore`; `.env.example`; `erp/seed.ts` |
 | Security headers | No custom CSP, HSTS or other security-header configuration was found in the repository. Response headers were not validated against a running deployment. | `nuxt.config.ts`; `server/` — **Requires validation** |
 
 ## 12. Facts, observations and assumptions
 
 ### Facts evidenced in the repository
 
-- The application is a Nuxt 4 SSR demo portal backed by a SAP adapter and an optional in-memory mock SAP.
-- There is no application authentication, session handling or authorization; a customer ID is the only lookup key.
+- The application is a Nuxt 4 SSR demo partner portal with a backend interface that has an in-memory JSON-snapshot implementation (default) and a live ERPNext implementation.
+- Sessions use a sealed cookie; access to company data is checked server-side against per-company role memberships. Sign-in does not verify a credential.
 - The application is deployed as a non-root container built and tested by GitHub Actions.
 - The repository contains SAST, secret scanning, dependency scanning, container scanning and dependency-update automation.
-- The application handles fictional personal and billing data; no database is part of the application.
+- The application handles fictional business and billing data; the deployed artifact contains no database, only the committed snapshot.
 - The deployment host, reverse proxy and TLS tunnel are external and documented only narratively.
 
 ### Technical observations
 
-- The customer identifier is enumerable in principle; fixed demo identifiers are published, and no rate limiting is implemented in the application.
-- Because payment is a POST without authentication, confirmation, idempotency or audit logging, the integrity of the payment flow depends entirely on controls outside this repository.
-- The in-memory mock and 30-minute reset are suitable for a demo but do not provide durable storage, backup or recovery.
+- Because the user identifier alone signs a user in, and demo identifiers are published, the authorization model protects company data from other users only as far as the identity assertion is trusted; with real data an identity provider with MFA would be required.
+- Payments are protected by role and company checks and a duplicate guard, but have no confirmation step, idempotency key or correlation id.
+- Audit events exist but are volatile or only stored in the backend and are not exposed or monitored.
+- The in-memory store and 30-minute reset are suitable for a demo but do not provide durable storage, backup or recovery.
+- The ERPNext adapter uses an `Administrator` API token and has no timeout, retry or circuit breaker; the local ERPNext stack uses default credentials and is intended for a developer machine only.
 - The CI/CD pipeline is the most mature security-relevant part of the repository, but several documented capabilities (GHCR publish, dependency-review) are not present in the workflows.
 
 ### Assumptions (not proven by the repository)
 
 - The production/demo deployment is expected to be reachable over HTTPS through Cloudflare; this is documented but not verifiable from the repository.
-- The external SAP interface is expected to enforce its own authentication, authorization and transport security; no evidence is available here.
+- A production-grade identity provider and a least-privilege ERPNext service account would replace the mock sign-in and the `Administrator` token before any real use; neither is evidenced here.
 - GitHub organisation settings such as branch protection, required reviews and environment approvals are expected to exist; they are not stored in the repository and therefore **Require validation**.
 
 ## 13. Open questions for the system owner
 
-1. Is the deployed demo running with `NUXT_MOCK_SAP=true` and `NUXT_PUBLIC_DEMO_USERS=true`? What is the actual production configuration?
-2. What authentication and authorization does the real SAP interface require, and how are its credentials stored and rotated?
+1. Is the deployed demo running with `NUXT_PUBLIC_DEMO_USERS=true`, and is `NUXT_SESSION_PASSWORD` set (otherwise sessions end on every restart)? What is the actual production configuration?
+2. Which identity provider and MFA would replace the mock sign-in, and where would roles and memberships be administered?
 3. Is TLS terminated only at Cloudflare, and is traffic between Cloudflare, nginx and the Node process encrypted?
 4. Are the nginx rate-limit and Cloudflare/WAF rules documented and version-controlled anywhere?
 5. Are branch protection, required reviews and GitHub environment approvals enabled for `main` and `production`?
-6. What are the RTO, RPO and backup arrangements for the SAP system and the deployment host?
+6. What are the RTO, RPO and backup arrangements for ERPNext data and the deployment host if the live backend were ever used outside a developer machine?
 7. Is there an incident-response plan, on-call rota and security contact outside this repository?
 
 ## 14. Document control
@@ -263,3 +273,4 @@ The customer identifier therefore acts as a **knowledge-based lookup key**, not 
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-11-17 | Initial PoC system overview generated from repository evidence at commit `94ce09c`. |
+| 0.2 | 2026-11-22 | Updated for the B2B partner portal: backend interface (snapshot/ERPNext), session authentication, role-based authorization, audit events. Baseline `main` at `17d547b`. |

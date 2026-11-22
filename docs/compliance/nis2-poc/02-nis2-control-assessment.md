@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | Document | `02-nis2-control-assessment.md` |
-| Assessment date | 2026-11-17 |
-| Assessment target | `szikra` repository at commit `94ce09cc539fef0d1f94eb32a1563b00efd89a96` |
+| Assessment date | 2026-11-22 (updated; first issued 2026-11-17) |
+| Assessment target | `szikra` repository, `main` at commit `17d547b` (PR #36, B2B partner portal) plus the update in this change |
 | Framework basis | NIS2 Directive (EU) 2022/2555, Article 21(2) measures, adapted to a repository review |
 | Entity classification | **Not evidenced.** The repository describes a demo application; no NIS2 entity classification is documented. |
 | Method | Static inspection of source, configuration, CI/CD, deployment scripts and documentation |
@@ -39,19 +39,19 @@ The application is a demo with fictional data. Whether the operating organisatio
 | Secure acquisition, development and maintenance | Partially evidenced | Pull-request CI in `.github/workflows/ci.yml:3-6`; typecheck and unit tests at lines 20-32; Playwright e2e at lines 34-70; CodeQL and Semgrep in `.github/workflows/security.yml`; protected-file check in `.github/workflows/agent.yml:73-89`. | No security requirements or acquisition criteria; no branch-protection/required-review evidence; no secure coding standard; no threat modelling; no dependency-review job despite `README.md`; no signed commits. | Codify secure SDLC gates, require reviewed changes on protected branches, add threat modelling and a dependency-review gate, and document security requirements for acquired components. |
 | Vulnerability handling and disclosure | Partially evidenced | Automated scanning exists: CodeQL, Semgrep, gitleaks, OSV-Scanner and Trivy in `.github/workflows/security.yml`; image scan in `.github/workflows/ci.yml:72-85`; exception register in `osv-scanner.toml`. | No disclosure policy or security contact; no triage, ownership, remediation SLA or ticket trail; no penetration test; no evidence that findings are tracked to closure. | Publish `SECURITY.md`/security.txt, define triage and remediation SLAs, track findings in an owned backlog, and schedule independent testing. |
 | Effectiveness of cybersecurity controls | Not evidenced | Functional tests exist (`tests/unit/`, `tests/e2e/`), but no control metrics, internal audit, penetration test, red-team exercise or management review. | No measurement of whether controls work; CI passing is not evidence of security effectiveness. | Define security KPIs, test controls periodically, run independent assessments and record management review decisions. |
-| Cryptography and encryption | Partially evidenced | `deploy/README.md:13-19` documents Cloudflare Tunnel ingress; deployment secrets are injected from GitHub at `.github/workflows/ci.yml:113-125,159-171`; `.env.example` contains only a placeholder URL. | TLS/WAF configuration is not in the repository; at-rest encryption, key management, rotation and a cryptographic inventory are not evidenced; application-level crypto is absent by design. | Document the TLS termination and internal-hop encryption model, inventory keys/certificates, define rotation, and verify Cloudflare/nginx settings. |
-| Access control | Not evidenced | `server/api/account/[id].get.ts` and `server/api/account/[id]/pay.post.ts` accept caller-supplied IDs with no identity or ownership check; no RBAC, roles or admin model found. | No authenticated principal, least privilege, role model, ownership check or tenant isolation; any known ID grants account access. | Introduce identity-aware authorization, enforce object-level ownership, define least-privilege roles and log access decisions. |
+| Cryptography and encryption | Partially evidenced | `deploy/README.md:13-19` documents Cloudflare Tunnel ingress; deployment secrets are injected from GitHub at `.github/workflows/ci.yml:113-125,159-171`; sessions are sealed with a secret from `NUXT_SESSION_PASSWORD` or a random per-process value (`server/utils/auth.ts`); `.env.example` contains only commented placeholders. | TLS/WAF configuration is not in the repository; at-rest encryption, key management, rotation and a cryptographic inventory are not evidenced; cookie attributes beyond the h3 defaults are not configured; the application uses framework session sealing only. | Document the TLS termination and internal-hop encryption model, set and rotate `NUXT_SESSION_PASSWORD`, configure and test cookie attributes, inventory keys/certificates, and verify Cloudflare/nginx settings. |
+| Access control | Partially evidenced | Server-side role model: `server/domain/permissions.ts` (admin, penzugy, muszaki, olvaso → capabilities); `requireCapability()` in `server/utils/auth.ts` is called by every `/api/partner/[pid]/…` handler; case types carry their own capability and references are validated against the company (`server/api/partner/[pid]/cases.post.ts`); e2e and unit tests cover cross-company and role-restricted requests (`tests/e2e/partner.spec.ts`, `tests/unit/permissions.test.ts`). | No access-review process or role-administration interface (memberships are backend data); no test for every route/role pair; no rate limiting; the quality of access control depends on the unverified identity assertion at sign-in. | Add an automated route × role access test matrix, define an access-review cycle for memberships, and bind authorization to a verified identity (see Authentication). |
 | Asset management | Partially evidenced | Declared dependencies in `package.json`; resolved versions in `pnpm-lock.yaml`; container definition in `Dockerfile`; CI/CD assets in `.github/workflows/`; test assets in `tests/`. | No asset register, ownership, criticality classification, SBOM or lifecycle/decommissioning record; host and network assets are outside the repository. | Maintain an asset and service inventory with owners and criticality, generate an SBOM and include external infrastructure assets. |
-| Authentication | Not evidenced | `app/pages/index.vue:10-13` collects only a customer identifier; no session/cookie/token/OIDC/SAML/middleware exists in `app/` or `server/`; the ID is used directly by `server/api/account/[id].get.ts`. | No credential verification, no MFA, no session management, no account recovery, no authentication for mock endpoints. | Implement a real identity provider with MFA, secure session/token handling and authenticated API calls. |
-| Logging and monitoring | Partially evidenced | `server/api/health.get.ts` exposes health and build SHA; `.github/workflows/ci.yml:172-179` polls it after deploy; Playwright/CI artifacts are retained at `.github/workflows/ci.yml:54-70`. | No application access, security or payment audit log; no central log collection, retention, alerting, SIEM or on-call process. | Add structured security/audit logging, centralise and retain logs, alert on payment/auth anomalies and define monitoring ownership. |
+| Authentication | Partially evidenced | Session handling exists: sealed h3 cookie, 8-hour lifetime, logout (`server/utils/auth.ts`, `server/api/auth/`); unauthenticated API calls return 401 and unauthenticated pages redirect (`app/middleware/auth.ts`). | Sign-in is a mock SSO: a known user identifier is the only factor (`server/api/auth/login.post.ts`); no password, MFA, identity provider, account recovery or brute-force protection; demo identifiers are published when `NUXT_PUBLIC_DEMO_USERS=true`. | Integrate a standards-based identity provider with MFA, keep sessions server-side or short-lived, and never enable the demo user list with real data. |
+| Logging and monitoring | Partially evidenced | Business/security events (sign-in, overview, payment success/decline, case creation) are written with `Backend.addAudit()` (`server/api/auth/login.post.ts`, `server/api/partner/[pid]/`); in `erpnext` mode they persist as `Szikra Event` rows (`server/utils/backends/erpnext.ts`); `server/api/health.get.ts` exposes health and build SHA; `.github/workflows/ci.yml:172-179` polls it after deploy; CI artifacts are retained at `.github/workflows/ci.yml:54-70`. | In the deployed snapshot mode the audit list is process memory and lost on restart; no endpoint or UI reads it; no HTTP access/error log configuration, central collection, retention, alerting, SIEM or on-call process. | Persist and ship audit events to a central store with retention, expose them to administrators, alert on payment/auth anomalies and define monitoring ownership. |
 | Network security | Requires validation | `deploy/README.md:13-19` documents Cloudflare Tunnel and nginx host routing/rate limiting; no nginx, firewall, WAF or tunnel configuration is present in the repository. | External network controls are not reproducible or verifiable here; the application itself has no rate limiting or anti-automation control. | Bring network configuration under version control or provide reviewed evidence; add app-level rate limiting and abuse protection. |
-| Data protection and privacy | Partially evidenced | Demo data is declared fictional in `README.md` and `app/app.vue:13`; data fields are defined in `server/mock-sap/types.ts`; no real card data is stored in the repository. | No data classification, retention, minimisation, privacy notice, DPA or at-rest encryption evidence for a real deployment. | Classify data, define retention/deletion, document lawful basis and protect personal/financial data in transit and at rest. |
+| Data protection and privacy | Partially evidenced | Demo data is declared fictional in `README.md` and `app/app.vue`; data fields are defined in `server/domain/types.ts`; no card or bank data is processed or stored; demo e-mail addresses use a reserved test domain. | No data classification, retention, minimisation, privacy notice, DPA or at-rest encryption evidence for a real deployment; free-text case fields can hold personal data. | Classify data, define retention/deletion, document lawful basis and protect personal/financial data in transit and at rest. |
 | Change management and configuration management | Partially evidenced | Git history; pull-request-triggered CI at `.github/workflows/ci.yml:3-6`; automated agent PR flow and protected-file denylist at `.github/workflows/agent.yml:73-101`; runtime configuration in `nuxt.config.ts`. | Branch protection and required reviews are not evidenced; host configuration is not version-controlled; documentation drift exists (`deploy.yml`, GHCR publish, dependency-review). | Require protected branches and reviews, version host configuration, and reconcile documentation with actual workflows. |
 | Governance, roles and training | Not evidenced | No security policy, role definitions, management commitment, training record or cyber-hygiene programme was found in the repository. | No assigned security responsibilities, awareness programme or management oversight. | Define NIS2 roles, approve a security policy, and run recurring awareness and role-specific training. |
 | Physical and environmental security | Not applicable | The application assets in scope are code and CI/CD definitions; hosting is external (GitHub and a documented Hetzner host). No physical asset is managed in the repository. | Physical controls cannot be assessed from the repository and are the provider's responsibility. | Obtain and review hosting-provider attestations and include them in supplier management. |
-| Backup and recovery | Not evidenced | No backup job, schedule, storage or restore procedure was found. The mock store is in-memory (`server/mock-sap/store.ts:1-4`); `.output.prev` is a deployment rollback copy, not a data backup. | No backup of configuration, data or secrets; no restore test; no RPO. | Define backup scope and retention, encrypt backups, test restoration and record RPO/RTO. |
+| Backup and recovery | Not evidenced | No backup job, schedule, storage or restore procedure was found. The deployed store is in-memory (`server/utils/backends/memory.ts`); `.output.prev` is a deployment rollback copy; ERPNext data sits in Docker volumes on the developer machine (`erp/compose.yml`) with no backup. | No backup of configuration, data or secrets; no restore test; no RPO. The committed `snapshot.json` is a reproducible export of fictional data, not a backup. | Define backup scope and retention, encrypt backups, test restoration and record RPO/RTO. |
 | Automated vulnerability scanning (sub-control) | Evidenced | CodeQL, Semgrep, gitleaks, OSV-Scanner and Trivy definitions in `.github/workflows/security.yml`; Trivy image scan in `.github/workflows/ci.yml:72-85`; scheduled weekly run at `security.yml:7-8`. | Scanning is CI-only; coverage, tuning and finding follow-up are not evidenced. | Retain scan results, track findings to closure and review scanner coverage periodically. |
-| SAP integration resilience (sub-control) | Partially evidenced | `server/utils/sap.ts` centralises SAP calls; `.github/workflows/ci.yml:172-179` verifies only the application's own health; `server/api/account/[id].get.ts` maps failures to 502. | No timeout, retry, circuit breaker, bulkhead or dependency health check for SAP; a SAP outage directly degrades account and payment functions. | Add timeouts, bounded retries, circuit breaking, dependency health checks and an outage runbook. |
+| Backend integration resilience (sub-control) | Partially evidenced | `server/utils/backend.ts` is the single data boundary; the default snapshot store has no network dependency; `server/utils/erp/client.ts` performs plain `fetch` calls for the ERPNext mode; `.github/workflows/ci.yml:172-179` verifies only the application's own health. | The ERPNext client has no timeout, retry, circuit breaker or dependency health check; the ERPNext token belongs to `Administrator` (no least privilege); errors surface as generic failures. | Add timeouts, bounded retries, circuit breaking and dependency health checks, use a least-privilege ERPNext service user, and write an outage runbook before any non-local use. |
 | Secret and key management (sub-control) | Partially evidenced | GitHub secrets for deployment and the AI provider; SSH key written with mode 600 and strict host-key checking at `.github/workflows/ci.yml:113-125,159-171`; `.env*` ignored except `.env.example`; gitleaks in CI. | No vault, rotation schedule, access review or documented key ownership; deploy-key lifetime is unknown. | Move to a managed secret store, define rotation and access review, and document key ownership. |
 | Secure CI/CD and agent automation (sub-control) | Partially evidenced | Workflows default to `contents: read`; actions are mostly SHA-pinned; deployment uses a forced command (`deploy/deploy.sh`); fork and Dependabot deployments are excluded at `.github/workflows/ci.yml:131-138`. | The agent workflow has write permissions and repository secrets; it installs unpinned OS packages and disables an AppArmor user-namespace restriction; no environment-approval evidence; Semgrep image is unpinned. | Harden the automation path, pin all dependencies/images, require environment approval, minimise token permissions and review sandbox trade-offs. |
 
@@ -67,7 +67,7 @@ The application is a demo with fictional data. Whether the operating organisatio
 | (f) Policies and procedures to assess effectiveness | Effectiveness of cybersecurity controls | Not evidenced |
 | (g) Cyber hygiene and security training | Governance, roles and training | Not evidenced |
 | (h) Cryptography and encryption | Cryptography and encryption | Partially evidenced |
-| (i) Access control, asset management and authentication | Access control; Asset management; Authentication | Not evidenced / Partially evidenced |
+| (i) Access control, asset management and authentication | Access control; Asset management; Authentication | Partially evidenced |
 | (j) Multi-factor authentication, secure communications and emergency communication | Authentication; Cryptography; Incident handling | Not evidenced |
 
 ## 5. Detailed area assessments
@@ -75,9 +75,9 @@ The application is a demo with fictional data. Whether the operating organisatio
 ### 5.1 Risk analysis and information system security
 
 - **Evidence:** The repository documents the architecture and deployment intent (`README.md`, `deploy/README.md`), but no risk register, threat model, risk scoring method, risk owner or treatment plan is present.
-- **Observation:** The most security-relevant risk is evident from the code itself — the account and payment APIs accept customer IDs without authentication — yet no risk assessment records or accepts that risk.
+- **Observation:** The most security-relevant risk is evident from the code itself — sign-in asserts identity by user identifier only, and the ERPNext adapter uses an administrator-level token — yet no risk assessment records or accepts these risks.
 - **Gap:** No repeatable risk-analysis process, no linkage from risks to controls, no management approval.
-- **Recommendation:** Create a scoped risk assessment covering the portal, SAP integration, CI/CD and hosting; assign owners and review dates; record accepted risks explicitly.
+- **Recommendation:** Create a scoped risk assessment covering the portal, the ERPNext integration, CI/CD and hosting; assign owners and review dates; record accepted risks explicitly.
 
 ### 5.2 Incident handling
 
@@ -88,7 +88,7 @@ The application is a demo with fictional data. Whether the operating organisatio
 ### 5.3 Business continuity and disaster recovery
 
 - **Evidence:** `deploy/deploy.sh:30-39` keeps the previous build in `.output.prev`; `ci.yml` defines main and preview deployment targets; `/api/health` is used for smoke verification.
-- **Observation:** The application is stateless, but the mock SAP is in-memory and the real SAP is an external dependency. There is no evidence of data backup, restore testing or redundancy.
+- **Observation:** The application is stateless, but the snapshot store is in-memory and ERPNext (when used) is an external dependency. There is no evidence of data backup, restore testing or redundancy.
 - **Gap:** No business impact analysis, RTO/RPO, backup schedule, restore test, failover or crisis-management procedure.
 - **Recommendation:** Define RTO/RPO per service, back up configuration and any durable data, test restore, and document an outage/rollback runbook.
 
@@ -118,36 +118,36 @@ The application is a demo with fictional data. Whether the operating organisatio
 
 ### 5.8 Cryptography and encryption
 
-- **Evidence:** `deploy/README.md:13-19` documents Cloudflare Tunnel ingress; deployment secrets are injected from GitHub; `.env.example` contains only a placeholder SAP URL.
+- **Evidence:** `deploy/README.md:13-19` documents Cloudflare Tunnel ingress; deployment secrets are injected from GitHub; `.env.example` contains only commented placeholders; sessions are sealed with `NUXT_SESSION_PASSWORD` or a random per-process secret (`server/utils/auth.ts`).
 - **Observation:** The repository contains no application-level cryptographic code, key material or certificate configuration. Transport security is asserted narratively for the external edge.
 - **Gaps:** TLS configuration is not version-controlled or verifiable; encryption between nginx and the Node process is not evidenced; at-rest encryption and key rotation are not evidenced; there is no cryptographic inventory.
 - **Recommendation:** Document and verify the TLS termination model, encrypt internal hops, inventory keys/certificates, define rotation, and avoid custom cryptography.
 
 ### 5.9 Access control
 
-- **Evidence:** `server/api/account/[id].get.ts` returns the SAP customer for any supplied `id`; `server/api/account/[id]/pay.post.ts` attempts payment for any supplied customer/bill pair; no role or permission check exists.
-- **Observation:** This is an object-reference access-control weakness (IDOR) if the underlying data is real, because the identifier is the only access decision.
-- **Gap:** No identity, least privilege, role model, ownership check or tenant isolation.
-- **Recommendation:** Authenticate callers, enforce object-level authorization on every account and payment request, define least-privilege roles, and log authorization decisions.
+- **Evidence:** `server/domain/permissions.ts` defines four roles and their capabilities; every `/api/partner/[pid]/…` handler calls `requireCapability()` (`server/utils/auth.ts`), which requires a session, a membership at the requested company and a role that grants the capability (401/403 otherwise); case types add their own required capability and company-bound reference checks; tests in `tests/e2e/partner.spec.ts` and `tests/unit/permissions.test.ts` assert the main negative cases.
+- **Observation:** Object-level authorization is derived from the session user, not from caller-supplied ownership claims. The residual weakness is upstream: identity is asserted by user identifier only.
+- **Gap:** No access-review cycle, no role-administration interface, no exhaustive route × role test matrix, no logging of denied decisions.
+- **Recommendation:** Add an automated route × role matrix test, log authorization decisions, define periodic review of memberships and keep the least-privilege principle for new capabilities.
 
 ### 5.10 Asset management
 
 - **Evidence:** `package.json`, `pnpm-lock.yaml`, `Dockerfile`, `.github/workflows/` and `tests/` identify the main software and pipeline assets.
-- **Gaps:** No asset inventory with owners and criticality, no SBOM, no lifecycle/decommissioning record, no inventory of external infrastructure (Cloudflare, Hetzner, nginx, systemd, SAP).
+- **Gaps:** No asset inventory with owners and criticality, no SBOM, no lifecycle/decommissioning record, no inventory of external infrastructure (Cloudflare, Hetzner, nginx, systemd, ERPNext).
 - **Recommendation:** Maintain an asset/service register with owners and criticality, generate an SBOM per release, and include external infrastructure and supplier services.
 
 ### 5.11 Authentication
 
-- **Evidence:** `app/pages/index.vue:10-13` reads a customer identifier and navigates to `/fiok/:id`; no password, token, session, OIDC/SAML client, middleware or MFA is present.
-- **Observation:** Knowing or guessing an identifier is sufficient to access the corresponding account. Fixed demo identifiers are published when demo mode is enabled (`app/pages/index.vue:4-9`).
-- **Gap:** No credential verification, session management, MFA, account recovery or brute-force protection.
-- **Recommendation:** Integrate a standards-based identity provider with MFA, use secure server-side sessions or short-lived tokens, and protect all account/payment APIs with authentication.
+- **Evidence:** `server/api/auth/login.post.ts` creates a sealed session (`server/utils/auth.ts`) for any existing user identifier; `server/api/auth/logout.post.ts` clears it; `app/middleware/auth.ts` redirects unauthenticated visitors; API handlers return 401 without a session.
+- **Observation:** Session handling is in place, but there is no credential: knowing a user identifier is sufficient. Demo identifiers are published when `NUXT_PUBLIC_DEMO_USERS=true`.
+- **Gap:** No credential verification, MFA, identity provider, account recovery or brute-force protection; cookie attributes rely on framework defaults.
+- **Recommendation:** Integrate a standards-based identity provider with MFA, configure and verify cookie attributes, rate-limit sign-in and keep the demo user list disabled for any real-data environment.
 
 ### 5.12 Logging and monitoring
 
-- **Evidence:** `/api/health` returns service status and build SHA (`server/api/health.get.ts`); deployment polls it (`.github/workflows/ci.yml:172-179`); CI and Playwright reports are uploaded as artifacts (`.github/workflows/ci.yml:54-70`).
-- **Gaps:** No application access log, authentication log, payment audit trail, structured error log, central log retention, alerting, SIEM or on-call ownership.
-- **Recommendation:** Add structured security and audit logging with correlation IDs, ship logs to a central store with retention, alert on payment/auth anomalies, and define monitoring ownership.
+- **Evidence:** `addAudit()` records sign-in, overview access, payment attempts (success and decline) and case creation with user, company and action; in ERPNext mode these persist as `Szikra Event` documents; `/api/health` returns service status and build SHA; deployment polls it (`.github/workflows/ci.yml:172-179`); CI and Playwright reports are uploaded as artifacts (`.github/workflows/ci.yml:54-70`).
+- **Gaps:** In the deployed snapshot mode the audit list is lost on restart; nothing reads it; no HTTP access log, central retention, alerting, SIEM or on-call ownership; no correlation identifiers.
+- **Recommendation:** Persist audit events centrally with retention, expose them to administrators, add correlation IDs, alert on payment/auth anomalies and define monitoring ownership.
 
 ### 5.13 Network security (Requires validation)
 
@@ -157,7 +157,7 @@ The application is a demo with fictional data. Whether the operating organisatio
 
 ### 5.14 Data protection and privacy
 
-- **Evidence:** The repository repeatedly states that data is fictional (`README.md`, `app/app.vue:13`); data fields are defined in `server/mock-sap/types.ts`; the mock card label is masked and contains no full PAN.
+- **Evidence:** The repository repeatedly states that data is fictional (`README.md`, `app/app.vue:13`); data fields are defined in `server/domain/types.ts`; no card or bank data is stored, and e-mail addresses use a reserved test domain.
 - **Gaps:** For a real deployment, no data classification, retention/deletion, minimisation, privacy notice, processor agreement or at-rest encryption evidence exists.
 - **Recommendation:** Classify personal and financial data, define retention and deletion, document lawful basis and processor relationships, and protect data in transit and at rest.
 
@@ -180,7 +180,7 @@ The application is a demo with fictional data. Whether the operating organisatio
 
 ### 5.18 Backup and recovery
 
-- **Evidence:** None for data or configuration backups. `.output.prev` preserves the previous application build for rollback (`deploy/deploy.sh:34-39`), but it is not a backup of data, configuration or secrets.
+- **Evidence:** None for data or configuration backups. ERPNext data lives in Docker volumes on the developer machine without backup, and the deployed store is in memory. `.output.prev` preserves the previous application build for rollback (`deploy/deploy.sh:34-39`), but it is not a backup of data, configuration or secrets.
 - **Gap:** No backup scope, schedule, encryption, retention, restore test or RPO.
 - **Recommendation:** Define and test backups for configuration and durable data, encrypt them, record RPO/RTO and include them in DR exercises.
 
@@ -196,3 +196,4 @@ The application is a demo with fictional data. Whether the operating organisatio
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-11-17 | Initial PoC control assessment based on repository evidence at commit `94ce09c`. |
+| 0.2 | 2026-11-22 | Updated for the B2B partner portal (session authentication, role-based authorization, audit events, ERPNext adapter). Baseline `main` at `17d547b`. |

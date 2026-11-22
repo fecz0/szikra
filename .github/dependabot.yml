@@ -4,6 +4,10 @@ updates:
     directory: /
     schedule: { interval: weekly }
     cooldown: { default-days: 7 }
+    ignore:
+      # TypeScript 7 még nem kompatibilis a vue-tsc-vel (nuxt typecheck elszáll); 6.x-en maradunk
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }

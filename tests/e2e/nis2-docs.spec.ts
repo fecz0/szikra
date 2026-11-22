@@ -59,12 +59,22 @@ const EXISTING_EVIDENCE_PATHS = [
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'server/api/health.get.ts',
-  'server/api/account/[id].get.ts',
-  'server/api/account/[id]/pay.post.ts',
-  'server/mock-sap/store.ts',
-  'server/routes/mock-sap/__seed.post.ts',
-  'server/utils/mock-guard.ts',
-  'server/utils/sap.ts',
+  'server/api/auth/login.post.ts',
+  'server/api/auth/demo-users.get.ts',
+  'server/api/partner/[pid]/invoices/[iid]/pay.post.ts',
+  'server/api/partner/[pid]/cases.post.ts',
+  'server/domain/permissions.ts',
+  'server/domain/case-types.ts',
+  'server/domain/types.ts',
+  'server/utils/auth.ts',
+  'server/utils/backend.ts',
+  'server/utils/backends/memory.ts',
+  'server/utils/backends/erpnext.ts',
+  'server/utils/erp/client.ts',
+  'server/routes/__test/seed.post.ts',
+  'server/plugins/demo-reset.ts',
+  'erp/compose.yml',
+  'erp/seed.ts',
   'tests/e2e/support/fixtures.ts',
 ] as const
 
@@ -94,7 +104,7 @@ test.describe('NIS2 PoC dokumentációs csomag', () => {
     }
     // A PoC nem állíthatja, hogy hivatalos NIS2 audit vagy tanúsítás.
     expect(text).toContain('not an official NIS2 audit or certification')
-    expect(text).toContain('server/utils/sap.ts')
+    expect(text).toContain('server/utils/backend.ts')
   })
 
   test('02: minden kötelező terület és státusz szerepel a táblázatban', () => {
@@ -107,7 +117,7 @@ test.describe('NIS2 PoC dokumentációs csomag', () => {
       expect(text, `hiányzó státusz: ${status}`).toContain(status)
     }
     // Konkrét repó-hivatkozások, nem általános állítások.
-    for (const path of ['server/utils/sap.ts', '.github/workflows/security.yml', 'Dockerfile', 'deploy/README.md']) {
+    for (const path of ['server/utils/backend.ts', 'server/utils/auth.ts', '.github/workflows/security.yml', 'Dockerfile', 'deploy/README.md']) {
       expect(text).toContain(path)
     }
     // Legalább a 12 kötelező területhez legyen egy-egy értékelő sor.
@@ -135,7 +145,21 @@ test.describe('NIS2 PoC dokumentációs csomag', () => {
       expect(text, `hiányzó gap-mező: ${field}`).toContain(field)
     }
     // A gap-ek valós, visszakereshető bizonyítékra hivatkoznak.
-    expect(text).toContain('server/api/account/[id].get.ts')
+    expect(text).toContain('server/utils/auth.ts')
     expect(text).toContain('.github/workflows/security.yml')
+  })
+
+  test('a dokumentumokban hivatkozott repó-útvonalak mind léteznek (nincs elavult hivatkozás)', () => {
+    // Csak a könyvtárat is tartalmazó, ismert kiterjesztésű útvonalak; a sorszám-utótag ( :10-13 ) levágva.
+    const pathLike = /^[\w.\-[\]@/]+\/[\w.\-[\]@]+\.(?:ts|vue|yml|yaml|json|md|toml|sh)$/
+    const notInRepo = new Set(['erp/.env.local']) // git-ignored, csak helyben jön létre
+    const stale: string[] = []
+    for (const name of REQUIRED_DOCS) {
+      for (const m of doc(name).matchAll(/`([^`\n]+)`/g)) {
+        const token = m[1]!.replace(/:\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*$/, '')
+        if (pathLike.test(token) && !notInRepo.has(token) && !existsSync(resolve(ROOT, token))) stale.push(`${name}: ${token}`)
+      }
+    }
+    expect(stale, `nem létező hivatkozott útvonalak:\n${stale.join('\n')}`).toEqual([])
   })
 })
