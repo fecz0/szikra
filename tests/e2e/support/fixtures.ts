@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test'
 import { test as base, expect } from '@playwright/test'
 
-export type Scenario = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak' | 'kereskedelmi-lanc' | 'napelempark'
-export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso'
+export type Scenario = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak' | 'kereskedelmi-lanc' | 'napelempark' | 'nagykereskedelem'
+export type Role = 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo'
 
 export interface Seeded { userId: string, partnerId: string }
 

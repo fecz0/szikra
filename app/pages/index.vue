@@ -3,6 +3,8 @@ interface DemoUser { id: string, name: string, note: string, companies: { name: 
 const showDemo = useRuntimeConfig().public.demoUsers
 const { data: demoUsers } = showDemo ? await useFetch<DemoUser[]>('/api/auth/demo-users') : { data: ref<DemoUser[]>([]) }
 
+import { roleLabel } from '../../server/domain/permissions'
+
 const userId = ref('')
 const error = ref('')
 
@@ -73,6 +75,7 @@ async function login(id: string) {
           <strong>{{ u.name }}</strong>
           <code>{{ u.id }}</code>
           <span class="hint">{{ u.note }}</span>
+          <span class="chips"><span v-for="c in u.companies" :key="c.name" class="tag">{{ c.name }} · {{ (roleLabel as Record<string, string>)[c.role] ?? c.role }}</span></span>
           <button type="button" :data-testid="`login-${u.id}`" @click="login(u.id)">Belépés mint {{ u.name }}</button>
         </li>
       </ul>

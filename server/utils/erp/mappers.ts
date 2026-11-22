@@ -1,13 +1,15 @@
 import { caseTypes } from '../../domain/case-types.ts'
-import type { CaseRecord, CaseStatus, CaseTypeId, Invoice, InvoiceLine, InvoiceUsage, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
+import type { Deal, ScheduleDay, CaseRecord, CaseStatus, CaseTypeId, Invoice, InvoiceLine, InvoiceUsage, Partner, PartnerKind, PortalUser, ProductionRecord, Reading, Role, Segment, SupplyPoint } from '../../domain/types.ts'
 
 /** ERPNext-mezők -> portál domain-típusok. A seed, az export és az élő adapter ugyanezt használja. */
 
-export const CUSTOMER_FIELDS = ['name', 'customer_name', 'szikra_id', 'tax_id', 'szikra_address', 'szikra_segment', 'szikra_contract_no', 'szikra_card_declines', 'szikra_kind']
+export const CUSTOMER_FIELDS = ['name', 'customer_name', 'szikra_id', 'tax_id', 'szikra_address', 'szikra_segment', 'szikra_contract_no', 'szikra_card_declines', 'szikra_kind', 'szikra_credit_limit', 'szikra_guarantee', 'szikra_guarantee_expiry']
 export const INVOICE_FIELDS = ['name', 'szikra_id', 'customer', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount', 'szikra_period', 'szikra_supply_point', 'szikra_usage']
 export const SUPPLY_FIELDS = ['name', 'szikra_id', 'customer', 'energy', 'pod', 'address', 'meter_serial', 'smart', 'last_reading', 'last_reading_date', 'unit', 'label', 'tariff', 'capacity_kw', 'direction', 'contracted_kw', 'network_category']
 export const ISSUE_FIELDS = ['name', 'subject', 'status', 'creation', 'customer', 'szikra_case_type', 'szikra_fields', 'szikra_created_by']
 export const ITEM_FIELDS = ['parent', 'item_code', 'item_name', 'qty', 'uom', 'rate', 'amount', 'szikra_category', 'idx']
+export const DEAL_FIELDS = ['szikra_id', 'customer', 'commodity', 'product', 'side', 'volume', 'volume_unit', 'price_eur_mwh', 'fx_huf_per_eur', 'delivery_from', 'delivery_to', 'total_mwh', 'trade_date', 'status']
+export const SCHEDULE_FIELDS = ['szikra_id', 'customer', 'date', 'commodity', 'values_json', 'status', 'submitted_by']
 export const READING_FIELDS = ['supply_point', 'date', 'value']
 export const PRODUCTION_FIELDS = ['szikra_id', 'customer', 'supply_point', 'month', 'mwh', 'price_huf_per_mwh', 'premium_huf', 'imbalance_huf', 'settlement_huf', 'status']
 export const ACCESS_FIELDS = ['name', 'user_id', 'full_name', 'email', 'note', 'customer', 'role']
@@ -39,7 +41,10 @@ export function mapPartner(c: any): Partner {
     taxNumber: c.tax_id ?? '',
     address: c.szikra_address ?? '',
     segment: (c.szikra_segment || 'ipari') as Segment,
-    ...(c.szikra_kind === 'termelo' ? { kind: 'termelo' as PartnerKind } : {}),
+    ...(c.szikra_kind === 'termelo' || c.szikra_kind === 'kereskedo' ? { kind: c.szikra_kind as PartnerKind } : {}),
+    ...(c.szikra_credit_limit ? { creditLimitHuf: Math.round(Number(c.szikra_credit_limit)) } : {}),
+    ...(c.szikra_guarantee ? { guaranteeHuf: Math.round(Number(c.szikra_guarantee)) } : {}),
+    ...(c.szikra_guarantee_expiry ? { guaranteeExpiry: c.szikra_guarantee_expiry } : {}),
     contractNo: c.szikra_contract_no ?? '',
     ...(c.szikra_card_declines ? { cardDeclines: true } : {}),
   }
@@ -144,4 +149,18 @@ export function mapAccess(rows: any[], partnerIdByCustomer: Map<string, string>)
     memberships.push({ userId: r.user_id, partnerId: partnerIdByCustomer.get(r.customer) ?? r.customer, role: r.role })
   }
   return { users: [...users.values()], memberships }
+}
+
+export function mapDeal(d: any, partnerIdByCustomer: Map<string, string>): Deal {
+  return {
+    id: d.szikra_id, partnerId: partnerIdByCustomer.get(d.customer) ?? d.customer, commodity: d.commodity, product: d.product, side: d.side,
+    volume: Number(d.volume), volumeUnit: d.volume_unit, priceEurMwh: Number(d.price_eur_mwh), fxHufPerEur: Number(d.fx_huf_per_eur),
+    deliveryFrom: d.delivery_from, deliveryTo: d.delivery_to, totalMwh: Math.round(Number(d.total_mwh)), tradeDate: d.trade_date, status: d.status,
+  }
+}
+
+export function mapSchedule(s: any, partnerIdByCustomer: Map<string, string>): ScheduleDay {
+  let values: number[] = []
+  try { values = JSON.parse(s.values_json || '[]') } catch { /* sérült JSON: üres menetrend */ }
+  return { id: s.szikra_id, partnerId: partnerIdByCustomer.get(s.customer) ?? s.customer, date: s.date, commodity: s.commodity, values, status: s.status, submittedBy: s.submitted_by ?? '' }
 }

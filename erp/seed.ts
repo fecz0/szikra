@@ -57,8 +57,12 @@ async function ensureLocale() {
 }
 
 async function ensureCustomField(dt: string, fieldname: string, def: Record<string, unknown>) {
-  const have = await c.list('Custom Field', { fields: ['name'], filters: [['dt', '=', dt], ['fieldname', '=', fieldname]] })
-  if (have.length) return
+  const have = await c.list('Custom Field', { fields: ['name', 'options'], filters: [['dt', '=', dt], ['fieldname', '=', fieldname]] })
+  if (have.length) {
+    // a Select mezők új opcióit (pl. új partnertípus) utólag is felvesszük
+    if (def.options && have[0].options !== def.options) { await c.update('Custom Field', have[0].name, { options: def.options }); log('mező opciói frissítve:', `${dt}.${fieldname}`) }
+    return
+  }
   await c.create('Custom Field', { dt, fieldname, label: fieldname, ...def })
   log('mező:', `${dt}.${fieldname}`)
 }
@@ -70,9 +74,11 @@ async function ensureDoctype(name: string, autoname: string, fields: Record<stri
     const doc = await c.get('DocType', name)
     const known = new Set((doc.fields as { fieldname: string }[]).map(f => f.fieldname))
     const missing = fields.filter(f => !known.has(String(f.fieldname)))
-    if (missing.length) {
-      await c.update('DocType', name, { fields: [...doc.fields, ...missing.map((f, i) => ({ idx: doc.fields.length + i + 1, ...f }))] })
-      log('DocType bővítve:', name, missing.map(f => f.fieldname).join(', '))
+    const optionChanges = (doc.fields as { fieldname: string, options?: string }[]).filter(f => fields.some(w => w.fieldname === f.fieldname && w.options && w.options !== f.options))
+    if (missing.length || optionChanges.length) {
+      const patched = (doc.fields as any[]).map(f => ({ ...f, options: fields.find(w => w.fieldname === f.fieldname)?.options ?? f.options }))
+      await c.update('DocType', name, { fields: [...patched, ...missing.map((f, i) => ({ idx: doc.fields.length + i + 1, ...f }))] })
+      log('DocType bővítve:', name, [...missing.map(f => f.fieldname), ...optionChanges.map(f => `${f.fieldname} (opciók)`)].join(', '))
     }
     return
   }
@@ -91,7 +97,10 @@ async function ensureSchema() {
   await ensureCustomField('Customer', 'szikra_segment', t('Select', { options: 'ipari\nkereskedelmi\nkozuzemi' }))
   await ensureCustomField('Customer', 'szikra_contract_no', t('Data'))
   await ensureCustomField('Customer', 'szikra_card_declines', t('Check'))
-  await ensureCustomField('Customer', 'szikra_kind', t('Select', { options: 'fogyaszto\ntermelo' }))
+  await ensureCustomField('Customer', 'szikra_credit_limit', t('Currency'))
+  await ensureCustomField('Customer', 'szikra_guarantee', t('Currency'))
+  await ensureCustomField('Customer', 'szikra_guarantee_expiry', t('Date'))
+  await ensureCustomField('Customer', 'szikra_kind', t('Select', { options: 'fogyaszto\ntermelo\nkereskedo' }))
   await ensureCustomField('Sales Invoice', 'szikra_id', t('Data'))
   await ensureCustomField('Sales Invoice', 'szikra_period', t('Data'))
   await ensureCustomField('Sales Invoice', 'szikra_supply_point', t('Data'))
@@ -136,13 +145,38 @@ async function ensureSchema() {
     t('Currency', { fieldname: 'settlement_huf', label: 'Elszámolás', precision: '0', in_list_view: 1 }),
     t('Select', { fieldname: 'status', label: 'Állapot', options: 'tervezet\njovahagyva\nkifizetve', in_list_view: 1 }),
   ])
+  await ensureDoctype('Szikra Deal', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Ügylet azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'commodity', label: 'Energia', options: 'villany\ngaz', reqd: 1 }),
+    t('Data', { fieldname: 'product', label: 'Termék', in_list_view: 1 }),
+    t('Select', { fieldname: 'side', label: 'Irány', options: 'vetel\neladas' }),
+    t('Float', { fieldname: 'volume', label: 'Mennyiség (MW vagy MWh/nap)' }),
+    t('Select', { fieldname: 'volume_unit', label: 'Mértékegység', options: 'MW\nMWh/nap' }),
+    t('Float', { fieldname: 'price_eur_mwh', label: 'Ár (EUR/MWh)', precision: '2' }),
+    t('Float', { fieldname: 'fx_huf_per_eur', label: 'Árfolyam (HUF/EUR)', precision: '2' }),
+    t('Date', { fieldname: 'delivery_from', label: 'Szállítás kezdete' }),
+    t('Date', { fieldname: 'delivery_to', label: 'Szállítás vége' }),
+    t('Float', { fieldname: 'total_mwh', label: 'Teljes mennyiség (MWh)', precision: '0' }),
+    t('Date', { fieldname: 'trade_date', label: 'Kötés napja' }),
+    t('Select', { fieldname: 'status', label: 'Állapot', options: 'visszaigazolasra-var\nvisszaigazolva\nvitatott\nteljesitve', in_list_view: 1 }),
+  ])
+  await ensureDoctype('Szikra Schedule', 'field:szikra_id', [
+    t('Data', { fieldname: 'szikra_id', label: 'Azonosító', reqd: 1, unique: 1 }),
+    t('Link', { fieldname: 'customer', label: 'Partner', options: 'Customer', reqd: 1, in_list_view: 1 }),
+    t('Date', { fieldname: 'date', label: 'Nap', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'commodity', label: 'Energia', options: 'villany\ngaz' }),
+    t('Long Text', { fieldname: 'values_json', label: 'Értékek (JSON)' }),
+    t('Select', { fieldname: 'status', label: 'Állapot', options: 'benyujtva\nelfogadva', in_list_view: 1 }),
+    t('Data', { fieldname: 'submitted_by', label: 'Benyújtotta' }),
+  ])
   await ensureDoctype('Szikra Portal Access', 'hash', [
     t('Data', { fieldname: 'user_id', label: 'Felhasználó azonosító', reqd: 1, in_list_view: 1 }),
     t('Data', { fieldname: 'full_name', label: 'Név', reqd: 1 }),
     t('Data', { fieldname: 'email', label: 'E-mail' }),
     t('Small Text', { fieldname: 'note', label: 'Megjegyzés' }),
     t('Link', { fieldname: 'customer', label: 'Cég', options: 'Customer', reqd: 1, in_list_view: 1 }),
-    t('Select', { fieldname: 'role', label: 'Szerepkör', options: 'admin\npenzugy\nmuszaki\nolvaso', reqd: 1, in_list_view: 1 }),
+    t('Select', { fieldname: 'role', label: 'Szerepkör', options: 'admin\npenzugy\nmuszaki\nolvaso\nkereskedo', reqd: 1, in_list_view: 1 }),
   ])
   await ensureDoctype('Szikra Event', 'hash', [
     t('Link', { fieldname: 'customer', label: 'Cég', options: 'Customer' }),
@@ -184,6 +218,7 @@ async function seedData() {
       customer_name: p.name, customer_type: 'Company', customer_group: 'Commercial', territory: 'All Territories',
       tax_id: p.taxNumber, szikra_id: p.id, szikra_address: p.address, szikra_segment: p.segment,
       szikra_contract_no: p.contractNo, szikra_card_declines: p.cardDeclines ? 1 : 0, szikra_kind: p.kind ?? 'fogyaszto',
+      szikra_credit_limit: p.creditLimitHuf ?? 0, szikra_guarantee: p.guaranteeHuf ?? 0, szikra_guarantee_expiry: p.guaranteeExpiry ?? null,
     })
     customerByPartner.set(p.id, doc.name)
     log('ügyfél:', doc.name)
@@ -236,6 +271,19 @@ async function seedData() {
   // ÁFA: fix összegű adósor (a számlakép végösszege forintra egyezik)
   const vatAccount = await ensureVatAccount(company)
   let ni = 0
+  const haveDeals = new Set((await c.list('Szikra Deal', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const d of ds.deals) {
+    if (haveDeals.has(d.id)) continue
+    await c.create('Szikra Deal', { szikra_id: d.id, customer: customerByPartner.get(d.partnerId), commodity: d.commodity, product: d.product, side: d.side, volume: d.volume, volume_unit: d.volumeUnit, price_eur_mwh: d.priceEurMwh, fx_huf_per_eur: d.fxHufPerEur, delivery_from: d.deliveryFrom, delivery_to: d.deliveryTo, total_mwh: d.totalMwh, trade_date: d.tradeDate, status: d.status })
+  }
+  if (ds.deals.length) log('ügyletek:', ds.deals.length)
+  const haveSch = new Set((await c.list('Szikra Schedule', { fields: ['szikra_id'] })).map(r => r.szikra_id))
+  for (const sc of ds.schedule) {
+    if (haveSch.has(sc.id)) continue
+    await c.create('Szikra Schedule', { szikra_id: sc.id, customer: customerByPartner.get(sc.partnerId), date: sc.date, commodity: sc.commodity, values_json: JSON.stringify(sc.values), status: sc.status, submitted_by: sc.submittedBy })
+  }
+  if (ds.schedule.length) log('menetrend:', ds.schedule.length)
+
   const existing = new Set((await c.list('Sales Invoice', { fields: ['szikra_id'] })).map(r => r.szikra_id))
   for (const inv of ds.invoices) {
     if (existing.has(inv.id)) continue

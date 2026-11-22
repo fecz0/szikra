@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const cfg = useRuntimeConfig(event)
   const b = useBackend()
   if (!cfg.testSeed || !b.load) throw createError({ statusCode: 404, statusMessage: 'Not Found' })
-  const { scenario, role = 'admin' } = await readBody<{ scenario?: string, role?: 'admin' | 'penzugy' | 'muszaki' | 'olvaso' }>(event)
+  const { scenario, role = 'admin' } = await readBody<{ scenario?: string, role?: 'admin' | 'penzugy' | 'muszaki' | 'olvaso' | 'kereskedo' }>(event)
   if (!scenario || !(scenario in scenarios)) throw createError({ statusCode: 400, message: 'Ismeretlen forgatókönyv' })
   const uid = crypto.randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()
   const { dataset, userId, partnerId } = seedDataset(scenario as ScenarioName, role, uid)

@@ -1,10 +1,10 @@
 import type { Bundle } from './demo-data.ts'
-import { buildChain, buildSolarPark } from './demo-data.ts'
+import { buildChain, buildSolarPark, buildWholesale } from './demo-data.ts'
 import type { Dataset, Membership, PortalUser } from './types.ts'
 import { emptyDataset } from './types.ts'
 
 type LegacyName = 'okos-ipari' | 'elmaradt-szamla' | 'kartya-elutasitva' | 'rendezett-szamlak'
-export type ScenarioName = LegacyName | 'kereskedelmi-lanc' | 'napelempark'
+export type ScenarioName = LegacyName | 'kereskedelmi-lanc' | 'napelempark' | 'nagykereskedelem'
 
 type Fragment = Bundle
 
@@ -13,7 +13,7 @@ type Fragment = Bundle
  * (cég, fogyasztási helyek, számlák). Ugyanezt tölti be az ERPNext seed
  * (`erp/seed.ts`) és a memória-tár a tesztekben; a deploy-hoz ezekből készül a JSON snapshot.
  */
-const legacyScenarios: Record<LegacyName, (id: string) => Omit<Fragment, 'readings' | 'production'>> = {
+const legacyScenarios: Record<LegacyName, (id: string) => Omit<Fragment, 'readings' | 'production' | 'deals' | 'schedule'>> = {
   'okos-ipari': id => ({
     partner: { id, name: `Napfény Energia Kft. (${id})`, taxNumber: '12345678-2-41', address: '1011 Budapest, Minta utca 1.', segment: 'ipari', contractNo: `SZ-${id}-01` },
     supplyPoints: [
@@ -60,9 +60,10 @@ const legacyScenarios: Record<LegacyName, (id: string) => Omit<Fragment, 'readin
 }
 
 export const scenarios: Record<ScenarioName, (id: string) => Fragment> = {
-  ...(Object.fromEntries(Object.entries(legacyScenarios).map(([k, make]) => [k, (id: string): Fragment => ({ readings: [], production: [], ...make(id) })])) as Record<LegacyName, (id: string) => Fragment>),
+  ...(Object.fromEntries(Object.entries(legacyScenarios).map(([k, make]) => [k, (id: string): Fragment => ({ readings: [], production: [], deals: [], schedule: [], ...make(id) })])) as Record<LegacyName, (id: string) => Fragment>),
   'kereskedelmi-lanc': id => buildChain(id, `Tisza Kereskedelmi Lánc Zrt. (${id})`, 3),
   'napelempark': id => buildSolarPark(id, `Alföldi Napenergia Kft. (${id})`),
+  'nagykereskedelem': id => buildWholesale(id, `Duna Trade Kft. (${id})`),
 }
 
 /** Fix demó partnerek (azonosítók a snapshotban is stabilak). */
@@ -73,6 +74,7 @@ export const demoPartnerIds: Record<ScenarioName, string> = {
   'rendezett-szamlak': 'DEMO-RENDEZETT',
   'kereskedelmi-lanc': 'DEMO-LANC',
   'napelempark': 'DEMO-NAPELEM',
+  'nagykereskedelem': 'DEMO-NAGYKER',
 }
 
 export const demoUsers: PortalUser[] = [
@@ -80,6 +82,10 @@ export const demoUsers: PortalUser[] = [
   { id: 'DEMO-PENZUGY', name: 'Nagy Péter', email: 'peter@demo.szikra.test', note: 'Pénzügyi szerepkör: számlák és fizetés, mérőállást nem közölhet' },
   { id: 'DEMO-MUSZAKI', name: 'Szabó Mária', email: 'maria@demo.szikra.test', note: 'Műszaki szerepkör: fogyasztási helyek, mérőállás, ajánlatkérés; számlát nem lát' },
   { id: 'DEMO-TERMELO', name: 'Kiss Zoltán', email: 'zoltan@demo.szikra.test', note: 'Napelempark-üzemeltető: termelés, átvételi elszámolás, leállás- és kapacitásügyek' },
+  { id: 'DEMO-KERESKEDO', name: 'Varga Dávid', email: 'david@demo.szikra.test', note: 'Nagykereskedelmi kereskedő: ügyletek visszaigazolása, napi menetrend benyújtása, limit' },
+  { id: 'DEMO-ELSZAMOLAS', name: 'Szűcs Réka', email: 'reka@demo.szikra.test', note: 'Elszámolás (pénzügy): a nagykereskedő számlái és limitje, és a napelempark átvételi elszámolása' },
+  { id: 'DEMO-UZEMVEZETO', name: 'Farkas Imre', email: 'imre@demo.szikra.test', note: 'Napelempark üzemvezető (műszaki): termelés, leállás-bejelentés; ügyletet és számlát nem lát' },
+  { id: 'DEMO-VEZETO', name: 'Dr. Balogh Katalin', email: 'katalin@demo.szikra.test', note: 'Cégcsoport-vezető: adminisztrátor a nagykereskedőnél, olvasó a láncnál és a napelemparknál' },
   { id: 'DEMO-OLVASO', name: 'Tóth Gábor', email: 'gabor@demo.szikra.test', note: 'Csak olvasó: minden megtekinthető, semmi nem indítható' },
 ]
 
@@ -89,6 +95,13 @@ export const demoMemberships: Membership[] = [
   { userId: 'DEMO-ADMIN', partnerId: 'DEMO-KARTYA', role: 'penzugy' },
   { userId: 'DEMO-ADMIN', partnerId: 'DEMO-LANC', role: 'admin' },
   { userId: 'DEMO-TERMELO', partnerId: 'DEMO-NAPELEM', role: 'admin' },
+  { userId: 'DEMO-KERESKEDO', partnerId: 'DEMO-NAGYKER', role: 'kereskedo' },
+  { userId: 'DEMO-ELSZAMOLAS', partnerId: 'DEMO-NAGYKER', role: 'penzugy' },
+  { userId: 'DEMO-ELSZAMOLAS', partnerId: 'DEMO-NAPELEM', role: 'penzugy' },
+  { userId: 'DEMO-UZEMVEZETO', partnerId: 'DEMO-NAPELEM', role: 'muszaki' },
+  { userId: 'DEMO-VEZETO', partnerId: 'DEMO-NAGYKER', role: 'admin' },
+  { userId: 'DEMO-VEZETO', partnerId: 'DEMO-LANC', role: 'olvaso' },
+  { userId: 'DEMO-VEZETO', partnerId: 'DEMO-NAPELEM', role: 'olvaso' },
   { userId: 'DEMO-PENZUGY', partnerId: 'DEMO-ELMARADT', role: 'penzugy' },
   { userId: 'DEMO-PENZUGY', partnerId: 'DEMO-KARTYA', role: 'penzugy' },
   { userId: 'DEMO-MUSZAKI', partnerId: 'DEMO-OKOS', role: 'muszaki' },
@@ -106,6 +119,8 @@ export function fixedDemoDataset(): Dataset {
     ds.supplyPoints.push(...f.supplyPoints)
     ds.readings.push(...f.readings)
     ds.production.push(...f.production)
+    ds.deals.push(...f.deals)
+    ds.schedule.push(...f.schedule)
     ds.invoices.push(...f.invoices)
   }
   ds.users.push(...demoUsers)
@@ -122,6 +137,8 @@ export function seedDataset(scenario: ScenarioName, role: Membership['role'], ui
   ds.supplyPoints.push(...f.supplyPoints)
   ds.readings.push(...f.readings)
   ds.production.push(...f.production)
+  ds.deals.push(...f.deals)
+  ds.schedule.push(...f.schedule)
   ds.invoices.push(...f.invoices)
   ds.users.push({ id: userId, name: 'Teszt Elek', email: `${uid}@teszt.szikra.test`, note: 'teszt' })
   ds.memberships.push({ userId, partnerId: f.partner.id, role })

@@ -10,6 +10,18 @@
       "contractNo": "SZ-DEMO-NAPELEM-06"
     },
     {
+      "id": "DEMO-NAGYKER",
+      "name": "Duna Trade Kft.",
+      "taxNumber": "24987654-2-41",
+      "address": "1138 Budapest, Dunavirág utca 2.",
+      "segment": "kereskedelmi",
+      "kind": "kereskedo",
+      "creditLimitHuf": 3000000000,
+      "guaranteeHuf": 1500000000,
+      "guaranteeExpiry": "2027-02-28",
+      "contractNo": "SZ-DEMO-NAGYKER-07"
+    },
+    {
       "id": "DEMO-ELMARADT",
       "name": "Késő Kereskedelmi Zrt.",
       "taxNumber": "23456789-2-09",
@@ -81,6 +93,30 @@
       "name": "Szabó Mária",
       "email": "maria@demo.szikra.test",
       "note": "Műszaki szerepkör: fogyasztási helyek, mérőállás, ajánlatkérés; számlát nem lát"
+    },
+    {
+      "id": "DEMO-VEZETO",
+      "name": "Dr. Balogh Katalin",
+      "email": "katalin@demo.szikra.test",
+      "note": "Cégcsoport-vezető: adminisztrátor a nagykereskedőnél, olvasó a láncnál és a napelemparknál"
+    },
+    {
+      "id": "DEMO-ELSZAMOLAS",
+      "name": "Szűcs Réka",
+      "email": "reka@demo.szikra.test",
+      "note": "Elszámolás (pénzügy): a nagykereskedő számlái és limitje, és a napelempark átvételi elszámolása"
+    },
+    {
+      "id": "DEMO-UZEMVEZETO",
+      "name": "Farkas Imre",
+      "email": "imre@demo.szikra.test",
+      "note": "Napelempark üzemvezető (műszaki): termelés, leállás-bejelentés; ügyletet és számlát nem lát"
+    },
+    {
+      "id": "DEMO-KERESKEDO",
+      "name": "Varga Dávid",
+      "email": "david@demo.szikra.test",
+      "note": "Nagykereskedelmi kereskedő: ügyletek visszaigazolása, napi menetrend benyújtása, limit"
     }
   ],
   "memberships": [
@@ -128,6 +164,41 @@
       "userId": "DEMO-MUSZAKI",
       "partnerId": "DEMO-OKOS",
       "role": "muszaki"
+    },
+    {
+      "userId": "DEMO-VEZETO",
+      "partnerId": "DEMO-NAPELEM",
+      "role": "olvaso"
+    },
+    {
+      "userId": "DEMO-VEZETO",
+      "partnerId": "DEMO-LANC",
+      "role": "olvaso"
+    },
+    {
+      "userId": "DEMO-ELSZAMOLAS",
+      "partnerId": "DEMO-NAPELEM",
+      "role": "penzugy"
+    },
+    {
+      "userId": "DEMO-ELSZAMOLAS",
+      "partnerId": "DEMO-NAGYKER",
+      "role": "penzugy"
+    },
+    {
+      "userId": "DEMO-VEZETO",
+      "partnerId": "DEMO-NAGYKER",
+      "role": "admin"
+    },
+    {
+      "userId": "DEMO-UZEMVEZETO",
+      "partnerId": "DEMO-NAPELEM",
+      "role": "muszaki"
+    },
+    {
+      "userId": "DEMO-KERESKEDO",
+      "partnerId": "DEMO-NAGYKER",
+      "role": "kereskedo"
     }
   ],
   "supplyPoints": [
@@ -1618,6 +1689,562 @@
       "status": "tervezet"
     }
   ],
+  "deals": [
+    {
+      "id": "DEMO-NAGYKER-D01",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Bázis",
+      "side": "vetel",
+      "volume": 25,
+      "volumeUnit": "MW",
+      "priceEurMwh": 96.4,
+      "fxHufPerEur": 395,
+      "deliveryFrom": "2025-11-01",
+      "deliveryTo": "2026-12-31",
+      "totalMwh": 255600,
+      "tradeDate": "2025-09-12",
+      "status": "visszaigazolva"
+    },
+    {
+      "id": "DEMO-NAGYKER-D02",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Csúcs",
+      "side": "vetel",
+      "volume": 10,
+      "volumeUnit": "MW",
+      "priceEurMwh": 112,
+      "fxHufPerEur": 395,
+      "deliveryFrom": "2025-11-01",
+      "deliveryTo": "2026-12-31",
+      "totalMwh": 36480,
+      "tradeDate": "2025-09-12",
+      "status": "visszaigazolva"
+    },
+    {
+      "id": "DEMO-NAGYKER-D03",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "gaz",
+      "product": "Gáz bázis",
+      "side": "vetel",
+      "volume": 60,
+      "volumeUnit": "MWh/nap",
+      "priceEurMwh": 37.5,
+      "fxHufPerEur": 395,
+      "deliveryFrom": "2025-11-01",
+      "deliveryTo": "2026-12-31",
+      "totalMwh": 25560,
+      "tradeDate": "2025-09-15",
+      "status": "visszaigazolva"
+    },
+    {
+      "id": "DEMO-NAGYKER-D04",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Bázis",
+      "side": "vetel",
+      "volume": 20,
+      "volumeUnit": "MW",
+      "priceEurMwh": 98.5,
+      "fxHufPerEur": 392,
+      "deliveryFrom": "2026-07-01",
+      "deliveryTo": "2026-09-30",
+      "totalMwh": 44160,
+      "tradeDate": "2026-05-18",
+      "status": "teljesitve"
+    },
+    {
+      "id": "DEMO-NAGYKER-D05",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Csúcs",
+      "side": "vetel",
+      "volume": 10,
+      "volumeUnit": "MW",
+      "priceEurMwh": 109,
+      "fxHufPerEur": 392,
+      "deliveryFrom": "2026-07-01",
+      "deliveryTo": "2026-09-30",
+      "totalMwh": 7920,
+      "tradeDate": "2026-05-18",
+      "status": "teljesitve"
+    },
+    {
+      "id": "DEMO-NAGYKER-D11",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "gaz",
+      "product": "Gáz téli szezon",
+      "side": "vetel",
+      "volume": 100,
+      "volumeUnit": "MWh/nap",
+      "priceEurMwh": 38.5,
+      "fxHufPerEur": 396,
+      "deliveryFrom": "2026-11-01",
+      "deliveryTo": "2027-03-31",
+      "totalMwh": 15100,
+      "tradeDate": "2026-10-05",
+      "status": "visszaigazolva"
+    },
+    {
+      "id": "DEMO-NAGYKER-D06",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Bázis",
+      "side": "vetel",
+      "volume": 40,
+      "volumeUnit": "MW",
+      "priceEurMwh": 109,
+      "fxHufPerEur": 396,
+      "deliveryFrom": "2027-01-01",
+      "deliveryTo": "2027-03-31",
+      "totalMwh": 86400,
+      "tradeDate": "2026-10-20",
+      "status": "visszaigazolva"
+    },
+    {
+      "id": "DEMO-NAGYKER-D09",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Bázis",
+      "side": "eladas",
+      "volume": 15,
+      "volumeUnit": "MW",
+      "priceEurMwh": 101.3,
+      "fxHufPerEur": 396,
+      "deliveryFrom": "2026-11-01",
+      "deliveryTo": "2026-12-31",
+      "totalMwh": 21960,
+      "tradeDate": "2026-10-28",
+      "status": "visszaigazolva"
+    },
+    {
+      "id": "DEMO-NAGYKER-D10",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Csúcs",
+      "side": "vetel",
+      "volume": 5,
+      "volumeUnit": "MW",
+      "priceEurMwh": 119,
+      "fxHufPerEur": 396,
+      "deliveryFrom": "2026-12-01",
+      "deliveryTo": "2026-12-31",
+      "totalMwh": 1380,
+      "tradeDate": "2026-11-12",
+      "status": "vitatott"
+    },
+    {
+      "id": "DEMO-NAGYKER-D12",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "gaz",
+      "product": "Gáz bázis",
+      "side": "vetel",
+      "volume": 80,
+      "volumeUnit": "MWh/nap",
+      "priceEurMwh": 34.2,
+      "fxHufPerEur": 397,
+      "deliveryFrom": "2027-04-01",
+      "deliveryTo": "2027-06-30",
+      "totalMwh": 7280,
+      "tradeDate": "2026-11-19",
+      "status": "visszaigazolasra-var"
+    },
+    {
+      "id": "DEMO-NAGYKER-D07",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Bázis",
+      "side": "vetel",
+      "volume": 30,
+      "volumeUnit": "MW",
+      "priceEurMwh": 104.5,
+      "fxHufPerEur": 397,
+      "deliveryFrom": "2027-04-01",
+      "deliveryTo": "2027-06-30",
+      "totalMwh": 65520,
+      "tradeDate": "2026-11-20",
+      "status": "visszaigazolasra-var"
+    },
+    {
+      "id": "DEMO-NAGYKER-D08",
+      "partnerId": "DEMO-NAGYKER",
+      "commodity": "villany",
+      "product": "Csúcs",
+      "side": "vetel",
+      "volume": 10,
+      "volumeUnit": "MW",
+      "priceEurMwh": 121,
+      "fxHufPerEur": 397,
+      "deliveryFrom": "2027-01-01",
+      "deliveryTo": "2027-03-31",
+      "totalMwh": 7680,
+      "tradeDate": "2026-11-21",
+      "status": "visszaigazolasra-var"
+    }
+  ],
+  "schedule": [
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261115",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-15",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261115",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-15",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261116",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-16",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261116",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-16",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261117",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-17",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261117",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-17",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261118",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-18",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261118",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-18",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261119",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-19",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261119",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-19",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261120",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-20",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        35,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261120",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-20",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261121",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-21",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261121",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-21",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-E-20261122",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-22",
+      "commodity": "villany",
+      "values": [
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25,
+        25
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    },
+    {
+      "id": "DEMO-NAGYKER-SCH-G-20261122",
+      "partnerId": "DEMO-NAGYKER",
+      "date": "2026-11-22",
+      "commodity": "gaz",
+      "values": [
+        160
+      ],
+      "status": "elfogadva",
+      "submittedBy": "Varga Dávid"
+    }
+  ],
   "invoices": [
     {
       "id": "DEMO-LANC-INV-E1-202511",
@@ -2598,6 +3225,44 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1677
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202511",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2025. november",
+      "amountHuf": 1039169118,
+      "issueDate": "2025-12-05",
+      "dueDate": "2025-12-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18000,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 685404000
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2400,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 106176000
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1800,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 26663400
         }
       ]
     },
@@ -3584,6 +4249,44 @@
       ]
     },
     {
+      "id": "DEMO-NAGYKER-INV-202512",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2025. december",
+      "amountHuf": 1089539833,
+      "issueDate": "2026-01-05",
+      "dueDate": "2026-01-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2760,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 122102400
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
+        }
+      ]
+    },
+    {
       "id": "DEMO-LANC-INV-E1-202601",
       "partnerId": "DEMO-LANC",
       "supplyPointId": "DEMO-LANC-E1",
@@ -4562,6 +5265,44 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1872
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202601",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. január",
+      "amountHuf": 1082797657,
+      "issueDate": "2026-02-05",
+      "dueDate": "2026-02-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 116793600
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
         }
       ]
     },
@@ -5548,6 +6289,44 @@
       ]
     },
     {
+      "id": "DEMO-NAGYKER-INV-202602",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. február",
+      "amountHuf": 978880745,
+      "issueDate": "2026-03-05",
+      "dueDate": "2026-03-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 16800,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 639710400
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2400,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 106176000
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1680,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 24885840
+        }
+      ]
+    },
+    {
       "id": "DEMO-LANC-INV-E1-202603",
       "partnerId": "DEMO-LANC",
       "supplyPointId": "DEMO-LANC-E1",
@@ -6526,6 +7305,44 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1902
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202603",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. március",
+      "amountHuf": 1082797657,
+      "issueDate": "2026-04-05",
+      "dueDate": "2026-04-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 116793600
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
         }
       ]
     },
@@ -7512,6 +8329,44 @@
       ]
     },
     {
+      "id": "DEMO-NAGYKER-INV-202604",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. április",
+      "amountHuf": 1052653470,
+      "issueDate": "2026-05-05",
+      "dueDate": "2026-05-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18000,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 685404000
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 116793600
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1800,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 26663400
+        }
+      ]
+    },
+    {
       "id": "DEMO-LANC-INV-E1-202605",
       "partnerId": "DEMO-LANC",
       "supplyPointId": "DEMO-LANC-E1",
@@ -8490,6 +9345,44 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1626
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202605",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. május",
+      "amountHuf": 1076055481,
+      "issueDate": "2026-06-05",
+      "dueDate": "2026-06-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2520,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 111484800
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
         }
       ]
     },
@@ -9476,6 +10369,44 @@
       ]
     },
     {
+      "id": "DEMO-NAGYKER-INV-202606",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. június",
+      "amountHuf": 1052653470,
+      "issueDate": "2026-07-05",
+      "dueDate": "2026-07-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18000,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 685404000
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 116793600
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1800,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 26663400
+        }
+      ]
+    },
+    {
       "id": "DEMO-LANC-INV-E1-202607",
       "partnerId": "DEMO-LANC",
       "supplyPointId": "DEMO-LANC-E1",
@@ -10454,6 +11385,62 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1608
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202607",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. július",
+      "amountHuf": 1968984149,
+      "issueDate": "2026-08-05",
+      "dueDate": "2026-08-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2760,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 122102400
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
+        },
+        {
+          "code": "NK-BAZIS-NEGYED",
+          "label": "Villamos energia, bázis (negyedéves)",
+          "category": "energia",
+          "quantity": 14880,
+          "unit": "MWh",
+          "unitPrice": 38612,
+          "amountHuf": 574546560
+        },
+        {
+          "code": "NK-CSUCS-NEGYED",
+          "label": "Villamos energia, csúcs (negyedéves)",
+          "category": "energia",
+          "quantity": 2760,
+          "unit": "MWh",
+          "unitPrice": 42728,
+          "amountHuf": 117929280
         }
       ]
     },
@@ -11446,6 +12433,62 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1785
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202608",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. augusztus",
+      "amountHuf": 1942476303,
+      "issueDate": "2026-09-05",
+      "dueDate": "2026-09-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2520,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 111484800
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
+        },
+        {
+          "code": "NK-BAZIS-NEGYED",
+          "label": "Villamos energia, bázis (negyedéves)",
+          "category": "energia",
+          "quantity": 14880,
+          "unit": "MWh",
+          "unitPrice": 38612,
+          "amountHuf": 574546560
+        },
+        {
+          "code": "NK-CSUCS-NEGYED",
+          "label": "Villamos energia, csúcs (negyedéves)",
+          "category": "energia",
+          "quantity": 2520,
+          "unit": "MWh",
+          "unitPrice": 42728,
+          "amountHuf": 107674560
         }
       ]
     },
@@ -12448,6 +13491,62 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1854
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202609",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. szeptember",
+      "amountHuf": 1902048164,
+      "issueDate": "2026-10-05",
+      "dueDate": "2026-10-25",
+      "status": "paid",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18000,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 685404000
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 116793600
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1800,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 26663400
+        },
+        {
+          "code": "NK-BAZIS-NEGYED",
+          "label": "Villamos energia, bázis (negyedéves)",
+          "category": "energia",
+          "quantity": 14400,
+          "unit": "MWh",
+          "unitPrice": 38612,
+          "amountHuf": 556012800
+        },
+        {
+          "code": "NK-CSUCS-NEGYED",
+          "label": "Villamos energia, csúcs (negyedéves)",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 42728,
+          "amountHuf": 112801920
         }
       ]
     },
@@ -13470,6 +14569,44 @@
           "unit": "kWh",
           "unitPrice": 0.03,
           "amountHuf": 1866
+        }
+      ]
+    },
+    {
+      "id": "DEMO-NAGYKER-INV-202610",
+      "partnerId": "DEMO-NAGYKER",
+      "period": "2026. október",
+      "amountHuf": 1082797657,
+      "issueDate": "2026-11-05",
+      "dueDate": "2026-11-25",
+      "status": "open",
+      "lines": [
+        {
+          "code": "NK-BAZIS",
+          "label": "Villamos energia, bázis",
+          "category": "energia",
+          "quantity": 18600,
+          "unit": "MWh",
+          "unitPrice": 38078,
+          "amountHuf": 708250800
+        },
+        {
+          "code": "NK-CSUCS",
+          "label": "Villamos energia, csúcs",
+          "category": "energia",
+          "quantity": 2640,
+          "unit": "MWh",
+          "unitPrice": 44240,
+          "amountHuf": 116793600
+        },
+        {
+          "code": "NK-GAZ",
+          "label": "Földgáz, bázis",
+          "category": "energia",
+          "quantity": 1860,
+          "unit": "MWh",
+          "unitPrice": 14813,
+          "amountHuf": 27552180
         }
       ]
     }

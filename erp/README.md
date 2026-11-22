@@ -36,9 +36,24 @@ A `server/domain/demo-data.ts` determinista generátora 12 hónapot (2025-11 …
 |---|---|---|
 | Tisza Kereskedelmi Lánc Zrt. (`DEMO-LANC`) | fogyasztó | 8 telephely, villany + gáz (12 hely), 144 számla, mérőállás-idősor, egy lejárt tartozás |
 | Alföldi Napenergia Kft. (`DEMO-NAPELEM`) | termelő | 20 MW napelempark (12 + 8 MW), kb. 24 GWh éves termelés, havi átvételi elszámolás |
+| Duna Trade Kft. (`DEMO-NAGYKER`) | nagykereskedő | 12 határidős ügylet (villany bázis/csúcs, gáz; vétel és eladás; EUR/MWh, árfolyammal), napi menetrend (24 órás villany, napi gáz), hitelkeret 3 Mrd Ft + 1,5 Mrd Ft bankgarancia (lejárat 2027-02-28), havi elszámoló számlák (~1,1 Mrd Ft) |
 | Napfény, Késő, Pech, Rendes (régi 4) | fogyasztó | a korábbi forgatókönyvek |
 
 A seed a pénzügyi évet (2025) és a sémát is pótolja meglévő ERPNext-en (`ensureFiscalYear`, DocType-migráció).
+
+## Demó felhasználók
+
+| Azonosító | Szerepkör | Cégek |
+|---|---|---|
+| `DEMO-ADMIN` | admin / olvasó / pénzügyi | Napfény, Késő, Pech, Tisza lánc |
+| `DEMO-PENZUGY` | pénzügyi | Késő, Pech |
+| `DEMO-MUSZAKI` | műszaki | Napfény |
+| `DEMO-TERMELO` | admin | Alföldi Napenergia |
+| `DEMO-KERESKEDO` | kereskedő | Duna Trade |
+| `DEMO-ELSZAMOLAS` | pénzügyi | Duna Trade, Alföldi Napenergia |
+| `DEMO-UZEMVEZETO` | műszaki | Alföldi Napenergia |
+| `DEMO-VEZETO` | admin / olvasó | Duna Trade (admin), Tisza lánc és Alföldi Napenergia (olvasó) |
+| `DEMO-OLVASO` | olvasó | Rendes Ipari Park |
 
 ## Tételes számlakép és díjszerkezet
 

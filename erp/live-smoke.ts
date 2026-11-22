@@ -23,7 +23,7 @@ class Session {
   }
 }
 
-const created = { issues: [] as string[], payments: [] as string[] }
+const created = { issues: [] as string[], payments: [] as string[], schedules: [] as string[], confirmedDeals: [] as string[] }
 try {
   const fin = new Session()
   ok((await fin.call('POST', '/api/auth/login', { userId: 'DEMO-PENZUGY' })).status === 200, 'pénzügyi felhasználó belép')
@@ -78,6 +78,25 @@ try {
   const me2 = (await solar.call('GET', '/api/auth/me')).json
   ok(me2.companies[0].kind === 'termelo', 'a cég típusa: termelő')
 
+  // nagykereskedelem: ügyletek, limit, menetrend
+  const trader = new Session()
+  await trader.call('POST', '/api/auth/login', { userId: 'DEMO-KERESKEDO' })
+  const deals = (await trader.call('GET', '/api/partner/DEMO-NAGYKER/deals')).json
+  ok(deals.length === 12 && deals.filter((d: any) => d.status === 'visszaigazolasra-var').length === 3, `ügyletek az ERPNextből: ${deals.length}, ebből 3 visszaigazolásra vár`)
+  const cr = (await trader.call('GET', '/api/partner/DEMO-NAGYKER/credit')).json
+  ok(cr.limitHuf === 3_000_000_000 && cr.usedPct > 0 && cr.usedPct < 100, `hitelkeret: ${cr.usedPct}% kihasználva`)
+  const cf = await trader.call('POST', '/api/partner/DEMO-NAGYKER/deals/DEMO-NAGYKER-D07/confirm')
+  created.confirmedDeals.push('DEMO-NAGYKER-D07')
+  ok(cf.status === 200 && (await erp.list('Szikra Deal', { fields: ['status'], filters: [['szikra_id', '=', 'DEMO-NAGYKER-D07']] }))[0].status === 'visszaigazolva', 'az ügylet visszaigazolása az ERPNextben állapotot vált')
+  ok((await trader.call('POST', '/api/partner/DEMO-NAGYKER/deals/DEMO-NAGYKER-D07/confirm')).status === 409, 'kétszer nem igazolható vissza')
+  const tom = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  const sc = await trader.call('POST', '/api/partner/DEMO-NAGYKER/schedule', { date: tom, commodity: 'villany', baseMw: 30, peakMw: 12 })
+  created.schedules.push(`DEMO-NAGYKER-SCH-E-${tom.replaceAll('-', '')}`)
+  const sched = (await trader.call('GET', '/api/partner/DEMO-NAGYKER/schedule')).json
+  ok(sc.status === 200 && sched.some((x: any) => x.date === tom && x.values.length === 24 && x.status === 'benyujtva'), 'a menetrend az ERPNextbe kerül (24 óra)')
+  const nk = (await trader.call('GET', '/api/partner/DEMO-NAGYKER/invoices/DEMO-NAGYKER-INV-202610')).json
+  ok(nk.invoice.lines.length === 3 && nk.invoice.amountHuf > 1_000_000_000, `nagykereskedői számla: ${nk.invoice.lines.length} tétel, ${Math.round(nk.invoice.amountHuf / 1e6)} M Ft`)
+
   const ro = new Session()
   await ro.call('POST', '/api/auth/login', { userId: 'DEMO-ADMIN' })
   ok((await ro.call('POST', '/api/partner/DEMO-ELMARADT/invoices/DEMO-ELMARADT-INV2/pay')).status === 403, 'olvasó szerepkör fizetése 403')
@@ -90,6 +109,14 @@ finally {
   // takarítás: a fizetés visszavonva (könyvelésileg a törölt PE helyes állapota a 'cancelled'), az ügy törölve
   for (const pe of created.payments) {
     await erp.update('Payment Entry', pe, { docstatus: 2 }).catch(e => console.log('cancel:', e.message))
+  }
+  for (const d of created.confirmedDeals) {
+    const row = (await erp.list('Szikra Deal', { fields: ['name'], filters: [['szikra_id', '=', d]] }))[0]
+    if (row) await erp.update('Szikra Deal', row.name, { status: 'visszaigazolasra-var' }).catch(e => console.log('deal visszaállítás:', e.message))
+  }
+  for (const sId of created.schedules) {
+    const row = (await erp.list('Szikra Schedule', { fields: ['name'], filters: [['szikra_id', '=', sId]] }))[0]
+    if (row) await erp.request('DELETE', `/api/resource/Szikra%20Schedule/${row.name}`).catch(e => console.log('menetrend törlés:', e.message))
   }
   for (const i of created.issues) {
     for (const cm of await erp.list('Comment', { filters: [['reference_name', '=', i]] })) await erp.request('DELETE', `/api/resource/Comment/${cm.name}`).catch(() => {})
